@@ -13,39 +13,62 @@
         </ion-toolbar>
       </ion-header>
 
-      <!--      <ExploreContainer name="Tab 1 page"/>-->
 
       <ion-content>
         <ion-list lines="full">
-          <ion-item v-for="(item, index) in items" :key="index">
-            <!--          A chat style where the user's bubbles are on the right side, and the AI's bubbles are on the left side in a different color -->
-            <ion-avatar :slot="item.type === 'user' ? 'end' : 'start'" edge
+          <ion-item v-for="(item, index) in conv.history" :key="index">
+            <ion-avatar :slot="item.who === 'self' ? 'end' : 'start'" edge
                         style="margin: 0">
-              <img :src="item.avatar" alt="avatar"/>
+              <img :src="item.user.avatar" alt="avatar"/>
             </ion-avatar>
-            <!--          Set margin to push to left or right -->
             <ion-card
-                :color="item.type === 'user' ? 'light' : 'secondary'"
-                :style="item.type === 'user' ? {marginLeft: 'auto'} : {marginRight: 'auto'}">
+                :color="item.who === 'self' ? 'light' : 'secondary'"
+                :style="item.who === 'self' ? {marginLeft: 'auto'} : {marginRight: 'auto'}">
 
               <ion-card-header>
-                <ion-card-subtitle>{{ item.title }} @ {{ item.time }}</ion-card-subtitle>
+                <ion-card-subtitle>{{ item.type.toUpperCase() }} @ {{ item.time }}</ion-card-subtitle>
               </ion-card-header>
 
               <div style="height: 1px; margin: 0 10px; background-color: #000000"></div>
 
               <ion-card-content>
                 {{ item.message }}
+
+                <ion-grid v-if="item.images.length > 0">
+                  <ion-row v-for="(row, rowIndex) in getGrid(item.images)" :key="rowIndex">
+                    <ion-col v-for="(image, colIndex) in row" :key="colIndex">
+                      <ion-thumbnail @click="showSlideshow(item.images, rowIndex, colIndex)">
+                        <img :src="image" alt="image"/>
+                      </ion-thumbnail>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
               </ion-card-content>
 
             </ion-card>
           </ion-item>
         </ion-list>
-        <ion-infinite-scroll @ionInfinite="ionInfinite">
+        <ion-infinite-scroll @ionInfinite="fetchMoreConversations">
           <ion-infinite-scroll-content></ion-infinite-scroll-content>
         </ion-infinite-scroll>
+
+
       </ion-content>
     </ion-content>
+
+    <ion-modal :is-open="modalImages.showModal" @ionModalDidDismiss="modalImages.showModal = false">
+
+      <ion-content>
+        <ion-slides :options="modalImages.slideOpts" pager style="height: 100%">
+          <ion-slide v-for="(image, index) in modalImages.images" :key="index">
+            <img :src="image" alt="image" style="width: 100%; height: auto;"/>
+          </ion-slide>
+        </ion-slides>
+        <div class="swiper-button-prev" @click="prevSlide"></div>
+        <div class="swiper-button-next" @click="nextSlide"></div>
+      </ion-content>
+
+    </ion-modal>
 
 
     <ion-card>
@@ -70,50 +93,87 @@
             type="text"
         />
       </ion-card-content>
-      <ion-button class="ion-margin" fill="outline" @click="sendMessage">Send</ion-button>
 
+      <ion-card-content>
+        <ion-button fill="outline" @click="sendMessage">Send</ion-button>
+        <ion-button fill="outline" @click="clearConversation">Clear</ion-button>
+        <ion-button fill="outline" @click="refreshConversation">Refresh</ion-button>
+      </ion-card-content>
     </ion-card>
   </ion-page>
 </template>
 
-<script lang="ts" setup>
-import { reactive, ref } from "vue"
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from "@ionic/vue"
 
-const message = ref("Hello, how are you today?")
-const items = reactive([])
+<script lang="ts" setup>
+import { onMounted, ref } from "vue"
+import {
+  IonButton, IonContent, IonHeader, IonItem, IonModal, IonPage, IonSlide, IonSlides, IonTitle, IonToolbar
+} from "@ionic/vue"
+import { getAvatar, getPicsum } from "@/util/Util"
+import { Message } from "@/util/Models"
+import { getCache, updateCache } from "@/util/Cache"
 
 const users = {
-  user: {
+  self : {
     name  : "User",
-    avatar: "https://picsum.photos/80/80?random=1"
+    avatar: getAvatar("user")
   },
-  bot : {
+  other: {
     name  : "Bot",
-    avatar: "https://picsum.photos/80/80?random=2"
+    avatar: getAvatar("bot")
   }
 }
+
+const conv = ref({
+  message: "Hello, how are you today?",
+  history: [] as Message[]
+})
+
+const imageCols = 3
+
+const modalImages = ref({
+  showModal: false,
+  images   : [] as string[],
+  slideOpts: {
+    initialSlide : 1,
+    speed        : 400,
+    loop         : true,
+    slidesPerView: 1
+  }
+})
 
 const generateItems = () => {
-  const count = items.length + 1
+  const newItems = []
+  const count = conv.value.history.length + 1
   for (let i = 0; i < 50; i++) {
     const ci = count + i
-    // alternate between user and bot
-    const type = i % 2 === 0 ? "user" : "bot"
-    const actor = users[type]
-    items.push({
-      type   : type,
-      name   : actor.name,
-      avatar : actor.avatar,
-      title  : "Title",
-      message: "Message " + ci,
-      time   : new Date().toLocaleTimeString()
-    })
+
+    const who = i % 2 === 0 ? "self" : "other"
+    const user = users[who]
+
+    const images = []
+    const numImages = Math.floor(Math.random() * 5)
+    for (let j = 0; j < numImages; j++) {
+      images.push(getPicsum(`${who}-${ci}-${j}`, 500, 300))
+    }
+
+    const message: Message = {
+      who    : who,
+      user   : user,
+      type   : "text",
+      time   : new Date().toLocaleTimeString(),
+      title  : "Message Title",
+      message: `Message ${ci}`,
+      images : images
+    }
+
+    newItems.push(message)
   }
+  return newItems
 }
 
-const ionInfinite = (ev) => {
-  generateItems()
+const fetchMoreConversations = (ev) => {
+  // generateItems()
   setTimeout(() => ev.target.complete(), 500)
 }
 
@@ -121,5 +181,64 @@ const sendMessage = () => {
   console.log("Hello World")
 }
 
-generateItems()
+const getGrid = (images: string[]) => {
+  const grid = []
+  let row = []
+  for (let i = 0; i < images.length; i++) {
+    row.push(images[i])
+    if (row.length === imageCols) {
+      grid.push(row)
+      row = []
+    }
+  }
+  if (row.length > 0) {
+    grid.push(row)
+  }
+  return grid
+}
+
+const showSlideshow = (images: string[], rowIndex: number, colIndex: number) => {
+  console.log("showSlideshow", images, rowIndex, colIndex)
+  modalImages.value.images = [ ...images ]
+  modalImages.value.slideOpts.initialSlide = rowIndex * imageCols + colIndex
+  modalImages.value.showModal = true
+}
+
+const prevSlide = () => {
+  console.log("prevSlide")
+  const el = document.querySelector("ion-slides")
+  el?.slidePrev()
+}
+
+const nextSlide = () => {
+  console.log("nextSlide")
+  const el = document.querySelector("ion-slides")
+  el?.slideNext()
+}
+
+const clearConversation = () => {
+  console.log("Clearing conv.value.conversation")
+  conv.value.history.splice(0, conv.value.history.length)
+  updateCache(conv.value.history)
+}
+
+const refreshConversation = () => {
+  console.log("Generating new conv.value.conversation")
+  clearConversation()
+  conv.value.history.push(...generateItems())
+  updateCache(conv.value.history)
+}
+
+// on mounted
+onMounted(() => {
+  const existingConversation = getCache()
+  if (existingConversation) {
+    conv.value.history.push(...getCache())
+  } else {
+    conv.value.history.push(...generateItems())
+    updateCache(conv.value.history)
+  }
+})
+
+
 </script>

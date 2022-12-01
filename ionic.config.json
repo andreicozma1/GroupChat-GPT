@@ -1,0 +1,7 @@
+{
+  "name": "AI-Chatbot",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}

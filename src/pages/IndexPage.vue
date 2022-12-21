@@ -15,8 +15,8 @@
       </q-card-section>
       <q-card-actions>
         <q-btn label="Send" color="primary" @click="sendMessage"/>
-        <q-btn label="Clear Thread" color="primary" @click="clearThread"/>
-        <q-btn label="Clear Cache" color="primary" @click="clearCache"/>
+        <q-btn label="Clear Thread" color="primary" @click="comp.clearThread"/>
+        <q-btn label="Clear Cache" color="primary" @click="comp.clearCache"/>
       </q-card-actions>
     </q-card>
   </div>
@@ -95,14 +95,6 @@ const sendMessage = () => {
   comp.pushMessage(usrMsg)
   message.value = ""
   getAIResponse()
-}
-
-const clearThread = () => {
-  comp.clearThread()
-}
-
-const clearCache = () => {
-  comp.clearCache()
 }
 
 const kbShortcuts = (e) => {

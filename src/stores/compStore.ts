@@ -173,6 +173,7 @@ export const useCompStore = defineStore("counter", {
 		},
 		async genTextCompletion(config: GenConfig) {
 			const prompt = config.promptType.createPrompt(this.getThread.messages)
+			console.log("Prompt", prompt)
 			const hash = hashPrompt(prompt)
 			// if we already have a completion for this prompt, return it
 			if (!config.ignoreCache && this.completions[hash]) {

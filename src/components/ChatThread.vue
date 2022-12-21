@@ -50,7 +50,13 @@ import { dateToStr, getTimeAgo } from "src/util/Util"
 const threadElem: any = ref(null)
 const comp = useCompStore()
 
-const myName = "Andrei Cozma"
+const props = defineProps({
+  myName: {
+    type    : String,
+    required: false,
+    default : "You"
+  }
+})
 
 const threadMessages = computed(() => {
   const thrd = comp.getThread.messages.map((message: TextMessage) => {
@@ -99,7 +105,7 @@ const createHoverHint = (message: TextMessage) => {
 }
 
 const isSentByMe = (message: TextMessage) => {
-  return message.name === myName
+  return message.name === props.myName
 }
 
 onMounted(() => {

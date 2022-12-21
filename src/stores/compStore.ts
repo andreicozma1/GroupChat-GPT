@@ -1,7 +1,6 @@
 import { defineStore } from "pinia"
 import { LocalStorage } from "quasar"
 import { OpenAIApi } from "openai"
-import { getSeededAvatarURL } from "src/util/Util"
 
 export interface GenConfig {
 	prompt: string,
@@ -111,27 +110,9 @@ export const useCompStore = defineStore("counter", {
 				}
 			}
 		},
-		pushAIMessage(res) {
-			const result = res?.result
-			if (!result) {
-				console.error("No result to push")
-				return
-			}
-			const model = result?.model
-			const objective = result?.object
-			const name = `AI ${model} (${objective})`
-			const currDate = new Date()
-			const msg: TextMessage = {
-				text       : [ result?.choices[0]?.text ],
-				images     : [],
-				avatar     : getSeededAvatarURL(name),
-				name       : name,
-				date       : currDate,
-				objective  : result?.object,
-				dateCreated: result?.created * 1000,
-				cached     : res?.cached
-			}
-			this.getThread.messages.push(msg)
+		pushMessage(message: TextMessage) {
+			this.threads[this.currentThread].messages.push(message)
+			this.updateCache()
 		}
 	}
 })

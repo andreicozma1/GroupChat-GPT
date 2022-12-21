@@ -102,22 +102,11 @@ const isSentByMe = (message: TextMessage) => {
   return message.name === myName
 }
 
-const getAIResponse = async () => {
-  const prompt = {
-    prompt     : "Hello, how are you?",
-    ignoreCache: false
-  }
-  comp.genTextCompletion(prompt).then((res) => {
-    comp.pushAIMessage(res)
-  })
-}
-
 onMounted(() => {
   // scroll to bottom. The element is q-scroll-area
   if (threadElem.value) {
     threadElem.value.setScrollPercentage("vertical", 1.0, 500)
   }
 
-  // getAIResponse()
 })
 </script>

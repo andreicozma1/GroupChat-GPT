@@ -29,6 +29,7 @@
     "@typescript-eslint/parser": "^5.10.0",
     "@vue/eslint-config-typescript": "^11.0.2",
     "autoprefixer": "^10.4.2",
+    "dotenv": "^16.0.3",
     "eslint": "^8.10.0",
     "prettier": "^2.5.1",
     "typescript": "^4.5.4"

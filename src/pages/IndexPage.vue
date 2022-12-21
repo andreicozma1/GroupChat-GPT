@@ -14,6 +14,11 @@
             color="primary"
             @click="sendMessage"
         />
+        <q-btn
+            label="Clear"
+            color="primary"
+            @click="clearThread"
+        />
       </q-card-actions>
     </q-card>
   </div>
@@ -30,47 +35,56 @@ const comp = useCompStore()
 const myName = ref("Andrei Cozma")
 const message = ref("")
 
+function createAIMessage(res) {
+  const result = res?.result
+  const model = result?.model
+  const objective = result?.object
+  const name = `AI ${model} (${objective})`
+  const currDate = new Date()
+  const msg: TextMessage = {
+    text       : [ result?.choices[0]?.text ],
+    images     : [],
+    avatar     : getSeededAvatarURL(name),
+    name       : name,
+    date       : currDate,
+    objective  : result?.object,
+    dateCreated: result?.created * 1000,
+    cached     : res?.cached
+  }
+  return msg
+}
+
 const getAIResponse = (prompt: string) => {
   const cfg = {
     prompt     : prompt,
     ignoreCache: false
   }
   comp.genTextCompletion(cfg).then((res) => {
-    const result = res?.result
-    if (!result) {
-      console.error("No result to push")
+    if (res?.errorMsg) {
+      console.error(res.errorMsg)
       return
     }
-    const model = result?.model
-    const objective = result?.object
-    const name = `AI ${model} (${objective})`
-    const currDate = new Date()
-    const msg: TextMessage = {
-      text       : [ result?.choices[0]?.text ],
-      images     : [],
-      avatar     : getSeededAvatarURL(name),
-      name       : name,
-      date       : currDate,
-      objective  : result?.object,
-      dateCreated: result?.created * 1000,
-      cached     : res?.cached
-    }
+    const msg = createAIMessage(res)
     comp.pushMessage(msg)
   })
 }
 
 const sendMessage = () => {
   const currDate = new Date()
-  const msg: TextMessage = {
+  const usrMsg: TextMessage = {
     text  : [ message.value ],
     images: [],
     avatar: getSeededAvatarURL(myName.value),
     name  : myName.value,
     date  : currDate
   }
-  comp.pushMessage(msg)
+  comp.pushMessage(usrMsg)
   message.value = ""
+  getAIResponse(usrMsg.text[0])
+}
 
+const clearThread = () => {
+  comp.clearThread()
 }
 
 </script>

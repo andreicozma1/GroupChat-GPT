@@ -74,8 +74,14 @@ export const useCompStore = defineStore("counter", {
 			// otherwise, generate a new completion
 			try {
 				const completion = await openai.createCompletion({
-					model : "text-davinci-002",
-					prompt: prompt
+					model            : "text-davinci-002",
+					prompt           : prompt,
+					max_tokens       : 100,
+					temperature      : 0.5,
+					top_p            : 1,
+					frequency_penalty: 0,
+					presence_penalty : 0,
+					stop             : [ "\n", "###" ]
 				}, {
 					headers: {
 						"Authorization": `Bearer ${this.config.apiKey}`
@@ -112,6 +118,10 @@ export const useCompStore = defineStore("counter", {
 		},
 		pushMessage(message: TextMessage) {
 			this.threads[this.currentThread].messages.push(message)
+			this.updateCache()
+		},
+		clearThread() {
+			this.threads[this.currentThread].messages = []
 			this.updateCache()
 		}
 	}

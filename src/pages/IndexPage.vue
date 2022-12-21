@@ -25,8 +25,8 @@
 
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue"
-import { onBeforeUnmount, onMounted, ref, watch } from "vue"
-import { GenConfig, TextMessage, useCompStore } from "stores/compStore"
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
+import { GenConfig, promptTypes, TextMessage, useCompStore } from "stores/compStore"
 import { getSeededAvatarURL } from "src/util/Util"
 
 const comp = useCompStore()
@@ -36,11 +36,13 @@ const scStyle = ref({})
 
 const myName = ref("Andrei Cozma")
 const message = ref("")
+const isMessageValid = computed(() => {
+  return message.value.trim().length > 0
+})
 
 const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
   const currDate = new Date()
-  const model = cfg.config.model
-  const name = `AI ${model}`
+  const name = cfg.promptType.config.model
   return {
     text       : [],
     images     : [],
@@ -53,18 +55,9 @@ const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
 
 const getAIResponse = () => {
   const cfg: GenConfig = {
-    promptType   : "chatHistory",
+    promptType   : promptTypes.chat,
     maxHistoryLen: 10,
-    ignoreCache  : false,
-    config       : {
-      model            : "text-davinci-002",
-      max_tokens       : 250,
-      temperature      : 0.75,
-      top_p            : 1,
-      frequency_penalty: 0,
-      presence_penalty : 0,
-      stop             : [ "###" ]
-    }
+    ignoreCache  : false
   }
   // push the initial message and then get the response to update it
 
@@ -90,6 +83,7 @@ const getAIResponse = () => {
 }
 
 const sendMessage = () => {
+  if (!isMessageValid.value) return
   const currDate = new Date()
   const usrMsg: TextMessage = {
     text  : [ message.value ],

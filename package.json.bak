@@ -6,7 +6,7 @@
 	"author": "Andrei Cozma <me@andreicozma.com>",
 	"private": true,
 	"scripts": {
-		"start": "quasar dev",
+		"createPrompt": "quasar dev",
 		"build": "quasar build",
 		"lint": "eslint --ext .js,.ts,.vue ./",
 		"format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",

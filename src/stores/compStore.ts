@@ -4,12 +4,17 @@ import { OpenAIApi } from "openai"
 import { CreateCompletionRequest } from "openai/api"
 import { v4 as uuidv4 } from "uuid"
 
+interface PromptType {
+	createPrompt: any;
+	config: CreateCompletionRequest;
+	createComp: any;
+}
+
 export interface GenConfig {
-	promptType: "chatHistory" | "text" | "image"
+	promptType: PromptType;
 	maxHistoryLen?: number;
 	prompt?: string;
 	ignoreCache: boolean;
-	config: CreateCompletionRequest;
 }
 
 export interface MessageThread {
@@ -29,16 +34,82 @@ export interface TextMessage {
 	loading?: boolean;
 }
 
-const starts = {
-	chat: "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and" + " very friendly.",
-	qa  : "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I" + " will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with \"Unknown\"."
+const openAiConfig = {
+	apiKey: process.env.OPENAI_API_KEY
+}
+
+const openai = new OpenAIApi(openAiConfig)
+const options = {
+	headers: {
+		Authorization: `Bearer ${openAiConfig.apiKey}`
+	}
+}
+
+const createChatStartPrompt = (messages: TextMessage[]) => {
+	let res = "The following is a conversation with an AI assistant."
+	res += "The assistant is helpful, creative, clever, and very friendly."
+	const maxLength = 10
+
+	let prompt = messages.map((message) => {
+		const txts = message.text.map((txt) => txt.trim()).join("\n")
+		let chunk = `### ${message.name.trim()}`
+		// const obj = message.objective?.trim()
+		// if (obj) chunk += ` (${obj})`
+		if (txts.trim().length === 0) return chunk
+		chunk += `\n${txts}`
+		return chunk
+	})
+	prompt = prompt.filter((chunk) => chunk !== undefined)
+	prompt = prompt.slice(-maxLength)
+	res += prompt.join("\n\n")
+	return res
+}
+
+const createClassificationPrompt = (message: TextMessage[]) => {
+	// create some example prompts
+	const prompts = {
+		"image": [ "Here's an image of a cute puppy for you!" ],
+		"text" : [ "Sure, I can explain further" ]
+	}
+
+	const prompt = Object.keys(prompts).map(type => {
+		const ex = prompts[type]
+		return ex.map(p => `Prompt: ${p}\nType: ${type}`).join("\n\n")
+	}).join("\n\n")
+	return prompt
+}
+
+export const promptTypes: Record<string, PromptType> = {
+	chat    : {
+		createPrompt: createChatStartPrompt,
+		config      : {
+			model            : "text-davinci-002",
+			max_tokens       : 250,
+			temperature      : 0.75,
+			top_p            : 1,
+			frequency_penalty: 0,
+			presence_penalty : 0,
+			stop             : [ "###" ]
+		},
+		createComp  : openai.createCompletion
+	},
+	followup: {
+		createPrompt: createClassificationPrompt,
+		config      : {
+			model            : "babbage",
+			temperature      : 0.5,
+			max_tokens       : 5,
+			top_p            : 1,
+			frequency_penalty: 0,
+			presence_penalty : 0,
+			stop             : [ "\n", "Prompt:" ]
+		},
+		createComp  : openai.createCompletion
+	}
 }
 
 export const useCompStore = defineStore("counter", {
 	state  : () => ({
-		config       : LocalStorage.getItem("config") || {
-			apiKey: process.env.OPENAI_API_KEY
-		},
 		completions  : LocalStorage.getItem("completions") || {},
 		threads      : {
 			main: {
@@ -100,41 +171,8 @@ export const useCompStore = defineStore("counter", {
 			this.updateCache()
 			return message
 		},
-		getThreadHistoryPrompt(maxLength: number) {
-			const start = starts.chat
-			const messages = this.threads[this.currentThread].messages
-			let prompt = messages.map((message) => {
-				const txts = message.text.map((txt) => txt.trim()).join("\n")
-				let chunk = `### ${message.name.trim()}`
-				// const obj = message.objective?.trim()
-				// if (obj) chunk += ` (${obj})`
-				if (txts.trim().length === 0) return chunk
-				chunk += `\n${txts}`
-				return chunk
-			})
-			prompt = prompt.filter((chunk) => chunk !== undefined)
-			prompt = prompt.slice(-maxLength)
-			prompt.unshift(start)
-			// prompt.push("### ChatBot")
-			const res = prompt.join("\n\n")
-			console.log(res)
-			return res
-		},
 		async genTextCompletion(config: GenConfig) {
-			let prompt = undefined
-			switch (config.promptType) {
-				case "chatHistory":
-					prompt = this.getThreadHistoryPrompt(config.maxHistoryLen || 10)
-					break
-				case "image":
-				case "text":
-					// trim
-					if (!config.prompt) throw new Error("Prompt cannot be empty")
-					prompt = config.prompt.trim()
-					break
-				default:
-					throw new Error("Invalid prompt type")
-			}
+			const prompt = config.promptType.createPrompt(this.getThread.messages)
 			const hash = hashPrompt(prompt)
 			// if we already have a completion for this prompt, return it
 			if (!config.ignoreCache && this.completions[hash]) {
@@ -144,32 +182,13 @@ export const useCompStore = defineStore("counter", {
 					hash  : hash
 				}
 			}
-			const openai = new OpenAIApi(this.config)
-			const options = {
-				headers: {
-					Authorization: `Bearer ${this.config.apiKey}`
-				}
-			}
+
 			// otherwise, generate a new completion
 			try {
-				let completion = undefined
-				switch (config.promptType) {
-					case "chatHistory":
-					case "text":
-						completion = await openai.createCompletion({
-							...config.config,
-							prompt: prompt
-						}, options)
-						break
-					case "image":
-						completion = await openai.createImage({
-							...config.config,
-							prompt: prompt
-						}, options)
-						break
-					default:
-						throw new Error("Invalid prompt type")
-				}
+				const completion = await config.promptType.createComp({
+					...config.promptType.config,
+					prompt: prompt
+				}, options)
 
 				if (!completion) throw new Error("No completion returned")
 				// then add it to the cache

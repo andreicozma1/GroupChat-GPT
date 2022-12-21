@@ -1,3 +1,44 @@
+<template>
+  <div class="q-pa-xl row justify-center" style="width: 100%;">
+    <div>
+      <q-chat-message
+          :label="thread.messages.length.toString() + ' messages'"
+      />
+
+      <div v-for="message in parseThread" :key="message.date">
+        <q-chat-message
+            v-bind="message"
+            size="6"
+            :bg-color="message.sent ? null : getSeededQColor(message.name, 1, 2)"
+        >
+          <div v-for="text in message.text" :key="text">
+            <span>{{ text }}</span>
+          </div>
+
+          <div v-if="message.images.length > 0">
+            <q-card
+                v-for="image in message.images"
+                class="bg-grey-1"
+                :key="image"
+                :title="image"
+                flat>
+              <q-card-section class="q-pa-none">
+                <q-img
+                    draggable
+                    :src="image"
+                    fit="contain"
+                    style="max-height: 400px"
+                />
+              </q-card-section>
+            </q-card>
+          </div>
+
+        </q-chat-message>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script lang="ts" setup>
 
 import { computed } from "vue"
@@ -275,44 +316,4 @@ const parseThread = computed(() => {
 
 </script>
 
-<template>
-  <div class="q-pa-xl row justify-center" style="width: 100%;">
-    <div>
-      <q-chat-message
-          :label="thread.messages.length.toString() + ' messages'"
-      />
-
-      <div v-for="message in parseThread" :key="message.date">
-        <q-chat-message
-            v-bind="message"
-            size="6"
-            :bg-color="message.sent ? null : getSeededQColor(message.name, 1, 2)"
-        >
-          <div v-for="text in message.text" :key="text">
-            <span>{{ text }}</span>
-          </div>
-
-          <div v-if="message.images.length > 0">
-            <q-card
-                v-for="image in message.images"
-                class="bg-grey-1"
-                :key="image"
-                :title="image"
-                flat>
-              <q-card-section class="q-pa-none">
-                <q-img
-                    draggable
-                    :src="image"
-                    fit="contain"
-                    style="max-height: 400px"
-                />
-              </q-card-section>
-            </q-card>
-          </div>
-
-        </q-chat-message>
-      </div>
-    </div>
-  </div>
-</template>
 

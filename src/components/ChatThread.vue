@@ -55,23 +55,30 @@ interface TextMessage {
   date: string;
 }
 
-const generateMessage = (seed: string) => {
-  const config = {
-    numTextMin : 1,
-    numTextMax : 3,
-    numImageMin: 0,
-    numImageMax: 3
+interface RandoMsgConfig {
+  numMsgMin: number;
+  numMsgMax: number;
+  numSeedMin: number;
+  numSeedMax: number;
+}
+
+const generateMessage = (seed: string, config?: RandoMsgConfig) => {
+  const cfg = {
+    numTextMin : config?.numMsgMin || 1,
+    numTextMax : config?.numMsgMax || 3,
+    numImageMin: config?.numSeedMin || 0,
+    numImageMax: config?.numSeedMax || 3
   }
 
   const text = []
-  const numText = Math.floor(Math.random() * (config.numTextMax - config.numTextMin + 1)) + config.numTextMin
+  const numText = Math.floor(Math.random() * (cfg.numTextMax - cfg.numTextMin + 1)) + cfg.numTextMin
   for (let i = 0; i < numText; i++) {
     const txt = getRandomTextStr()
     text.push(txt)
   }
 
   const images = []
-  const numImage = Math.floor(Math.random() * (config.numImageMax - config.numImageMin + 1)) + config.numImageMin
+  const numImage = Math.floor(Math.random() * (cfg.numImageMax - cfg.numImageMin + 1)) + cfg.numImageMin
   for (let i = 0; i < numImage; i++) {
     const txtSeed = getRandomTextStr()
     const img = getSeededImageURL(txtSeed)

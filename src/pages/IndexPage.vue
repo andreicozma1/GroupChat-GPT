@@ -74,6 +74,9 @@ const getAIResponse = () => {
   comp.genTextCompletion(cfg).then((res) => {
     if (res?.errorMsg) {
       console.error(res.errorMsg)
+      msg.text = [ res.errorMsg ]
+      msg.loading = false
+      comp.pushMessage(msg)
       return
     }
     console.log(res)

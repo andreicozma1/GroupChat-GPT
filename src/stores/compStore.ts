@@ -5,7 +5,7 @@ import { CreateCompletionRequest } from "openai/api"
 import { v4 as uuidv4 } from "uuid"
 
 export interface GenConfig {
-	promptType: "chatHistory" | "text";
+	promptType: "chatHistory" | "text" | "image"
 	maxHistoryLen?: number;
 	prompt?: string;
 	ignoreCache: boolean;
@@ -74,12 +74,59 @@ export const useCompStore = defineStore("counter", {
 			LocalStorage.clear()
 			location.reload()
 		},
+		clearThread() {
+			this.threads[this.currentThread].messages = []
+			this.updateCache()
+		},
+		pushMessage(message: TextMessage) {
+			if (message.id) {
+				// look back through the messages to see if we already have this message
+				// and update it if we do
+				const existing = this.getThread.messages.find((m) => m.id === message.id)
+				if (existing !== undefined) {
+					for (const key in message) {
+						existing[key] = message[key]
+					}
+					existing.date = new Date()
+					console.log("Updated message", { ...existing })
+					this.updateCache()
+					return existing
+				}
+			}
+			// otherwise, create uuid and push it
+			message.id = uuidv4()
+			this.getThread.messages.push(message)
+			console.log("Pushed message", { ...message })
+			this.updateCache()
+			return message
+		},
+		getThreadHistoryPrompt(maxLength: number) {
+			const start = starts.chat
+			const messages = this.threads[this.currentThread].messages
+			let prompt = messages.map((message) => {
+				const txts = message.text.map((txt) => txt.trim()).join("\n")
+				let chunk = `### ${message.name.trim()}`
+				// const obj = message.objective?.trim()
+				// if (obj) chunk += ` (${obj})`
+				if (txts.trim().length === 0) return chunk
+				chunk += `\n${txts}`
+				return chunk
+			})
+			prompt = prompt.filter((chunk) => chunk !== undefined)
+			prompt = prompt.slice(-maxLength)
+			prompt.unshift(start)
+			// prompt.push("### ChatBot")
+			const res = prompt.join("\n\n")
+			console.log(res)
+			return res
+		},
 		async genTextCompletion(config: GenConfig) {
 			let prompt = undefined
 			switch (config.promptType) {
 				case "chatHistory":
 					prompt = this.getThreadHistoryPrompt(config.maxHistoryLen || 10)
 					break
+				case "image":
 				case "text":
 					// trim
 					if (!config.prompt) throw new Error("Prompt cannot be empty")
@@ -97,19 +144,34 @@ export const useCompStore = defineStore("counter", {
 					hash  : hash
 				}
 			}
-			console.log(this.config)
 			const openai = new OpenAIApi(this.config)
-			console.log(openai)
+			const options = {
+				headers: {
+					Authorization: `Bearer ${this.config.apiKey}`
+				}
+			}
 			// otherwise, generate a new completion
 			try {
-				const completion = await openai.createCompletion({
-					...config.config,
-					prompt: prompt
-				}, {
-					headers: {
-						Authorization: `Bearer ${this.config.apiKey}`
-					}
-				})
+				let completion = undefined
+				switch (config.promptType) {
+					case "chatHistory":
+					case "text":
+						completion = await openai.createCompletion({
+							...config.config,
+							prompt: prompt
+						}, options)
+						break
+					case "image":
+						completion = await openai.createImage({
+							...config.config,
+							prompt: prompt
+						}, options)
+						break
+					default:
+						throw new Error("Invalid prompt type")
+				}
+
+				if (!completion) throw new Error("No completion returned")
 				// then add it to the cache
 				this.completions[hash] = completion.data
 				this.updateCache()
@@ -138,52 +200,6 @@ export const useCompStore = defineStore("counter", {
 					errorMsg: `Error: ${error}`
 				}
 			}
-		},
-		pushMessage(message: TextMessage) {
-			if (message.id) {
-				// look back through the messages to see if we already have this message
-				// and update it if we do
-				const existing = this.getThread.messages.find((m) => m.id === message.id)
-				if (existing !== undefined) {
-					for (const key in message) {
-						existing[key] = message[key]
-					}
-					existing.date = new Date()
-					console.log("Updated message", { ...existing })
-					this.updateCache()
-					return existing
-				}
-			}
-			// otherwise, create uuid and push it
-			message.id = uuidv4()
-			this.getThread.messages.push(message)
-			console.log("Pushed message", { ...message })
-			this.updateCache()
-			return message
-		},
-		clearThread() {
-			this.threads[this.currentThread].messages = []
-			this.updateCache()
-		},
-		getThreadHistoryPrompt(maxLength: number) {
-			const start = starts.chat
-			const messages = this.threads[this.currentThread].messages
-			let prompt = messages.map((message) => {
-				const txts = message.text.map((txt) => txt.trim()).join("\n")
-				let chunk = `### ${message.name.trim()}`
-				// const obj = message.objective?.trim()
-				// if (obj) chunk += ` (${obj})`
-				if (txts.trim().length === 0) return chunk
-				chunk += `\n${txts}`
-				return chunk
-			})
-			prompt = prompt.filter((chunk) => chunk !== undefined)
-			prompt = prompt.slice(-maxLength)
-			prompt.unshift(start)
-			// prompt.push("### ChatBot")
-			const res = prompt.join("\n\n")
-			console.log(res)
-			return res
 		}
 	}
 })

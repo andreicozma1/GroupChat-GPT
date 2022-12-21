@@ -2,7 +2,7 @@
   <q-scroll-area
       class="q-px-xl"
       ref="threadElem"
-      style="position: absolute; left: 0; right: 0; top: 50px; bottom: 0"
+      :style="getScrollAreaStyle"
   >
     <q-chat-message
         class="q-pt-md"
@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
 import { getSeededQColor } from "src/util/ColorUtils"
 import { TextMessage, useCompStore } from "stores/compStore"
 import { dateToStr, getTimeAgo } from "src/util/Util"
@@ -51,10 +51,15 @@ const threadElem: any = ref(null)
 const comp = useCompStore()
 
 const props = defineProps({
-  myName: {
+  myName         : {
     type    : String,
     required: false,
     default : "You"
+  },
+  scrollAreaStyle: {
+    type    : Object,
+    required: false,
+    default : null
   }
 })
 
@@ -108,11 +113,35 @@ const isSentByMe = (message: TextMessage) => {
   return message.name === props.myName
 }
 
-onMounted(() => {
-  // scroll to bottom. The element is q-scroll-area
-  if (threadElem.value) {
-    threadElem.value.setScrollPercentage("vertical", 1.0, 500)
+const getScrollAreaStyle = computed(() => {
+  return {
+    position: "absolute",
+    left    : "0px",
+    right   : "0px",
+    top     : "50px",
+    bottom  : "0px", ...props.scrollAreaStyle
   }
+})
 
+const scrollToBottom = (duration?: number) => {
+  if (threadElem.value) {
+    duration = duration ?? 750
+    // scroll to bottom. The element is q-scroll-area
+    threadElem.value.setScrollPercentage("vertical", 1.0, duration)
+  }
+}
+
+watch(threadMessages, () => {
+  scrollToBottom()
+})
+
+watch(() => props.scrollAreaStyle, () => {
+  setTimeout(() => {
+    scrollToBottom(100)
+  }, 0)
+})
+
+onMounted(() => {
+  scrollToBottom()
 })
 </script>

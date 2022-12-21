@@ -1,8 +1,8 @@
 <template>
   <!--  <q-page class="row items-center justify-evenly">-->
   <div class="full-width">
-    <ChatThread :my-name="myName"/>
-    <q-card class="fixed-bottom q-pa-md">
+    <ChatThread :my-name="myName" :scroll-area-style="scStyle"/>
+    <q-card class="fixed-bottom q-pa-md" ref="inputCard">
       <q-card-section>
         <q-input filled clearable autofocus
                  autogrow
@@ -27,13 +27,14 @@
 
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue"
-import { ref } from "vue"
-import { TextMessage, useCompStore } from "stores/compStore"
+import { onBeforeUnmount, onMounted, ref, watch } from "vue"
+import { GenConfig, TextMessage, useCompStore } from "stores/compStore"
 import { getSeededAvatarURL } from "src/util/Util"
 
 const comp = useCompStore()
 const myName = ref("Andrei Cozma")
 const message = ref("")
+const inputCard = ref(null)
 
 function createAIMessage(res) {
   const result = res?.result
@@ -54,18 +55,19 @@ function createAIMessage(res) {
   return msg
 }
 
-const getAIResponse = (prompt: string) => {
-  const cfg = {
-    prompt     : prompt,
-    ignoreCache: false
+const getAIResponse = () => {
+  const cfg: GenConfig = {
+    maxHistoryLen: 10,
+    ignoreCache  : false
   }
   comp.genTextCompletion(cfg).then((res) => {
     if (res?.errorMsg) {
       console.error(res.errorMsg)
       return
     }
-    const msg = createAIMessage(res)
-    comp.pushMessage(msg)
+    console.log(res)
+    const aiMsg = createAIMessage(res)
+    comp.pushMessage(aiMsg)
   })
 }
 
@@ -80,11 +82,37 @@ const sendMessage = () => {
   }
   comp.pushMessage(usrMsg)
   message.value = ""
-  getAIResponse(usrMsg.text[0])
+  getAIResponse()
 }
 
 const clearThread = () => {
   comp.clearThread()
 }
+
+const kbShortcuts = (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault()
+    sendMessage()
+  }
+}
+
+const scStyle = ref({})
+
+watch(message, () => {
+  // get the height of the input card
+  const ic: any = inputCard.value
+  if (ic) {
+    scStyle.value = { bottom: ic.$el.clientHeight + "px" }
+    console.log(scStyle.value)
+  }
+})
+
+onMounted(() => {
+  document.addEventListener("keydown", kbShortcuts)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener("keydown", kbShortcuts)
+})
 
 </script>

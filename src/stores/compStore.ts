@@ -3,7 +3,7 @@ import { LocalStorage } from "quasar"
 import { OpenAIApi } from "openai"
 
 export interface GenConfig {
-	prompt: string,
+	maxHistoryLen: number,
 	ignoreCache: boolean,
 }
 
@@ -58,7 +58,7 @@ export const useCompStore = defineStore("counter", {
 			LocalStorage.set("threads", this.threads)
 		},
 		async genTextCompletion(config: GenConfig) {
-			const prompt = config.prompt
+			const prompt = this.getThreadHistoryPrompt(config.maxHistoryLen || 10)
 			const hash = hashPrompt(prompt)
 			// if we already have a completion for this prompt, return it
 			if (!config.ignoreCache && this.completions[hash]) {
@@ -76,12 +76,12 @@ export const useCompStore = defineStore("counter", {
 				const completion = await openai.createCompletion({
 					model            : "text-davinci-002",
 					prompt           : prompt,
-					max_tokens       : 100,
-					temperature      : 0.5,
+					max_tokens       : 250,
+					temperature      : 0.75,
 					top_p            : 1,
 					frequency_penalty: 0,
 					presence_penalty : 0,
-					stop             : [ "\n", "###" ]
+					stop             : [ "###" ]
 				}, {
 					headers: {
 						"Authorization": `Bearer ${this.config.apiKey}`
@@ -123,6 +123,25 @@ export const useCompStore = defineStore("counter", {
 		clearThread() {
 			this.threads[this.currentThread].messages = []
 			this.updateCache()
+		},
+		getThreadHistoryPrompt(maxLength: number) {
+			const start = "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with \"Unknown\"."
+			const messages = this.threads[this.currentThread].messages
+			let prompt = messages.map((message) => {
+				const txts = message.text.join("\n")
+				if (txts.trim().length === 0) return undefined
+				let chunk = `### ${message.name}`
+				if (message.objective) chunk += ` (${message.objective})`
+				chunk += `\n${txts}`
+				return chunk
+			})
+			prompt = prompt.filter((chunk) => chunk !== undefined)
+			prompt = prompt.slice(-maxLength)
+			prompt.unshift(start)
+			prompt.push("### ChatBot")
+			const res = prompt.join("\n\n")
+			console.log(res)
+			return res
 		}
 	}
 })

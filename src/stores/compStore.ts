@@ -1,27 +1,47 @@
 import { defineStore } from "pinia"
 import { LocalStorage } from "quasar"
 import { OpenAIApi } from "openai"
+import { getSeededAvatarURL } from "src/util/Util"
 
 export interface GenConfig {
 	prompt: string,
 	ignoreCache: boolean,
 }
 
+export interface MessageThread {
+	messages: TextMessage[];
+}
+
+export interface TextMessage {
+	text: string[];
+	images?: string[];
+	avatar: string;
+	name: string;
+	date: string | number | Date;
+	objective?: string;
+	dateCreated?: string | number;
+	cached?: boolean;
+}
+
 export const useCompStore = defineStore("counter", {
 	state  : () => ({
-		completions: LocalStorage.getItem("completions") || {},
-		config     : LocalStorage.getItem("config") || {
+		config       : LocalStorage.getItem("config") || {
 			apiKey: process.env.OPENAI_API_KEY
 		},
-		threads    : {
-			main: {
+		completions  : LocalStorage.getItem("completions") || {},
+		threads      : {
+			"main": {
 				messages: []
-			}
-		}
+			}, ...LocalStorage.getItem("threads") || {}
+		} as Record<string, MessageThread>,
+		currentThread: "main"
 	}),
 	getters: {
 		getAllCompletions(state) {
 			return state.completions
+		},
+		getThread(state) {
+			return state.threads[state.currentThread]
 		}
 	},
 	actions: {
@@ -36,6 +56,7 @@ export const useCompStore = defineStore("counter", {
 		},
 		updateCache() {
 			LocalStorage.set("completions", this.completions)
+			LocalStorage.set("threads", this.threads)
 		},
 		async genTextCompletion(config: GenConfig) {
 			const prompt = config.prompt
@@ -70,15 +91,47 @@ export const useCompStore = defineStore("counter", {
 					cached: false,
 					hash  : hash
 				}
-			} catch (error) {
+			} catch (error: any) {
 				if (error.response) {
 					console.warn(error.response.status)
 					console.warn(error.response.data)
-				} else {
-					console.warn(error.message)
+					return {
+						result  : null,
+						cached  : false,
+						hash    : hash,
+						errorMsg: `Error: ${error.response.status} ${error.response.data}`
+					}
 				}
-				return null
+
+				return {
+					result  : null,
+					cached  : false,
+					hash    : hash,
+					errorMsg: `Error: ${error}`
+				}
 			}
+		},
+		pushAIMessage(res) {
+			const result = res?.result
+			if (!result) {
+				console.error("No result to push")
+				return
+			}
+			const model = result?.model
+			const objective = result?.object
+			const name = `AI ${model} (${objective})`
+			const currDate = new Date()
+			const msg: TextMessage = {
+				text       : [ result?.choices[0]?.text ],
+				images     : [],
+				avatar     : getSeededAvatarURL(name),
+				name       : name,
+				date       : currDate,
+				objective  : result?.object,
+				dateCreated: result?.created * 1000,
+				cached     : res?.cached
+			}
+			this.getThread.messages.push(msg)
 		}
 	}
 })

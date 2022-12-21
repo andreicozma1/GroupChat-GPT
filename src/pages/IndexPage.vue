@@ -32,9 +32,12 @@ import { GenConfig, TextMessage, useCompStore } from "stores/compStore"
 import { getSeededAvatarURL } from "src/util/Util"
 
 const comp = useCompStore()
+
+const inputCard = ref(null)
+const scStyle = ref({})
+
 const myName = ref("Andrei Cozma")
 const message = ref("")
-const inputCard = ref(null)
 
 function createAIMessage(res) {
   const result = res?.result
@@ -95,8 +98,6 @@ const kbShortcuts = (e) => {
     sendMessage()
   }
 }
-
-const scStyle = ref({})
 
 watch(message, () => {
   // get the height of the input card

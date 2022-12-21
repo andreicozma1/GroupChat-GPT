@@ -3,8 +3,8 @@ import { LocalStorage } from "quasar"
 import { OpenAIApi } from "openai"
 
 export interface GenConfig {
-	maxHistoryLen: number,
-	ignoreCache: boolean,
+	maxHistoryLen: number;
+	ignoreCache: boolean;
 }
 
 export interface MessageThread {
@@ -22,6 +22,11 @@ export interface TextMessage {
 	cached?: boolean;
 }
 
+const starts = {
+	chat: "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and" + " very friendly.",
+	qa  : "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I" + " will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with \"Unknown\"."
+}
+
 export const useCompStore = defineStore("counter", {
 	state  : () => ({
 		config       : LocalStorage.getItem("config") || {
@@ -29,9 +34,9 @@ export const useCompStore = defineStore("counter", {
 		},
 		completions  : LocalStorage.getItem("completions") || {},
 		threads      : {
-			"main": {
+			main: {
 				messages: []
-			}, ...LocalStorage.getItem("threads") || {}
+			}, ...(LocalStorage.getItem("threads") || {})
 		} as Record<string, MessageThread>,
 		currentThread: "main"
 	}),
@@ -84,7 +89,7 @@ export const useCompStore = defineStore("counter", {
 					stop             : [ "###" ]
 				}, {
 					headers: {
-						"Authorization": `Bearer ${this.config.apiKey}`
+						Authorization: `Bearer ${this.config.apiKey}`
 					}
 				})
 				// then add it to the cache
@@ -125,13 +130,14 @@ export const useCompStore = defineStore("counter", {
 			this.updateCache()
 		},
 		getThreadHistoryPrompt(maxLength: number) {
-			const start = "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with \"Unknown\"."
+			const start = starts.chat
 			const messages = this.threads[this.currentThread].messages
 			let prompt = messages.map((message) => {
-				const txts = message.text.join("\n")
+				const txts = message.text.map((txt) => txt.trim()).join("\n")
 				if (txts.trim().length === 0) return undefined
-				let chunk = `### ${message.name}`
-				if (message.objective) chunk += ` (${message.objective})`
+				let chunk = `### ${message.name.trim()}`
+				const obj = message.objective?.trim()
+				if (obj) chunk += ` (${obj})`
 				chunk += `\n${txts}`
 				return chunk
 			})

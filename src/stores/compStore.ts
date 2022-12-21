@@ -1,10 +1,15 @@
 import { defineStore } from "pinia"
 import { LocalStorage } from "quasar"
 import { OpenAIApi } from "openai"
+import { CreateCompletionRequest } from "openai/api"
+import { v4 as uuidv4 } from "uuid"
 
 export interface GenConfig {
-	maxHistoryLen: number;
+	promptType: "chatHistory" | "text";
+	maxHistoryLen?: number;
+	prompt?: string;
 	ignoreCache: boolean;
+	config: CreateCompletionRequest;
 }
 
 export interface MessageThread {
@@ -12,6 +17,7 @@ export interface MessageThread {
 }
 
 export interface TextMessage {
+	id?: string | number;
 	text: string[];
 	images?: string[];
 	avatar: string;
@@ -20,6 +26,7 @@ export interface TextMessage {
 	objective?: string;
 	dateCreated?: string | number;
 	cached?: boolean;
+	loading?: boolean;
 }
 
 const starts = {
@@ -62,8 +69,25 @@ export const useCompStore = defineStore("counter", {
 			LocalStorage.set("completions", this.completions)
 			LocalStorage.set("threads", this.threads)
 		},
+		clearCache() {
+			// clear whole local storage and reload
+			LocalStorage.clear()
+			location.reload()
+		},
 		async genTextCompletion(config: GenConfig) {
-			const prompt = this.getThreadHistoryPrompt(config.maxHistoryLen || 10)
+			let prompt = undefined
+			switch (config.promptType) {
+				case "chatHistory":
+					prompt = this.getThreadHistoryPrompt(config.maxHistoryLen || 10)
+					break
+				case "text":
+					// trim
+					if (!config.prompt) throw new Error("Prompt cannot be empty")
+					prompt = config.prompt.trim()
+					break
+				default:
+					throw new Error("Invalid prompt type")
+			}
 			const hash = hashPrompt(prompt)
 			// if we already have a completion for this prompt, return it
 			if (!config.ignoreCache && this.completions[hash]) {
@@ -79,14 +103,8 @@ export const useCompStore = defineStore("counter", {
 			// otherwise, generate a new completion
 			try {
 				const completion = await openai.createCompletion({
-					model            : "text-davinci-002",
-					prompt           : prompt,
-					max_tokens       : 250,
-					temperature      : 0.75,
-					top_p            : 1,
-					frequency_penalty: 0,
-					presence_penalty : 0,
-					stop             : [ "###" ]
+					...config.config,
+					prompt: prompt
 				}, {
 					headers: {
 						Authorization: `Bearer ${this.config.apiKey}`
@@ -122,8 +140,26 @@ export const useCompStore = defineStore("counter", {
 			}
 		},
 		pushMessage(message: TextMessage) {
-			this.threads[this.currentThread].messages.push(message)
+			if (message.id) {
+				// look back through the messages to see if we already have this message
+				// and update it if we do
+				const existing = this.getThread.messages.find((m) => m.id === message.id)
+				if (existing !== undefined) {
+					for (const key in message) {
+						existing[key] = message[key]
+					}
+					existing.date = new Date()
+					console.log("Updated message", { ...existing })
+					this.updateCache()
+					return existing
+				}
+			}
+			// otherwise, create uuid and push it
+			message.id = uuidv4()
+			this.getThread.messages.push(message)
+			console.log("Pushed message", { ...message })
 			this.updateCache()
+			return message
 		},
 		clearThread() {
 			this.threads[this.currentThread].messages = []
@@ -134,17 +170,17 @@ export const useCompStore = defineStore("counter", {
 			const messages = this.threads[this.currentThread].messages
 			let prompt = messages.map((message) => {
 				const txts = message.text.map((txt) => txt.trim()).join("\n")
-				if (txts.trim().length === 0) return undefined
 				let chunk = `### ${message.name.trim()}`
-				const obj = message.objective?.trim()
-				if (obj) chunk += ` (${obj})`
+				// const obj = message.objective?.trim()
+				// if (obj) chunk += ` (${obj})`
+				if (txts.trim().length === 0) return chunk
 				chunk += `\n${txts}`
 				return chunk
 			})
 			prompt = prompt.filter((chunk) => chunk !== undefined)
 			prompt = prompt.slice(-maxLength)
 			prompt.unshift(start)
-			prompt.push("### ChatBot")
+			// prompt.push("### ChatBot")
 			const res = prompt.join("\n\n")
 			console.log(res)
 			return res

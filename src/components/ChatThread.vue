@@ -42,7 +42,8 @@
 <script lang="ts" setup>
 
 import { computed } from "vue"
-import { getRandomTextStr, getSeededAvatarURL, getSeededImageURL, getSeededQColor } from "src/util/Util"
+import { getRandomTextStr, getSeededAvatarURL, getSeededImageURL } from "src/util/Util"
+import { getSeededQColor } from "src/util/ColorUtils"
 
 const myName = "Andrei Cozma"
 
@@ -209,7 +210,6 @@ const parseHoverHint = (message: TextMessage) => {
 }
 
 const parseThread = computed(() => {
-
   const thrd = thread.messages.map((message: TextMessage) => {
     const text = message.text.length === 0 ? [] : [ ...message.text ]
     if (text.length === 0) text.push("[No message]")

@@ -100,12 +100,8 @@ const kbShortcuts = (e) => {
 }
 
 watch(message, () => {
-  // get the height of the input card
   const ic: any = inputCard.value
-  if (ic) {
-    scStyle.value = { bottom: ic.$el.clientHeight + "px" }
-    console.log(scStyle.value)
-  }
+  if (ic) scStyle.value = { bottom: ic.$el.clientHeight + "px" }
 })
 
 onMounted(() => {

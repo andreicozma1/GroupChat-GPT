@@ -159,7 +159,7 @@ const getAIResponse = () => {
     comp.pushMessage(msg)
 
     const cfgClassifyReq: GenConfig = {
-      promptType : promptTypes.classify_req,
+      promptType : promptTypes.coordinator,
       ignoreCache: false
     }
     comp.genTextCompletion(cfgClassifyReq).then((res_fw: GenerationResult) => {

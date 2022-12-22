@@ -112,8 +112,8 @@ export const promptTypes: Record<string, PromptType> = {
 		createComp  : openai.createCompletion,
 		icon        : "chat"
 	},
-	classify_req  : {
-		key         : "classify_req",
+	coordinator   : {
+		key         : "coordinator",
 		config      : {
 			model            : "text-davinci-003",
 			temperature      : 0.3,

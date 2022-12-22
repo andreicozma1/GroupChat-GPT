@@ -7,7 +7,7 @@ Well, this application is a step towards that world.
 
 ## Demo:
 
-![image](https://user-images.githubusercontent.com/14914491/209240095-2dc6d5ab-351e-4753-b4ec-63544066dc78.png)
+![image](https://user-images.githubusercontent.com/14914491/209240281-566cc8ce-aaee-4405-8efc-28750f288b64.png)
 
 ## Install the dependencies
 

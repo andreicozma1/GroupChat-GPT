@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid"
 
 interface PromptType {
 	key: string;
+	name?: string;
 	createPrompt: any;
 	config: CreateCompletionRequest | CreateImageRequest;
 	createComp: any;
@@ -15,7 +16,6 @@ interface PromptType {
 export interface GenConfig {
 	promptType: PromptType;
 	maxHistoryLen?: number;
-	prompt?: string;
 	ignoreCache: boolean;
 }
 
@@ -49,15 +49,16 @@ const options = {
 
 const createChatStartPrompt = (messages: TextMessage[]) => {
 	let res = "The following is a conversation with an AI assistant."
-	res += "The assistant is helpful, creative, clever, and very friendly.\n\n"
-	res += "### Human\nHello, who are you?\n\n"
-	res += "### AI\nI am an AI created by OpenAI. How can I help you today?\n\n"
+	res += "The assistant is helpful, creative, clever, and very friendly."
+	res += "When specifically asked to create an image, the assistant will ask it's friend DALL-E to help create an image."
+	res += "### Human:\nHello, who are you?\n\n"
+	res += "### Davinci:\nI am an AI created by OpenAI. How can I help you today?\n\n"
 	const maxLength = 10
 
 	let prompt = messages.map((message) => {
 		const txts = message.text.map((txt) => txt.trim()).join("\n")
 		// let chunk = `### ${message.name.trim()}`
-		let chunk = `### ${message.name.trim()}`
+		let chunk = `### ${message.name.trim()}:`
 		// const obj = message.objective?.trim()
 		// if (obj) chunk += ` (${obj})`
 		if (txts.trim().length === 0) return chunk
@@ -79,7 +80,7 @@ const createClassificationPrompt = (message: TextMessage[]) => {
 	res += "###\n"
 	res += "Chat: Could you generate a drawing of a dog? It's wearing a space suit and floating in space.\n"
 	res += "Task: generate_image\n"
-	res += "Prompt: A dog wearing a space suit and floating in space.\n\n"
+	res += "Prompt: A drawing of a dog wearing a space suit and floating in space.\n\n"
 
 	// grab the last 2 messages and join the texts
 	const lastMessage = message.slice(-2, message.length - 1)
@@ -89,14 +90,16 @@ const createClassificationPrompt = (message: TextMessage[]) => {
 	return res.trim()
 }
 
-const createImagePrompt = (message: TextMessage[]) => {
-	const lastMessage = message.slice(-2, message.length - 1)
-	return lastMessage.map((m) => m.text.join(". ")).join(". ")
+const createImagePrompt = (messages: TextMessage[]) => {
+	const lastMessage = messages[messages.length - 1]
+	const lastText = lastMessage.text[lastMessage.text.length - 1]
+	return lastText
 }
 
 export const promptTypes: Record<string, PromptType> = {
 	chat          : {
 		key         : "chat",
+		name        : "Davinci",
 		config      : {
 			model            : "text-davinci-003",
 			max_tokens       : 250,
@@ -114,7 +117,7 @@ export const promptTypes: Record<string, PromptType> = {
 		key         : "classify_req",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.5,
+			temperature      : 0.3,
 			max_tokens       : 100,
 			top_p            : 1,
 			frequency_penalty: 0,
@@ -127,6 +130,7 @@ export const promptTypes: Record<string, PromptType> = {
 	},
 	generate_image: {
 		key         : "generate_image",
+		name        : "DALL-E",
 		config      : {
 			n     : 1,
 			size  : "256x256",

@@ -70,7 +70,7 @@ const isMessageValid = computed(() => {
 
 const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
   // if config.promptType.config has "model", use that, otherwise use "AI"
-  const name = cfg.promptType.config?.model || "AI"
+  const name = cfg.promptType?.name || "AI"
   return {
     text       : [],
     images     : [],
@@ -78,15 +78,25 @@ const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
     name       : name,
     date       : new Date(),
     dateCreated: undefined,
-    objective  : cfg.promptType.key
+    objective  : cfg.promptType?.key
   }
 }
 
-function genFollowUp(followUpPromptType: any, msg: TextMessage) {
+function genFollowUp(objectiveStr: string, prompt: string) {
   const cfgFollowup: GenConfig = {
-    promptType : followUpPromptType,
+    promptType : promptTypes[objectiveStr],
     ignoreCache: false
   }
+  const msg: TextMessage = createAIMsgTemplate(cfgFollowup)
+  if (!cfgFollowup.promptType) {
+    msg.text.push(`Unknown follow-up prompt type: ${objectiveStr}`)
+    comp.pushMessage(msg)
+    return
+  }
+  msg.text.push(prompt)
+  msg.loading = true
+  comp.pushMessage(msg)
+
   comp.genTextCompletion(cfgFollowup).then((res2) => {
     console.log(res2)
     if (res2?.errorMsg) {
@@ -147,30 +157,26 @@ const getAIResponse = () => {
     }
     comp.genTextCompletion(cfgClassifyReq).then((res1: GenerationResult) => {
       console.log(res1)
+      msg.loading = false
       if (res1.errorMsg) {
         console.error(res1.errorMsg)
+        comp.pushMessage(msg)
         return
       }
       if (!res1.text) {
         console.error("No text in classify_req response")
-        return
-      }
-      // join the text and classify it
-      const objectiveStr = res1.text.join(" ").trim()
-      const skipPrompts = [ "none", "" ]
-      if (skipPrompts.includes(objectiveStr)) return
-      msg.loading = true
-      msg.objective = objectiveStr
-      comp.pushMessage(msg)
-
-      const nextPromptType = promptTypes[objectiveStr]
-      if (!nextPromptType) {
-        console.error(`Unknown follow-up prompt type: ${nextPromptType}`)
-        msg.text.push(`An error occurred requesting a follow-up prompt (${res1?.text})`)
         comp.pushMessage(msg)
         return
       }
-      genFollowUp(nextPromptType, msg)
+      // join the text and classify it
+      const respSpl = res1.text[0].split("\nPrompt:")
+      const objectiveStr = respSpl[0].trim()
+      const nextPrompt = respSpl[1]?.trim()
+      msg.objective = objectiveStr
+      comp.pushMessage(msg)
+      const skipPrompts = [ "none", "" ]
+      if (skipPrompts.includes(objectiveStr)) return
+      genFollowUp(objectiveStr, nextPrompt)
     })
   })
 }

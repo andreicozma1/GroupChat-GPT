@@ -23,7 +23,7 @@ interface MsgHistoryConfig {
 	maxLength?: number
 }
 
-const basePersonalityTraits = [ "helpful", "clever", "very friendly" ]
+const basePersonalityTraits = [ "enthusiastic", "helpful", "clever", "very friendly" ]
 const baseAlways: string[] = [
 	"respond for yourself" // "separate responses into proper paragraphs"
 ]

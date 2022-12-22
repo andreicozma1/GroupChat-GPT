@@ -163,15 +163,11 @@ const scrollToBottom = (duration?: number) => {
     // scroll to bottom. The element is q-scroll-area
     const size = threadElem.value.getScroll().verticalSize
     threadElem.value.setScrollPosition("vertical", size, duration)
-    // threadElem.value.setScrollPercentage("vertical", 1.0, duration)
   }
 }
 
 watch(() => props.scrollAreaStyle, () => {
-  console.log("HERE")
-  // nextTick(() => {
   scrollToBottom(1000)
-  // })
 })
 
 </script>

@@ -63,7 +63,6 @@ const isMessageValid = computed(() => {
 })
 
 const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
-  const currDate = new Date()
   // if config.promptType.config has "model", use that, otherwise use "AI"
   const name = cfg.promptType.config?.model || "AI"
   return {
@@ -71,8 +70,8 @@ const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
     images     : [],
     avatar     : getSeededAvatarURL(name),
     name       : name,
-    date       : currDate,
-    dateCreated: currDate.getTime(),
+    date       : new Date(),
+    dateCreated: undefined,
     objective  : cfg.promptType.key
   }
 }
@@ -140,7 +139,8 @@ const getAIResponse = () => {
         return
       }
       let followUpPromptType = res1?.text.trim()
-      if (followUpPromptType === "none") return
+      const skipPrompts = [ "none", "" ]
+      if (skipPrompts.includes(followUpPromptType)) return
       msg.loading = true
       msg.objective = followUpPromptType
       comp.pushMessage(msg)
@@ -186,7 +186,6 @@ watch(message, () => {
 })
 
 const kbShortcuts = (e) => {
-  console.log(e.key)
   // ctrl+shift+x clears thread
   if (e.key === "X" && e.ctrlKey && e.shiftKey) {
     console.log("Clearing thread")

@@ -88,6 +88,9 @@ const createStamp = (message: TextMessage) => {
   const timeAgo = getTimeAgo(message.date);
   const sentByMe = isSentByMe(message);
   let res = sentByMe ? `Sent ${timeAgo}` : `Received ${timeAgo}`;
+  if (message.objective) {
+    res += ` [${message.objective}]`;
+  }
   if (message.cached) {
     if (message.dateCreated) {
       res += ` (cached ${getTimeAgo(message.dateCreated)})`;

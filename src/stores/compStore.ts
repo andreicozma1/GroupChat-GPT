@@ -1,12 +1,13 @@
 import { defineStore } from "pinia"
 import { LocalStorage } from "quasar"
 import { OpenAIApi } from "openai"
-import { CreateCompletionRequest } from "openai/api"
+import { CreateCompletionRequest, CreateImageRequest } from "openai/api"
 import { v4 as uuidv4 } from "uuid"
 
 interface PromptType {
+	key: string;
 	createPrompt: any;
-	config: CreateCompletionRequest;
+	config: CreateCompletionRequest | CreateImageRequest;
 	createComp: any;
 }
 
@@ -24,7 +25,7 @@ export interface MessageThread {
 export interface TextMessage {
 	id?: string | number;
 	text: string[];
-	images?: string[];
+	images: string[];
 	avatar: string;
 	name: string;
 	date: string | number | Date;
@@ -46,8 +47,9 @@ const options = {
 }
 
 const createChatStartPrompt = (messages: TextMessage[]) => {
-	let res = "The following is a conversation with an AI assistant."
-	res += "The assistant is helpful, creative, clever, and very friendly."
+	let res = "### Chat-Bot\n"
+	res += "The following is a conversation with an AI assistant."
+	res += "The assistant is helpful, creative, clever, and very friendly.\n\n"
 	const maxLength = 10
 
 	let prompt = messages.map((message) => {
@@ -62,25 +64,45 @@ const createChatStartPrompt = (messages: TextMessage[]) => {
 	prompt = prompt.filter((chunk) => chunk !== undefined)
 	prompt = prompt.slice(-maxLength)
 	res += prompt.join("\n\n")
-	return res
+	return res.trim()
 }
 
 const createClassificationPrompt = (message: TextMessage[]) => {
 	// create some example prompts
-	const prompts = {
-		"image": [ "Here's an image of a cute puppy for you!" ],
-		"text" : [ "Sure, I can explain further" ]
-	}
+	let res = "### Classification\n"
+	res += "Categorize what to do next into one of the following categories: "
+	res += "generate_image, none\n"
+	res += "If you are unsure, choose none.\n"
 
-	const prompt = Object.keys(prompts).map(type => {
-		const ex = prompts[type]
-		return ex.map(p => `Prompt: ${p}\nType: ${type}`).join("\n\n")
-	}).join("\n\n")
-	return prompt
+	const prompts = {
+		generate_image: [
+			"Could you create an image of a puppy?", "Create an image of a cat.", "Show me a picture depicting this."
+		]
+	}
+	res += "\n### Examples\n"
+	res += Object.keys(prompts)
+		.map((type) => {
+			const ex = prompts[type]
+			return ex.map((p) => `Prompt: ${p}\nType: ${type}`).join("\n\n")
+		})
+		.join("\n")
+	res += "\n"
+	// grab the last 2 messages and join the texts
+	const lastMessages = message.slice(-2, message.length - 1)
+	const prompt = lastMessages.map((m) => m.text.join(". ")).join(". ")
+	res += `\nPrompt: ${prompt}`
+	res += "\nType:"
+	return res.trim()
+}
+
+const createImagePrompt = (message: TextMessage[]) => {
+	const lastMessage = message[message.length - 1]
+	return lastMessage.text.join(". ")
 }
 
 export const promptTypes: Record<string, PromptType> = {
-	chat    : {
+	chat          : {
+		key         : "chat",
 		createPrompt: createChatStartPrompt,
 		config      : {
 			model            : "text-davinci-002",
@@ -93,18 +115,29 @@ export const promptTypes: Record<string, PromptType> = {
 		},
 		createComp  : openai.createCompletion
 	},
-	followup: {
+	classify_req  : {
+		key         : "classify_req",
 		createPrompt: createClassificationPrompt,
 		config      : {
-			model            : "babbage",
-			temperature      : 0.5,
-			max_tokens       : 5,
+			model            : "text-babbage-001",
+			temperature      : 0.75,
+			max_tokens       : 10,
 			top_p            : 1,
 			frequency_penalty: 0,
 			presence_penalty : 0,
 			stop             : [ "\n", "Prompt:" ]
 		},
 		createComp  : openai.createCompletion
+	},
+	generate_image: {
+		key         : "generate_image",
+		createPrompt: createImagePrompt,
+		config      : {
+			n     : 1,
+			size  : "256x256",
+			prompt: "A cute puppy"
+		},
+		createComp  : openai.createImage
 	}
 }
 
@@ -173,12 +206,18 @@ export const useCompStore = defineStore("counter", {
 		},
 		async genTextCompletion(config: GenConfig) {
 			const prompt = config.promptType.createPrompt(this.getThread.messages)
-			console.log("Prompt", prompt)
+			console.warn(prompt)
 			const hash = hashPrompt(prompt)
 			// if we already have a completion for this prompt, return it
+
 			if (!config.ignoreCache && this.completions[hash]) {
+				const choices = this.completions[hash].choices
+				const text = choices ? choices[0].text.trim().split("\n") : undefined
+				const images = this.completions[hash].data?.map((d: any) => d.url)
 				return {
 					result: this.completions[hash],
+					text  : text,
+					images: images,
 					cached: true,
 					hash  : hash
 				}
@@ -196,8 +235,14 @@ export const useCompStore = defineStore("counter", {
 				this.completions[hash] = completion.data
 				this.updateCache()
 				// and return it
+				console.log(completion)
+				const choices = completion.data.choices
+				const text = choices ? choices[0].text.trim().split("\n") : undefined
+				const images = this.completions[hash].data?.map((d: any) => d.url)
 				return {
 					result: completion.data,
+					text  : text,
+					images: images,
 					cached: false,
 					hash  : hash
 				}

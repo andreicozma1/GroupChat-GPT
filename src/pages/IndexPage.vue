@@ -42,7 +42,8 @@ const isMessageValid = computed(() => {
 
 const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
   const currDate = new Date()
-  const name = cfg.promptType.config.model
+  // if config.promptType.config has "model", use that, otherwise use "AI"
+  const name = cfg.promptType.config?.model || "AI"
   return {
     text       : [],
     images     : [],
@@ -51,6 +52,32 @@ const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
     date       : currDate,
     dateCreated: currDate.getTime()
   }
+}
+
+function genFollowUp(followUpPromptType, msg: TextMessage) {
+  const cfgFollowup: GenConfig = {
+    promptType : followUpPromptType,
+    ignoreCache: false
+  }
+  comp.genTextCompletion(cfgFollowup).then((res2) => {
+    console.log(res2)
+    if (res2?.errorMsg) {
+      console.error(res2.errorMsg)
+      msg.text.push(res2.errorMsg)
+      comp.pushMessage(msg)
+      return
+    }
+    if (res2?.text) {
+      msg.text.push(...res2.text)
+    }
+    if (res2?.images) {
+      msg.images.push(...res2.images)
+    }
+    msg.dateCreated = res2?.result?.created * 1000
+    msg.cached = res2?.cached
+    msg.loading = false
+    comp.pushMessage(msg)
+  })
 }
 
 const getAIResponse = () => {
@@ -65,20 +92,46 @@ const getAIResponse = () => {
   msg.loading = true
   msg = comp.pushMessage(msg)
   comp.genTextCompletion(cfg).then((res) => {
-    if (res?.errorMsg) {
+    console.log(res)
+    if (!res?.result && res?.errorMsg) {
       console.error(res.errorMsg)
       msg.text = [ res.errorMsg ]
       msg.loading = false
       comp.pushMessage(msg)
       return
     }
-    console.log(res)
-    const trTxt = res?.result?.choices[0]?.text.trim()
-    msg.text = trTxt ? [ trTxt ] : [ "An error occurred" ]
+    msg.text = res?.text ? res?.text : [ "An error occurred" ]
     msg.dateCreated = res?.result?.created * 1000
     msg.cached = res?.cached
     msg.loading = false
     comp.pushMessage(msg)
+
+    const cfgClassifyReq: GenConfig = {
+      promptType : promptTypes.classify_req,
+      ignoreCache: false
+    }
+    comp.genTextCompletion(cfgClassifyReq).then((res1) => {
+      console.log(res1)
+      if (res1?.errorMsg) {
+        console.error(res1.errorMsg)
+        return
+      }
+      let followUpPromptType = res1?.text[0].trim()
+      msg.text.push(`Follow-up: ${followUpPromptType}`)
+      comp.pushMessage(msg)
+      if (followUpPromptType === "none") return
+      msg.loading = true
+      comp.pushMessage(msg)
+
+      followUpPromptType = promptTypes[followUpPromptType]
+      if (!followUpPromptType) {
+        console.error(`Unknown follow-up prompt type: ${followUpPromptType}`)
+        msg.text.push(`An error occurred requesting a follow-up prompt (${res1?.text})`)
+        comp.pushMessage(msg)
+        return
+      }
+      genFollowUp(followUpPromptType, msg)
+    })
   })
 }
 

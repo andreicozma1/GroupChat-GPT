@@ -1,5 +1,5 @@
 <template>
-  <q-scroll-area class="q-px-xl" ref="threadElem" :style="getScrollAreaStyle">
+  <q-scroll-area ref="threadElem" :style="getScrollAreaStyle">
     <q-chat-message
       class="q-pt-md"
       :label="threadMessages.length.toString() + ' messages'"
@@ -12,10 +12,42 @@
       >
         <div v-for="text in message.text" :key="text">
           <span>{{ text }}</span>
+          <q-tooltip v-if="message.dateCreated" :delay="750">
+            {{ createHoverHint(message) }}
+          </q-tooltip>
         </div>
 
         <template v-if="message.loading">
           <q-spinner-dots class="q-ml-md" color="primary" size="1.5em" />
+        </template>
+
+        <template v-slot:stamp>
+          <div class="row items-center">
+            <span>
+              <q-icon
+                :name="getObjectiveIcon(message.objective)"
+                class="q-mr-sm"
+              />
+              <q-tooltip v-if="promptTypes[message.objective]?.config">
+                Objective: {{ message.objective }}
+              </q-tooltip>
+            </span>
+            <span class="text-caption text-italic">
+              {{ createStamp(message) }}
+              <q-tooltip>
+                {{ dateToStr(message.date) }}
+              </q-tooltip>
+            </span>
+            <q-space />
+            <span v-if="message.cached">
+              <q-icon name="cached" class="q-ml-sm" />
+              <q-tooltip v-if="message.dateCreated">
+                Generated
+                {{ getTimeAgo(message.dateCreated) }}
+                ({{ dateToStr(message.dateCreated) }})
+              </q-tooltip>
+            </span>
+          </div>
         </template>
 
         <div v-if="message.images.length > 0">
@@ -44,7 +76,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
 import { getSeededQColor } from "src/util/ColorUtils";
-import { TextMessage, useCompStore } from "stores/compStore";
+import { promptTypes, TextMessage, useCompStore } from "stores/compStore";
 import { dateToStr, getTimeAgo } from "src/util/Util";
 
 const threadElem: any = ref(null);
@@ -63,6 +95,19 @@ const props = defineProps({
   },
 });
 
+const getObjectiveIcon = (objective: string) => {
+  // if not in promptTypes, return "help"
+  // if in promptTypes, return promptTypes[objective].icon
+  // if icon is null, return "help"
+  if (!promptTypes[objective]) {
+    return "send";
+  }
+  if (!promptTypes[objective].icon) {
+    return "help";
+  }
+  return promptTypes[objective].icon;
+};
+
 const threadMessages = computed(() => {
   const thrd = comp.getThread.messages.map((message: TextMessage) => {
     const text = message.text.length === 0 ? [] : [...message.text];
@@ -71,8 +116,7 @@ const threadMessages = computed(() => {
       ...message,
       text: text,
       stamp: createStamp(message),
-      sent: isSentByMe(message),
-      title: createHoverHint(message),
+      sent: isSentByMe(message), // title: createHoverHint(message)
     };
   });
   // sort by date
@@ -87,18 +131,17 @@ const threadMessages = computed(() => {
 const createStamp = (message: TextMessage) => {
   const timeAgo = getTimeAgo(message.date);
   const sentByMe = isSentByMe(message);
-  let res = sentByMe ? `Sent ${timeAgo}` : `Received ${timeAgo}`;
-  if (message.objective) {
-    res += ` [${message.objective}]`;
-  }
-  if (message.cached) {
-    // if (message.dateCreated) {
-    // res += ` (cached ${getTimeAgo(message.dateCreated)})`;
-    // } else {
-    res += " (cached)";
-    // }
-  }
-  return res;
+  // if (message.objective) {
+  //   res += ` [${message.objective}]`
+  // }
+  // if (message.cached) {
+  // if (message.dateCreated) {
+  // res += ` (cached ${getTimeAgo(message.dateCreated)})`;
+  // } else {
+  // res += " (cached)"
+  // }
+  // }
+  return sentByMe ? `Sent ${timeAgo}` : `Received ${timeAgo}`;
 };
 
 const createHoverHint = (message: TextMessage) => {
@@ -119,12 +162,17 @@ const isSentByMe = (message: TextMessage) => {
 
 const getScrollAreaStyle = computed(() => {
   const propStyle = props.scrollAreaStyle ? props.scrollAreaStyle : {};
-  return {
+  const defaults = {
     position: "absolute",
     left: "0px",
     right: "0px",
     top: "50px",
     bottom: "0px",
+    paddingLeft: "5vw",
+    paddingRight: "5vw",
+  };
+  return {
+    ...defaults,
     ...propStyle,
   };
 });

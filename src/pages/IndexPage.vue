@@ -58,6 +58,7 @@ const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
     name: name,
     date: currDate,
     dateCreated: currDate.getTime(),
+    objective: cfg.promptType.key,
   };
 };
 

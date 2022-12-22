@@ -9,6 +9,7 @@ interface PromptType {
   createPrompt: any;
   config: CreateCompletionRequest | CreateImageRequest;
   createComp: any;
+  icon: string;
 }
 
 export interface GenConfig {
@@ -107,7 +108,6 @@ const createImagePrompt = (message: TextMessage[]) => {
 export const promptTypes: Record<string, PromptType> = {
   chat: {
     key: "chat",
-    createPrompt: createChatStartPrompt,
     config: {
       model: "text-davinci-002",
       max_tokens: 250,
@@ -117,11 +117,12 @@ export const promptTypes: Record<string, PromptType> = {
       presence_penalty: 0,
       stop: ["###"],
     },
+    createPrompt: createChatStartPrompt,
     createComp: openai.createCompletion,
+    icon: "chat",
   },
   classify_req: {
     key: "classify_req",
-    createPrompt: createClassificationPrompt,
     config: {
       model: "text-babbage-001",
       temperature: 0.75,
@@ -131,17 +132,20 @@ export const promptTypes: Record<string, PromptType> = {
       presence_penalty: 0,
       stop: ["\n", "Prompt:"],
     },
+    createPrompt: createClassificationPrompt,
     createComp: openai.createCompletion,
+    icon: "question_answer",
   },
   generate_image: {
     key: "generate_image",
-    createPrompt: createImagePrompt,
     config: {
       n: 1,
       size: "256x256",
       prompt: "A cute puppy",
     },
+    createPrompt: createImagePrompt,
     createComp: openai.createImage,
+    icon: "image",
   },
 };
 

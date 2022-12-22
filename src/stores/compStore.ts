@@ -29,7 +29,8 @@ const baseAlways: string[] = [
 	"separate responses into proper paragraphs"
 ]
 const baseNever: string[] = [
-	"repeat yourself too much", "repeat what other AIs have just said", "make logical inconsistencies",
+	"respond if not involved in the conversation", "repeat yourself too much", "repeat what other AIs have just said",
+	"make logical inconsistencies"
 ]
 
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {

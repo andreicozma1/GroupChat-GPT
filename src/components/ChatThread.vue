@@ -4,24 +4,23 @@
         class="q-pt-md"
         :label="threadMessages.length.toString() + ' messages'"
     />
-    <div v-for="message in threadMessages" :key="message.date">
+    <div v-for="msg in threadMessages" :key="msg.date">
       <q-chat-message
-          v-bind="message"
+          v-bind="msg"
           size="6"
-          :bg-color="message.sent ? null : getSeededQColor(message.name, 1, 2)"
-          @click="copyMessage(message)"
+          :bg-color="msg.sent ? null : getSeededQColor(msg.name, 1, 2)"
       >
-        <div v-for="text in message.text" :key="text">
-          <div v-for="line in getSplitText(text)" :key="line">
+        <div v-for="text in msg.text" :key="text" @click="copyMessage(msg.text.join('\n'))">
+          <div v-for="line in getSplitText(text)" :key="line" @click="line">
             {{ line }}
             <br/>
           </div>
-          <q-tooltip v-if="message.dateCreated" :delay="750">
-            {{ createHoverHint(message) }}
+          <q-tooltip v-if="msg.dateCreated" :delay="750">
+            {{ createHoverHint(msg) }}
           </q-tooltip>
         </div>
 
-        <template v-if="message.loading">
+        <template v-if="msg.loading">
           <q-spinner-dots class="q-ml-md" color="primary" size="1.5em"/>
         </template>
 
@@ -29,34 +28,34 @@
           <div class="row items-center">
             <span>
               <q-icon
-                  :name="getObjectiveIcon(message.objective)"
+                  :name="getObjectiveIcon(msg.objective)"
                   class="q-mr-sm"
               />
-              <q-tooltip v-if="actors[message.objective]?.config">
-                Objective: {{ message.objective }}
+              <q-tooltip v-if="actors[msg.objective]?.config">
+                Objective: {{ msg.objective }}
               </q-tooltip>
             </span>
             <span class="text-caption text-italic">
-              {{ createStamp(message) }}
+              {{ createStamp(msg) }}
               <q-tooltip>
-                {{ dateToStr(message.date) }}
+                {{ dateToStr(msg.date) }}
               </q-tooltip>
             </span>
             <q-space/>
-            <span v-if="message.cached">
+            <span v-if="msg.cached">
               <q-icon name="cached" class="q-ml-sm"/>
-              <q-tooltip v-if="message.dateCreated">
+              <q-tooltip v-if="msg.dateCreated">
                 Generated
-                {{ getTimeAgo(message.dateCreated) }}
-                ({{ dateToStr(message.dateCreated) }})
+                {{ getTimeAgo(msg.dateCreated) }}
+                ({{ dateToStr(msg.dateCreated) }})
               </q-tooltip>
             </span>
           </div>
         </template>
 
-        <div v-if="message.images.length > 0">
+        <div v-if="msg.images.length > 0">
           <q-card
-              v-for="image in message.images"
+              v-for="image in msg.images"
               class="bg-grey-1"
               :key="image"
               :title="image"
@@ -108,14 +107,14 @@ const getObjectiveIcon = (objective: string) => {
 }
 
 const threadMessages = computed(() => {
-  const thrd = comp.getThread.messages.map((message: TextMessage) => {
-    const text = message.text.length === 0 ? [] : [ ...message.text ]
-    if (!message.loading && text.length === 0) text.push("[No message]")
+  const thrd = comp.getThread.messages.map((msg: TextMessage) => {
+    const text = msg.text.length === 0 ? [] : [ ...msg.text ]
+    if (!msg.loading && text.length === 0) text.push("[No message]")
     return {
-      ...message,
+      ...msg,
       text : text,
-      stamp: createStamp(message),
-      sent : isSentByMe(message)
+      stamp: createStamp(msg),
+      sent : isSentByMe(msg)
     }
   })
   thrd.sort((a, b) => {
@@ -126,25 +125,25 @@ const threadMessages = computed(() => {
   return thrd
 })
 
-const createStamp = (message: TextMessage) => {
-  const timeAgo = getTimeAgo(message.date)
-  const sentByMe = isSentByMe(message)
+const createStamp = (msg: TextMessage) => {
+  const timeAgo = getTimeAgo(msg.date)
+  const sentByMe = isSentByMe(msg)
   return sentByMe ? `Sent ${timeAgo}` : `Received ${timeAgo}`
 }
 
-const createHoverHint = (message: TextMessage) => {
-  const numText = message.text?.length ?? 0
-  const numImage = message.images?.length ?? 0
+const createHoverHint = (msg: TextMessage) => {
+  const numText = msg.text?.length ?? 0
+  const numImage = msg.images?.length ?? 0
   const numTotal = numText + numImage
-  const who = isSentByMe(message) ? "You" : message.name
-  const what = `${numTotal} message${numTotal > 1 ? "s" : ""} (${numText} text, ${numImage} image${numImage > 1 ? "s"
+  const who = isSentByMe(msg) ? "You" : msg.name
+  const what = `${numTotal} msg${numTotal > 1 ? "s" : ""} (${numText} text, ${numImage} image${numImage > 1 ? "s"
       : ""})`
-  const when = dateToStr(message.date)
+  const when = dateToStr(msg.date)
   return `${who} sent ${what} on ${when}`
 }
 
-const isSentByMe = (message: TextMessage) => {
-  return message.name === props.myName
+const isSentByMe = (msg: TextMessage) => {
+  return msg.name === props.myName
 }
 
 const getScrollAreaStyle = computed(() => {
@@ -176,14 +175,18 @@ const getSplitText = (text: string) => {
   return text?.split("\n") ?? [ "[ERR: Text is null]" ]
 }
 
-const copyMessage = (message: TextMessage) => {
-  const text = message.text.join("\n")
+const copyMessage = (text: string) => {
   copyToClipboard(text).then(() => {
     smartNotify(`Copied message to clipboard`)
   })
 }
 
 watch(() => props.scrollAreaStyle, () => {
+  scrollToBottom(1000)
+})
+
+watch(() => comp.getThread, () => {
+  console.log("HERE")
   scrollToBottom(1000)
 })
 </script>

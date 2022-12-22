@@ -9,7 +9,7 @@
             autofocus
             autogrow
             outlined
-            v-model="message"
+            v-model="inputText"
             label="Message"
             ref="inputElem"
         />
@@ -22,7 +22,7 @@
             padding="5px 20px"
             rounded
             :disable="!isMessageValid"
-            @click="handleUser"
+            @click="sendMessage"
         />
         <q-space/>
         <q-btn
@@ -66,9 +66,9 @@ const inputElem: Ref<QInput | null> = ref(null)
 const scStyle = ref({})
 
 const myName = computed(() => comp.userName)
-const message = ref("")
+const inputText = ref("")
 const isMessageValid = computed(() => {
-  return message.value.trim().length > 0
+  return inputText.value.trim().length > 0
 })
 
 const createAIMessage = (cfg: ActorConfig): TextMessage => {
@@ -177,21 +177,50 @@ const handleNext = async (actorKey: string) => {
   comp.pushMessage(msg)
 }
 
-const handleUser = () => {
-  if (!isMessageValid.value) return
-  const currDate = new Date()
-  const msg: TextMessage = {
-    text  : [ message.value ],
-    images: [],
-    avatar: getSeededAvatarURL(myName.value),
-    name  : myName.value,
-    date  : currDate
-  }
-  comp.pushMessage(msg)
-  message.value = ""
-  handleCoordinator()
+const isTyping = ref(false)
+const typingTimeout: Ref<any> = ref(null)
+const coordInterv: Ref<any> = ref(null)
 
-  // handleDavinci()
+watch(inputText, () => {
+  updateIC()
+  // introduce a delay to detect if the user is typing.
+  // The coordinator will not be called until the user stops typing for a while.
+  isTyping.value = true
+  if (typingTimeout.value) clearTimeout(typingTimeout.value)
+  typingTimeout.value = setTimeout(() => {
+    isTyping.value = false
+  }, isMessageValid.value ? 1000 : 250)
+})
+
+const currMsg: Ref<any> = ref(null)
+
+const sendMessage = () => {
+  if (!isMessageValid.value) return
+  if (currMsg.value === null) {
+    currMsg.value = {
+      text  : [],
+      images: [],
+      avatar: getSeededAvatarURL(myName.value),
+      name  : myName.value,
+      date  : new Date()
+    }
+    comp.pushMessage(currMsg.value)
+  }
+  currMsg.value.text.push(inputText.value)
+  inputText.value = ""
+
+  // only call the coordinator if the user has stopped typing for a while
+  // wait until the user stops typing
+  // handleCoordinator()
+  // use setTimeout to wait until the user stops typing
+  if (coordInterv.value) clearInterval(coordInterv.value)
+  coordInterv.value = setInterval(() => {
+    if (!isTyping.value) {
+      currMsg.value = null
+      handleCoordinator()
+      clearInterval(coordInterv.value)
+    }
+  }, 500)
 }
 
 const updateIC = () => {
@@ -202,10 +231,6 @@ const updateIC = () => {
     scStyle.value = { bottom: bottom + "px" }
   }, 100)
 }
-
-watch(message, () => {
-  updateIC()
-})
 
 const kbShortcuts = (e: KeyboardEvent) => {
   // ctrl+shift+x clears thread
@@ -222,18 +247,18 @@ const kbShortcuts = (e: KeyboardEvent) => {
     comp.clearCache()
     return
   }
-  // enter sends message
+  // enter sends inputText
   if (e.key === "Enter" && !e.shiftKey) {
     console.log("Sending message")
     e.preventDefault()
-    handleUser()
+    sendMessage()
     return
   }
   // on escape first clear the input, then unfocus it
   if (e.key === "Escape") {
     if (inputElem.value) {
-      if (message.value) {
-        message.value = ""
+      if (inputText.value) {
+        inputText.value = ""
       } else {
         inputElem.value.blur()
       }

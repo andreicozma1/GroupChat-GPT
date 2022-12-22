@@ -1,6 +1,7 @@
 # AI-ChatBot (ai-chatbot)
 
-A chatbot application written using the Quasar Framework
+A chatbot application written using the Quasar Framework   
+**Important!!**: You will have to put your OpenAI API Key inside the `.env` file.
 
 ## Install the dependencies
 

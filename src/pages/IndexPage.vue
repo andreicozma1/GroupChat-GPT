@@ -148,11 +148,13 @@ const handleNext = async (actorKey: string) => {
   msg.loading = true
   comp.pushMessage(msg)
 
+  // await new Promise(resolve => setTimeout(resolve, Math.random() * 5000))
   const res = await comp.genTextCompletion(cfgFollowup)
 
   console.log(res)
-  msg.cached = res?.cached
   msg.loading = false
+  msg.cached = res?.cached
+  msg.date = new Date()
   if (res.errorMsg) {
     console.error(res.errorMsg)
     msg.text.push(`[ERR: ${res.errorMsg}]`)

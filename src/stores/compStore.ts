@@ -23,11 +23,14 @@ interface MsgHistoryConfig {
 	maxLength?: number
 }
 
-const basePersonalityTraits = [ "enthusiastic", "helpful", "clever", "very friendly" ]
+const basePersonalityTraits = [ "enthusiastic", "clever", "very friendly" ]
 const baseAlways: string[] = [
-	"respond for yourself" // "separate responses into proper paragraphs"
+	"respond for yourself", "add to information in the conversation if needed",
+	"separate responses into proper paragraphs"
 ]
-const baseNever: string[] = [ "make logical inconsistencies", "respond with links" ]
+const baseNever: string[] = [
+	"repeat yourself too much", "repeat what other AIs have just said", "make logical inconsistencies",
+]
 
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
 	let hist = config.messages
@@ -70,11 +73,11 @@ const getAssistantsList = (useKey: boolean, exclude?: ActorConfig) => {
 
 const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	let res = "### Response Coordinator:\n"
-	res += "Classify which assistants would be best at responding to the next message.\n"
+	res += "Classify which assistants would be best at responding to the next message."
 	res += "Only respond with the exact names of the assistants\n"
-	res += "If the conversation is directed at multiple assistants, separate the names with a comma\n"
+	res += "If the conversation is specifically directed at multiple assistants, separate the names with a comma\n"
 	res += "Also keep the logical consistency of the conversation in mind.\n"
-	res += "\n\n"
+	res += "\n"
 
 	res += "### Available Assistants:\n"
 	res += getAssistantsList(true)
@@ -132,10 +135,10 @@ const getBasePromptStart = (actor: ActorConfig) => {
 		res += `NEVER:\n- ${baseNever.slice(0, -1).join(", ")}, or ${baseNever.slice(-1)}.\n`
 	}
 	res += "\n"
-	res += "### Human:\n"
-	res += "Hello, who are you?\n\n"
-	res += `### ${actor.name}:\n`
-	res += "I am an AI created by OpenAI. How can I help you today?\n\n"
+	// res += "### Human:\n"
+	// res += "Hello, who are you?\n\n"
+	// res += `### ${actor.name}:\n`
+	// res += "I am an AI created by OpenAI. How can I help you today?\n\n"
 	return res
 }
 
@@ -198,7 +201,7 @@ export const actors: Record<string, ActorConfig> = {
 			presence_penalty : 0,
 			stop             : [ "###" ]
 		},
-		personality : [ "creative", ...basePersonalityTraits ],
+		personality : [ "helpful", "creative", ...basePersonalityTraits ],
 		specialties : [ "making general conversation" ]
 	},
 	dalle      : {

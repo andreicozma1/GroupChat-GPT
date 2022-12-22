@@ -3,6 +3,9 @@
 A chatbot application written using the Quasar Framework   
 **Important!!**: You will have to put your OpenAI API Key inside the `.env` file.
 
+## Demo:
+![image](https://user-images.githubusercontent.com/14914491/209040878-71c79db3-f4c1-4fa8-97d5-f13e9d334c7d.png)
+
 ## Install the dependencies
 
 ```bash

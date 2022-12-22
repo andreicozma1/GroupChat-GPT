@@ -71,120 +71,108 @@ const isMessageValid = computed(() => {
   return message.value.trim().length > 0
 })
 
-const createAIMsgTemplate = (cfg: ActorConfig): TextMessage => {
-  const name = cfg.name
-  return {
+const createAIMessage = (cfg: ActorConfig): TextMessage => {
+  const name: string = cfg?.name || "Anonymous AI"
+  let msg: TextMessage = {
     text       : [],
     images     : [],
     avatar     : getSeededAvatarURL(name),
     name       : name,
     date       : new Date(),
     dateCreated: undefined,
-    objective  : cfg.key
+    objective  : cfg?.key || "unknown",
+    loading    : true
   }
+  msg = comp.pushMessage(msg)
+  return msg
 }
 
-const handleDavinci = () => {
-  const ai: ActorConfig = actors.chat
+const handleCoordinator = () => {
+  const ai: ActorConfig = actors.coordinator
+  const msg: TextMessage = createAIMessage(ai)
 
-  let msg: TextMessage = createAIMsgTemplate(ai)
-  msg.loading = true
-  msg = comp.pushMessage(msg)
-  comp.genTextCompletion(ai).then((res: GenerationResult) => {
+  comp.genTextCompletion(ai).then(async (res: GenerationResult) => {
     console.log(res)
+    msg.loading = false
+    msg.cached = res.cached
     if (res.errorMsg) {
       console.error(res.errorMsg)
       msg.text.push(`[ERR: ${res.errorMsg}]`)
-      msg.loading = false
       comp.pushMessage(msg)
       return
     }
     if (!res.result) {
       console.error("No result")
       msg.text.push("[ERR: No result]")
-      msg.loading = false
       comp.pushMessage(msg)
       return
     }
-    msg.text = res.text ? [ ...res.text ] : [ "An error occurred" ]
-    msg.dateCreated = res.result.created * 1000
-    msg.cached = res.cached
-    msg.loading = false
-    comp.pushMessage(msg)
-
-    handleCoordinator(msg)
-  })
-}
-
-function handleCoordinator(msg: TextMessage): void {
-  const ai: ActorConfig = actors.coordinator
-
-  comp.genTextCompletion(ai).then((res_fw: GenerationResult) => {
-    console.log(res_fw)
-    msg.loading = false
-    if (res_fw.errorMsg) {
-      console.error(res_fw.errorMsg)
-      msg.text.push(`[ERR: ${res_fw.errorMsg}]`)
-      comp.pushMessage(msg)
-      return
-    }
-    if (!res_fw.text) {
+    if (!res.text) {
       console.error("No text in result")
       msg.text.push("[ERR: No text in result]")
       comp.pushMessage(msg)
       return
     }
-    // join the text and classify it
-    const respSpl = res_fw.text[0].split("\nPrompt:")
-    const objectiveStr = respSpl[0].trim().toLowerCase()
-    const nextPrompt = respSpl[1]?.trim()
-    msg.objective = objectiveStr
+    msg.dateCreated = res.result.created * 1000
+    msg.text = res.text ? [ ...res.text ] : [ "An error occurred" ]
     comp.pushMessage(msg)
-    const skipPrompts = [ "none", "" ]
-    if (skipPrompts.includes(objectiveStr)) return
-    handleNext(objectiveStr, nextPrompt)
+    let nextActors: string[] = res.text[0].split(":")
+    // if the length is 2, grab index 1, otherwise 0
+    const nextActorsCommaSep: string = nextActors.length === 2 ? nextActors[1] : nextActors[0]
+    nextActors = nextActorsCommaSep.trim().toLowerCase().split(", ")
+
+    // for each actor, call the appropriate handler
+    for (const actor of nextActors) {
+      await handleNext(actor)
+    }
   })
 }
 
-function handleNext(objectiveStr: string, prompt: string) {
-  objectiveStr = objectiveStr?.trim()
-  prompt = prompt?.trim()
-  const cfgFollowup: ActorConfig = actors[objectiveStr]
-
-  const msg: TextMessage = createAIMsgTemplate(cfgFollowup)
+// function handleNext(objectiveStr: string, prompt: string) {
+const handleNext = async (actorKey: string) => {
+  actorKey = actorKey?.trim()
+  // prompt = prompt?.trim()
+  const cfgFollowup: ActorConfig = actors[actorKey]
+  const msg: TextMessage = createAIMessage(cfgFollowup)
   if (!cfgFollowup) {
-    msg.text.push(`[ERR: Unknown follow-up prompt type: ${objectiveStr}]`)
+    msg.text.push(`[ERR: Unknown actor type: ${actorKey}]`)
     comp.pushMessage(msg)
     return
   }
-  if (!prompt || prompt.length === 0) {
-    msg.text.push(`[ERR: No follow-up prompt provided for ${objectiveStr}]`)
-    comp.pushMessage(msg)
-    return
-  }
-  msg.text.push(prompt)
+  // if (!prompt || prompt.length === 0) {
+  //   msg.text.push(`[ERR: No follow-up prompt provided for ${objectiveStr}]`)
+  //   comp.pushMessage(msg)
+  //   return
+  // }
+  // msg.text.push(prompt)
   msg.loading = true
   comp.pushMessage(msg)
 
-  comp.genTextCompletion(cfgFollowup).then((res) => {
-    console.log(res)
-    if (res?.errorMsg) {
-      console.error(res.errorMsg)
-      msg.text.push(`[ERR: ${res.errorMsg}]`)
-      comp.pushMessage(msg)
-      return
-    }
-    if (res?.text) {
-      msg.text.push(...res.text)
-    }
-    if (res?.images) {
-      msg.images.push(...res.images)
-    }
-    msg.dateCreated = res?.result?.created * 1000
-    msg.cached = res?.cached
-    msg.loading = false
+  const res = await comp.genTextCompletion(cfgFollowup)
+
+  console.log(res)
+  msg.cached = res?.cached
+  msg.loading = false
+  if (res.errorMsg) {
+    console.error(res.errorMsg)
+    msg.text.push(`[ERR: ${res.errorMsg}]`)
     comp.pushMessage(msg)
-  })
+    return
+  }
+  if (!res.result) {
+    console.error("No result")
+    msg.text.push("[ERR: No result]")
+    comp.pushMessage(msg)
+    return
+  }
+  msg.dateCreated = res?.result?.created * 1000
+  if (res?.text) {
+    msg.text.push(...res.text)
+  }
+  if (res?.images) {
+    msg.images.push(...res.images)
+  }
+  comp.pushMessage(msg)
 }
 
 const handleUser = () => {
@@ -199,7 +187,9 @@ const handleUser = () => {
   }
   comp.pushMessage(msg)
   message.value = ""
-  handleDavinci()
+  handleCoordinator()
+
+  // handleDavinci()
 }
 
 const updateIC = () => {

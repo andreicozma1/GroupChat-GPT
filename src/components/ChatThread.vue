@@ -78,12 +78,12 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from "vue"
-import { getSeededQColor } from "src/util/ColorUtils"
-import { actors, useCompStore } from "stores/compStore"
-import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util"
 import { copyToClipboard } from "quasar"
+import { getSeededQColor } from "src/util/ColorUtils"
 import { TextMessage } from "src/util/Models"
+import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util"
+import { actors, useCompStore } from "stores/compStore"
+import { computed, ref, watch } from "vue"
 
 const threadElem: any = ref(null)
 const comp = useCompStore()
@@ -92,7 +92,7 @@ const props = defineProps({
   myName         : {
     type    : String,
     required: false,
-    default : "You"
+    default : "Human"
   },
   scrollAreaStyle: {
     type    : Object,

@@ -10,9 +10,9 @@ export interface TextMessage {
 	images: string[];
 	avatar: string;
 	name: string;
-	date?: string | number | Date;
+	date: string | number | Date;
 	objective?: string;
-	dateCreated?: string | number;
+	dateCreated?: string | number | Date;
 	cached?: boolean;
 	loading?: boolean;
 }
@@ -25,6 +25,9 @@ export interface ActorConfig {
 	createComp: any;
 	icon: string;
 	ignoreCache?: boolean;
+	personality?: string[];
+	specialties?: string[];
+	available?: boolean;
 }
 
 export interface GenerationResult {

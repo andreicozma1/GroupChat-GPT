@@ -251,22 +251,13 @@ export const useCompStore = defineStore("counter", {
 					cached: false
 				}
 			} catch (error: any) {
-				if (error.response) {
-					console.error(error.response.status)
-					console.error(error.response.data)
-					return {
-						result  : null,
-						cached  : false,
-						hash    : hash,
-						errorMsg: `Error: ${error.response.status} ${error.response.data}`
-					}
-				}
-				console.error(error)
+				let errorMsg = error
+				if (error.response) errorMsg = `${error.response.status} ${error.response.data}`
 				return {
 					result  : null,
 					cached  : false,
 					hash    : hash,
-					errorMsg: `Error: ${error}`
+					errorMsg: `Error: ${errorMsg}`
 				}
 			}
 		}

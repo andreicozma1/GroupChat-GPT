@@ -72,29 +72,20 @@ const createChatStartPrompt = (messages: TextMessage[]) => {
 
 const createClassificationPrompt = (message: TextMessage[]) => {
 	// create some example prompts
-	let res = "### Classification\n"
-	res += "Categorize what to do next into one of the following categories: "
-	res += "generate_image, none\n"
-	res += "If you are unsure, choose none.\n"
+	let res = "Categorize what to do next into one of the following categories: "
+	res += "generate_image, none. If you are unsure, choose none.\n"
+	res += "Lastly, create a suitable prompt for the next message.\n\n"
 
-	const prompts = {
-		generate_image: [
-			"Could you create an image of a puppy?", "Make a drawing of a bike.", "Show me a picture depicting this."
-		]
-	}
-	res += "\n### Examples\n"
-	res += Object.keys(prompts)
-		.map((type) => {
-			const ex = prompts[type]
-			return ex.map((p) => `Prompt: ${p}\nType: ${type}`).join("\n\n")
-		})
-		.join("\n")
-	res += "\n"
+	res += "###\n"
+	res += "Chat: Could you generate a drawing of a dog? It's wearing a space suit and floating in space.\n"
+	res += "Task: generate_image\n"
+	res += "Prompt: A dog wearing a space suit and floating in space.\n\n"
+
 	// grab the last 2 messages and join the texts
 	const lastMessage = message.slice(-2, message.length - 1)
 	const prompt = lastMessage.map((m) => m.text.join(". ")).join(". ")
-	res += `\nPrompt: ${prompt}`
-	res += "\nType:"
+	res += `\nChat: ${prompt}.`
+	res += "\nTask:"
 	return res.trim()
 }
 
@@ -107,7 +98,7 @@ export const promptTypes: Record<string, PromptType> = {
 	chat          : {
 		key         : "chat",
 		config      : {
-			model            : "text-davinci-002",
+			model            : "text-davinci-003",
 			max_tokens       : 250,
 			temperature      : 0.75,
 			top_p            : 1,
@@ -122,13 +113,13 @@ export const promptTypes: Record<string, PromptType> = {
 	classify_req  : {
 		key         : "classify_req",
 		config      : {
-			model            : "text-babbage-001",
-			temperature      : 0.75,
-			max_tokens       : 10,
+			model            : "text-davinci-003",
+			temperature      : 0.5,
+			max_tokens       : 100,
 			top_p            : 1,
 			frequency_penalty: 0,
 			presence_penalty : 0,
-			stop             : [ "\n", "Prompt:" ]
+			stop             : [ "###" ]
 		},
 		createPrompt: createClassificationPrompt,
 		createComp  : openai.createCompletion,

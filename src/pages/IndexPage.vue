@@ -236,7 +236,8 @@ const kbShortcuts = (e) => {
   }
   // if any number or letter is pressed, focus the input
   if (e.key.match(/^[a-z0-9]$/i)) {
-    if (inputElem.value) {
+    // if no modifier keys are pressed, focus the input
+    if (!e.ctrlKey && !e.altKey && !e.shiftKey && inputElem.value) {
       console.log("Focusing input")
       inputElem.value.focus()
       return

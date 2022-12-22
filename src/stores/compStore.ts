@@ -79,7 +79,7 @@ const createClassificationPrompt = (message: TextMessage[]) => {
 
 	const prompts = {
 		generate_image: [
-			"Could you create an image of a puppy?", "Create an image of a cat.", "Show me a picture depicting this."
+			"Could you create an image of a puppy?", "Make a drawing of a bike.", "Show me a picture depicting this."
 		]
 	}
 	res += "\n### Examples\n"
@@ -197,28 +197,6 @@ export const useCompStore = defineStore("counter", {
 				hash  : hash
 			}
 		},
-		pushMessage(message: TextMessage) {
-			if (message.id) {
-				// look back through the messages to see if we already have this message
-				// and update it if we do
-				const existing = this.getThread.messages.find((m) => m.id === message.id)
-				if (existing !== undefined) {
-					for (const key in message) {
-						existing[key] = message[key]
-					}
-					existing.date = new Date()
-					console.log("Updated message", { ...existing })
-					this.updateCache()
-					return existing
-				}
-			}
-			// otherwise, create uuid and push it
-			message.id = uuidv4()
-			this.getThread.messages.push(message)
-			console.log("Pushed message", { ...message })
-			this.updateCache()
-			return message
-		},
 		async genTextCompletion(config: GenConfig): Promise<GenerationResult> {
 			const prompt = config.promptType.createPrompt(this.getThread.messages)
 			console.warn(prompt)
@@ -256,6 +234,28 @@ export const useCompStore = defineStore("counter", {
 					errorMsg: `Error: ${errorMsg}`
 				}
 			}
+		},
+		pushMessage(message: TextMessage) {
+			if (message.id) {
+				// look back through the messages to see if we already have this message
+				// and update it if we do
+				const existing = this.getThread.messages.find((m) => m.id === message.id)
+				if (existing !== undefined) {
+					for (const key in message) {
+						existing[key] = message[key]
+					}
+					existing.date = new Date()
+					console.log("Updated message", { ...existing })
+					this.updateCache()
+					return existing
+				}
+			}
+			// otherwise, create uuid and push it
+			message.id = uuidv4()
+			this.getThread.messages.push(message)
+			console.log("Pushed message", { ...message })
+			this.updateCache()
+			return message
 		}
 	}
 })

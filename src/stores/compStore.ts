@@ -166,13 +166,20 @@ export const useCompStore = defineStore("counter", {
 		}
 	},
 	actions: {
-		getByHash(hash: number) {
-			return this.completions[hash]
+		updateCache() {
+			LocalStorage.set("completions", this.completions)
+			LocalStorage.set("threads", this.threads)
 		},
-		getByPrompt(prompt: string) {
-			// first hash the prompt
-			const hash = hashPrompt(prompt)
-			// then return the completion
+		clearCache() {
+			// clear whole local storage and reload
+			LocalStorage.clear()
+			location.reload()
+		},
+		clearThread() {
+			this.threads[this.currentThread].messages = []
+			this.updateCache()
+		},
+		getByHash(hash: number) {
 			return this.completions[hash]
 		},
 		getCompletion(hash: number) {
@@ -187,19 +194,6 @@ export const useCompStore = defineStore("counter", {
 				images: images,
 				hash  : hash
 			}
-		},
-		updateCache() {
-			LocalStorage.set("completions", this.completions)
-			LocalStorage.set("threads", this.threads)
-		},
-		clearCache() {
-			// clear whole local storage and reload
-			LocalStorage.clear()
-			location.reload()
-		},
-		clearThread() {
-			this.threads[this.currentThread].messages = []
-			this.updateCache()
 		},
 		pushMessage(message: TextMessage) {
 			if (message.id) {

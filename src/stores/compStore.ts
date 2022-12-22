@@ -122,7 +122,7 @@ const getBasePromptStart = (actor: ActorConfig) => {
 	res += "### Other Members:\n"
 	res += getAssistantsList(false, actor)
 	res += "\n\n"
-	res += `### Your name: ${actor.key}\n`
+	res += `### Your name: ${actor.name}\n`
 	if (actor.specialties) {
 		res += `Specialties:\n- ${actor.specialties.join(", ")}.\n`
 	}

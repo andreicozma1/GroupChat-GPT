@@ -136,6 +136,7 @@ const handleNext = async (actorKey: string) => {
   const msg: TextMessage = createAIMessage(cfgFollowup)
   if (!cfgFollowup) {
     msg.text.push(`[ERR: Unknown actor type: ${actorKey}]`)
+    msg.loading = false
     comp.pushMessage(msg)
     return
   }
@@ -145,7 +146,6 @@ const handleNext = async (actorKey: string) => {
   //   return
   // }
   // msg.text.push(prompt)
-  msg.loading = true
   comp.pushMessage(msg)
 
   // await new Promise(resolve => setTimeout(resolve, Math.random() * 5000))

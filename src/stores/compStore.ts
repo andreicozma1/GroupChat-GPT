@@ -61,7 +61,7 @@ const getPromptCoordinator = (messages: TextMessage[]) => {
 	messages = messages.filter((m) => m.name === "Davinci").slice(-1)
 	const prompt = messages.map((m) => m.text.join(". ")).join(". ")
 	res += `\nChat: ${prompt}.`
-	res += "\nTask:"
+	// res += "\nTask:"
 	return res.trim()
 }
 

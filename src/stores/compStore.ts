@@ -15,7 +15,7 @@ const options = {
 	}
 }
 
-const createChatStartPrompt = (messages: TextMessage[]) => {
+const getPromptDavinci = (messages: TextMessage[]) => {
 	const personality = [ "helpful", "creative", "clever", "very friendly" ]
 
 	let res = "The following is a conversation with an AI assistant named Davinci."
@@ -46,7 +46,7 @@ const createChatStartPrompt = (messages: TextMessage[]) => {
 	return res.trim()
 }
 
-const createClassificationPrompt = (messages: TextMessage[]) => {
+const getPromptCoordinator = (messages: TextMessage[]) => {
 	// create some example prompts
 	let res = "Based on the chat conversation, please classify the task that needs to be done, and also generate a suitable prompt for the task to be accomplished.\n"
 	res += "Available tasks: generate_image, none.\n"
@@ -65,7 +65,7 @@ const createClassificationPrompt = (messages: TextMessage[]) => {
 	return res.trim()
 }
 
-const createImagePrompt = (messages: TextMessage[]) => {
+const getPromptDalle = (messages: TextMessage[]) => {
 	const lastMessage = messages[messages.length - 1]
 	return lastMessage.text[lastMessage.text.length - 1]
 }
@@ -83,7 +83,7 @@ export const actors: Record<string, ActorConfig> = {
 			presence_penalty : 0,
 			stop             : [ "###" ]
 		},
-		createPrompt: createChatStartPrompt,
+		createPrompt: getPromptDavinci,
 		createComp  : openai.createCompletion,
 		icon        : "chat"
 	},
@@ -99,7 +99,7 @@ export const actors: Record<string, ActorConfig> = {
 			presence_penalty : 0,
 			stop             : [ "###" ]
 		},
-		createPrompt: createClassificationPrompt,
+		createPrompt: getPromptCoordinator,
 		createComp  : openai.createCompletion,
 		icon        : "question_answer"
 	},
@@ -111,7 +111,7 @@ export const actors: Record<string, ActorConfig> = {
 			size  : "256x256",
 			prompt: "A cute puppy"
 		},
-		createPrompt: createImagePrompt,
+		createPrompt: getPromptDalle,
 		createComp  : openai.createImage,
 		icon        : "image"
 	}

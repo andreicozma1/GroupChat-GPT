@@ -21,7 +21,7 @@
             icon="send"
             padding="5px 20px"
             rounded
-            @click="sendMessage"
+            @click="handleUser"
         />
         <q-space/>
         <q-btn
@@ -52,11 +52,11 @@
 
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue"
-import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue"
-import { actors, useCompStore } from "stores/compStore"
-import { getSeededAvatarURL } from "src/util/Util"
-import { ActorConfig, GenerationResult, TextMessage } from "src/util/Models"
 import { QCard, QInput } from "quasar"
+import { ActorConfig, GenerationResult, TextMessage } from "src/util/Models"
+import { getSeededAvatarURL } from "src/util/Util"
+import { actors, useCompStore } from "stores/compStore"
+import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue"
 
 const comp = useCompStore()
 
@@ -83,7 +83,69 @@ const createAIMsgTemplate = (cfg: ActorConfig): TextMessage => {
   }
 }
 
-function genFollowUp(objectiveStr: string, prompt: string) {
+const handleDavinci = () => {
+  const ai: ActorConfig = actors.chat
+
+  let msg: TextMessage = createAIMsgTemplate(ai)
+  msg.loading = true
+  msg = comp.pushMessage(msg)
+  comp.genTextCompletion(ai).then((res: GenerationResult) => {
+    console.log(res)
+    if (res.errorMsg) {
+      console.error(res.errorMsg)
+      msg.text.push(`[ERR: ${res.errorMsg}]`)
+      msg.loading = false
+      comp.pushMessage(msg)
+      return
+    }
+    if (!res.result) {
+      console.error("No result")
+      msg.text.push("[ERR: No result]")
+      msg.loading = false
+      comp.pushMessage(msg)
+      return
+    }
+    msg.text = res.text ? [ ...res.text ] : [ "An error occurred" ]
+    msg.dateCreated = res.result.created * 1000
+    msg.cached = res.cached
+    msg.loading = false
+    comp.pushMessage(msg)
+
+    handleCoordinator(msg)
+  })
+}
+
+function handleCoordinator(msg: TextMessage): void {
+  const ai: ActorConfig = actors.coordinator
+
+  comp.genTextCompletion(ai).then((res_fw: GenerationResult) => {
+    console.log(res_fw)
+    msg.loading = false
+    if (res_fw.errorMsg) {
+      console.error(res_fw.errorMsg)
+      msg.text.push(`[ERR: ${res_fw.errorMsg}]`)
+      comp.pushMessage(msg)
+      return
+    }
+    if (!res_fw.text) {
+      console.error("No text in result")
+      msg.text.push("[ERR: No text in result]")
+      comp.pushMessage(msg)
+      return
+    }
+    // join the text and classify it
+    const respSpl = res_fw.text[0].split("\nPrompt:")
+    const objectiveStr = respSpl[0].trim().toLowerCase()
+    const nextPrompt = respSpl[1]?.trim()
+    msg.objective = objectiveStr
+    comp.pushMessage(msg)
+    const skipPrompts = [ "none", "" ]
+    if (skipPrompts.includes(objectiveStr)) return
+    handleNext(objectiveStr, nextPrompt)
+  })
+}
+
+function handleNext(objectiveStr: string, prompt: string) {
   objectiveStr = objectiveStr?.trim()
   prompt = prompt?.trim()
   const cfgFollowup: ActorConfig = actors[objectiveStr]
@@ -124,66 +186,7 @@ function genFollowUp(objectiveStr: string, prompt: string) {
   })
 }
 
-const getAIResponse = () => {
-  const cfg: ActorConfig = actors.chat
-  // push the initial message and then get the response to update it
-
-  let msg: TextMessage = createAIMsgTemplate(cfg)
-  msg.loading = true
-  msg = comp.pushMessage(msg)
-  comp.genTextCompletion(cfg).then((res: GenerationResult) => {
-    console.log(res)
-    if (res.errorMsg) {
-      console.error(res.errorMsg)
-      msg.text.push(`[ERR: ${res.errorMsg}]`)
-      msg.loading = false
-      comp.pushMessage(msg)
-      return
-    }
-    if (!res.result) {
-      console.error("No result")
-      msg.text.push("[ERR: No result]")
-      msg.loading = false
-      comp.pushMessage(msg)
-      return
-    }
-    msg.text = res.text ? [ ...res.text ] : [ "An error occurred" ]
-    msg.dateCreated = res.result.created * 1000
-    msg.cached = res.cached
-    msg.loading = false
-    comp.pushMessage(msg)
-
-    const cfgClassifyReq: ActorConfig = actors.coordinator
-
-    comp.genTextCompletion(cfgClassifyReq).then((res_fw: GenerationResult) => {
-      console.log(res_fw)
-      msg.loading = false
-      if (res_fw.errorMsg) {
-        console.error(res_fw.errorMsg)
-        msg.text.push(`[ERR: ${res_fw.errorMsg}]`)
-        comp.pushMessage(msg)
-        return
-      }
-      if (!res_fw.text) {
-        console.error("No text in result")
-        msg.text.push("[ERR: No text in result]")
-        comp.pushMessage(msg)
-        return
-      }
-      // join the text and classify it
-      const respSpl = res_fw.text[0].split("\nPrompt:")
-      const objectiveStr = respSpl[0].trim().toLowerCase()
-      const nextPrompt = respSpl[1]?.trim()
-      msg.objective = objectiveStr
-      comp.pushMessage(msg)
-      const skipPrompts = [ "none", "" ]
-      if (skipPrompts.includes(objectiveStr)) return
-      genFollowUp(objectiveStr, nextPrompt)
-    })
-  })
-}
-
-const sendMessage = () => {
+const handleUser = () => {
   if (!isMessageValid.value) return
   const currDate = new Date()
   const usrMsg: TextMessage = {
@@ -195,7 +198,7 @@ const sendMessage = () => {
   }
   comp.pushMessage(usrMsg)
   message.value = ""
-  getAIResponse()
+  handleDavinci()
 }
 
 const updateIC = () => {
@@ -230,7 +233,7 @@ const kbShortcuts = (e: KeyboardEvent) => {
   if (e.key === "Enter" && !e.shiftKey) {
     console.log("Sending message")
     e.preventDefault()
-    sendMessage()
+    handleUser()
     return
   }
   // on escape first clear the input, then unfocus it

@@ -48,11 +48,18 @@ const options = {
 }
 
 const createChatStartPrompt = (messages: TextMessage[]) => {
+	const personality = [ "helpful", "creative", "clever", "very friendly" ]
+
 	let res = "The following is a conversation with an AI assistant."
-	res += "The assistant is helpful, creative, clever, and very friendly."
-	res += "When specifically asked to create an image, the assistant will ask it's friend DALL-E to help create an image."
-	res += "### Human:\nHello, who are you?\n\n"
-	res += "### Davinci:\nI am an AI created by OpenAI. How can I help you today?\n\n"
+	// res += `The assistant is helpful, creative, clever, and very friendly.`
+	res += `The assistant is ${personality.join(", ")}.`
+	res += "When specifically asked to create an image, the assistant will ask its friend DALL-E to help create an image."
+	res += "\n\n"
+	res += "### Human:\nHello, who are you?"
+	res += "\n\n"
+	res += "### Davinci:\nI am an AI created by OpenAI. How can I help you today?"
+	res += "\n\n"
+
 	const maxLength = 10
 
 	let prompt = messages.map((message) => {
@@ -91,8 +98,7 @@ const createClassificationPrompt = (messages: TextMessage[]) => {
 
 const createImagePrompt = (messages: TextMessage[]) => {
 	const lastMessage = messages[messages.length - 1]
-	const lastText = lastMessage.text[lastMessage.text.length - 1]
-	return lastText
+	return lastMessage.text[lastMessage.text.length - 1]
 }
 
 export const promptTypes: Record<string, PromptType> = {

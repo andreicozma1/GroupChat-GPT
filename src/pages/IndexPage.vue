@@ -21,6 +21,7 @@
             icon="send"
             padding="5px 20px"
             rounded
+            :disable="!isMessageValid"
             @click="handleUser"
         />
         <q-space/>
@@ -189,14 +190,14 @@ function handleNext(objectiveStr: string, prompt: string) {
 const handleUser = () => {
   if (!isMessageValid.value) return
   const currDate = new Date()
-  const usrMsg: TextMessage = {
+  const msg: TextMessage = {
     text  : [ message.value ],
     images: [],
     avatar: getSeededAvatarURL(myName.value),
     name  : myName.value,
     date  : currDate
   }
-  comp.pushMessage(usrMsg)
+  comp.pushMessage(msg)
   message.value = ""
   handleDavinci()
 }

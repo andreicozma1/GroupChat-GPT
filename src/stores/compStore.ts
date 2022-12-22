@@ -53,12 +53,12 @@ const createChatStartPrompt = (messages: TextMessage[]) => {
 	let res = "The following is a conversation with an AI assistant."
 	// res += `The assistant is helpful, creative, clever, and very friendly.`
 	res += `The assistant is ${personality.join(", ")}.`
-	res += "When specifically asked to create an image, the assistant will ask its friend DALL-E to help create an image."
-	res += "\n\n"
-	res += "### Human:\nHello, who are you?"
-	res += "\n\n"
-	res += "### Davinci:\nI am an AI created by OpenAI. How can I help you today?"
-	res += "\n\n"
+	res += "When specifically asked to create an image, the assistant will ask its friend DALL-E to help create the image by providing a prompt."
+	res += "\n"
+	res += "### Human:\nHello, who are you?\n"
+	res += "\n"
+	res += "### Davinci:\nI am an AI created by OpenAI. How can I help you today?\n"
+	res += "\n"
 
 	const maxLength = 10
 
@@ -80,16 +80,17 @@ const createChatStartPrompt = (messages: TextMessage[]) => {
 
 const createClassificationPrompt = (messages: TextMessage[]) => {
 	// create some example prompts
-	let res = "Categorize what to do next into one of the following categories: "
-	res += "generate_image, none. If you are unsure, choose none.\n"
-	res += "Lastly, create a suitable prompt for the next message.\n\n"
+	let res = "Based on the chat conversation please classify the task that needs to be done, and also generate a" + " suitable prompt for the task to be accomplished.\n"
+	res += "Available tasks: generate_image, none.\n"
+	res += "\n"
 
-	res += "###\n"
-	res += "Chat: I can ask my friend DALL-E to help create an image for you. Could you generate a drawing of a dog?" + " It's wearing a space suit and floating in space.\n"
+	res += "### Examples\n"
+	res += "Chat: I would be happy to help you with that. I have asked my friend DALL-E to create an image of a cat for you. Please wait a moment while I get the image from DALL-E.\n"
 	res += "Task: generate_image\n"
-	res += "Prompt: A drawing of a dog wearing a space suit and floating in space.\n\n"
+	res += "Prompt: A picture of a cat playing with a ball.\n"
+	res += "\n"
 
-	messages = messages.filter((m) => m.name === "You").slice(-10)
+	messages = messages.filter((m) => m.name === "Davinci").slice(-5)
 	const prompt = messages.map((m) => m.text.join(". ")).join(". ")
 	res += `\nChat: ${prompt}.`
 	res += "\nTask:"
@@ -122,7 +123,7 @@ export const promptTypes: Record<string, PromptType> = {
 		key         : "coordinator",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.3,
+			temperature      : 0.7,
 			max_tokens       : 100,
 			top_p            : 1,
 			frequency_penalty: 0,

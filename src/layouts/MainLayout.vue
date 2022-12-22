@@ -41,40 +41,20 @@ import EssentialLink, { EssentialLinkProps } from "components/EssentialLink.vue"
 
 const essentialLinks: EssentialLinkProps[] = [
   {
-    title  : "Docs",
-    caption: "quasar.dev",
-    icon   : "school",
-    link   : "https://quasar.dev"
-  }, {
-    title  : "Github",
-    caption: "github.com/quasarframework",
+    title  : "GitHub Page",
+    caption: "andreicozma1/GroupChat-GPT",
     icon   : "code",
-    link   : "https://github.com/quasarframework"
+    link   : "https://github.com/andreicozma1/GroupChat-GPT"
   }, {
-    title  : "Discord Chat Channel",
-    caption: "chat.quasar.dev",
-    icon   : "chat",
-    link   : "https://chat.quasar.dev"
-  }, {
-    title  : "Forum",
-    caption: "forum.quasar.dev",
-    icon   : "record_voice_over",
-    link   : "https://forum.quasar.dev"
-  }, {
-    title  : "Twitter",
-    caption: "@quasarframework",
-    icon   : "rss_feed",
-    link   : "https://twitter.quasar.dev"
-  }, {
-    title  : "Facebook",
-    caption: "@QuasarFramework",
+    title  : "OpenAI API Docs",
+    caption: "beta.openai.com/docs",
     icon   : "public",
-    link   : "https://facebook.quasar.dev"
+    link   : "https://beta.openai.com/docs"
   }, {
-    title  : "Quasar Awesome",
-    caption: "Community Quasar projects",
-    icon   : "favorite",
-    link   : "https://awesome.quasar.dev"
+    title  : "Andrei's Portfolio",
+    caption: "andreicozma.com",
+    icon   : "school",
+    link   : "https://andreicozma.com"
   }
 ]
 

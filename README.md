@@ -1,8 +1,8 @@
 # GroupChat-GPT
 
-A chatbot application written using the Quasar Framework.  
-The Davinci model from the GPT-3 family is used for the chat-bot responses. The responses that need follow-ups (such as
-generating an image) are classified using a smaller model (Babbage).  
+Imagine a world where multiple Large Language Models (LLMs) collaborate together to help us humans with various tasks.  
+Well, this application is a step towards that world.
+
 **Important!!**: You will have to put your OpenAI API Key inside the `.env` file.
 
 ## Demo:

@@ -11,6 +11,7 @@
           autogrow
           v-model="message"
           label="Message"
+          ref="inputElem"
         />
       </q-card-section>
       <q-card-actions>
@@ -37,6 +38,7 @@ import { getSeededAvatarURL } from "src/util/Util";
 const comp = useCompStore();
 
 const inputCard = ref(null);
+const inputElem = ref(null);
 const scStyle = ref({});
 
 const myName = ref("Andrei Cozma");
@@ -59,7 +61,7 @@ const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
   };
 };
 
-function genFollowUp(followUpPromptType, msg: TextMessage) {
+function genFollowUp(followUpPromptType: any, msg: TextMessage) {
   const cfgFollowup: GenConfig = {
     promptType: followUpPromptType,
     ignoreCache: false,
@@ -73,7 +75,7 @@ function genFollowUp(followUpPromptType, msg: TextMessage) {
       return;
     }
     if (res2?.text) {
-      msg.text.push(...res2.text);
+      msg.text.push(res2.text);
     }
     if (res2?.images) {
       msg.images.push(...res2.images);
@@ -105,7 +107,7 @@ const getAIResponse = () => {
       comp.pushMessage(msg);
       return;
     }
-    msg.text = res?.text ? res?.text : ["An error occurred"];
+    msg.text = res?.text ? [res?.text] : ["An error occurred"];
     msg.dateCreated = res?.result?.created * 1000;
     msg.cached = res?.cached;
     msg.loading = false;
@@ -121,7 +123,7 @@ const getAIResponse = () => {
         console.error(res1.errorMsg);
         return;
       }
-      let followUpPromptType = res1?.text[0].trim();
+      let followUpPromptType = res1?.text.trim();
       if (followUpPromptType === "none") return;
       msg.loading = true;
       msg.objective = followUpPromptType;
@@ -156,20 +158,44 @@ const sendMessage = () => {
   getAIResponse();
 };
 
+const updateIC = () => {
+  setTimeout(() => {
+    const ic = inputCard.value;
+    let bottom = 0;
+    if (ic) bottom = ic.$el.clientHeight;
+    scStyle.value = { bottom: bottom + "px" };
+  }, 100);
+};
+
+watch(message, () => {
+  updateIC();
+});
+
 const kbShortcuts = (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     sendMessage();
   }
+  // if any number or letter is pressed, focus the input
+  if (e.key.match(/^[a-z0-9]$/i)) {
+    if (inputElem.value) inputElem.value.focus();
+  }
+  // on escape first clear the input, then unfocus it
+  if (e.key === "Escape") {
+    if (inputElem.value) {
+      if (message.value) {
+        message.value = "";
+      } else {
+        inputElem.value.blur();
+      }
+    }
+    updateIC();
+  }
 };
-
-watch(message, () => {
-  const ic: any = inputCard.value;
-  if (ic) scStyle.value = { bottom: ic.$el.clientHeight + "px" };
-});
 
 onMounted(() => {
   document.addEventListener("keydown", kbShortcuts);
+  updateIC();
 });
 
 onBeforeUnmount(() => {

@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { getSeededQColor } from "src/util/ColorUtils";
 import { TextMessage, useCompStore } from "stores/compStore";
 import { dateToStr, getTimeAgo } from "src/util/Util";
@@ -92,11 +92,11 @@ const createStamp = (message: TextMessage) => {
     res += ` [${message.objective}]`;
   }
   if (message.cached) {
-    if (message.dateCreated) {
-      res += ` (cached ${getTimeAgo(message.dateCreated)})`;
-    } else {
-      res += " (cached)";
-    }
+    // if (message.dateCreated) {
+    // res += ` (cached ${getTimeAgo(message.dateCreated)})`;
+    // } else {
+    res += " (cached)";
+    // }
   }
   return res;
 };
@@ -118,13 +118,14 @@ const isSentByMe = (message: TextMessage) => {
 };
 
 const getScrollAreaStyle = computed(() => {
+  const propStyle = props.scrollAreaStyle ? props.scrollAreaStyle : {};
   return {
     position: "absolute",
     left: "0px",
     right: "0px",
     top: "50px",
     bottom: "0px",
-    ...props.scrollAreaStyle,
+    ...propStyle,
   };
 });
 
@@ -132,24 +133,27 @@ const scrollToBottom = (duration?: number) => {
   if (threadElem.value) {
     duration = duration ?? 750;
     // scroll to bottom. The element is q-scroll-area
-    threadElem.value.setScrollPercentage("vertical", 1.0, duration);
+    const size = threadElem.value.getScroll().verticalSize;
+    threadElem.value.setScrollPosition("vertical", size, duration);
+    // threadElem.value.setScrollPercentage("vertical", 1.0, duration)
   }
 };
 
-watch(threadMessages, () => {
-  scrollToBottom();
-});
+// watch(threadMessages, () => {
+//   scrollToBottom()
+// })
 
 watch(
   () => props.scrollAreaStyle,
   () => {
-    setTimeout(() => {
-      scrollToBottom(100);
-    }, 0);
+    console.log("HERE");
+    // nextTick(() => {
+    scrollToBottom(1000);
+    // })
   }
 );
 
-onMounted(() => {
-  scrollToBottom();
-});
+// onMounted(() => {
+//   scrollToBottom(0)
+// })
 </script>

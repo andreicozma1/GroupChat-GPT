@@ -47,13 +47,15 @@ const options = {
 };
 
 const createChatStartPrompt = (messages: TextMessage[]) => {
-  let res = "### Chat-Bot\n";
-  res += "The following is a conversation with an AI assistant.";
+  let res = "The following is a conversation with an AI assistant.";
   res += "The assistant is helpful, creative, clever, and very friendly.\n\n";
+  res += "### Human\nHello, who are you?\n\n";
+  res += "### AI\nI am an AI created by OpenAI. How can I help you today?\n\n";
   const maxLength = 10;
 
   let prompt = messages.map((message) => {
     const txts = message.text.map((txt) => txt.trim()).join("\n");
+    // let chunk = `### ${message.name.trim()}`
     let chunk = `### ${message.name.trim()}`;
     // const obj = message.objective?.trim()
     // if (obj) chunk += ` (${obj})`
@@ -217,7 +219,7 @@ export const useCompStore = defineStore("counter", {
 
       if (!config.ignoreCache && this.completions[hash]) {
         const choices = this.completions[hash].choices;
-        const text = choices ? choices[0].text.trim().split("\n") : undefined;
+        const text = choices ? choices[0].text.trim() : undefined;
         const images = this.completions[hash].data?.map((d: any) => d.url);
         return {
           result: this.completions[hash],
@@ -245,7 +247,7 @@ export const useCompStore = defineStore("counter", {
         // and return it
         console.log(completion);
         const choices = completion.data.choices;
-        const text = choices ? choices[0].text.trim().split("\n") : undefined;
+        const text = choices ? choices[0].text.trim() : undefined;
         const images = this.completions[hash].data?.map((d: any) => d.url);
         return {
           result: completion.data,

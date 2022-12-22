@@ -1,40 +1,8 @@
 import { defineStore } from "pinia"
 import { LocalStorage } from "quasar"
 import { OpenAIApi } from "openai"
-import { CreateCompletionRequest, CreateImageRequest } from "openai/api"
 import { v4 as uuidv4 } from "uuid"
-
-interface PromptType {
-	key: string;
-	name?: string;
-	createPrompt: any;
-	config: CreateCompletionRequest | CreateImageRequest;
-	createComp: any;
-	icon: string;
-}
-
-export interface GenConfig {
-	promptType: PromptType;
-	maxHistoryLen?: number;
-	ignoreCache: boolean;
-}
-
-export interface MessageThread {
-	messages: TextMessage[];
-}
-
-export interface TextMessage {
-	id?: string | number;
-	text: string[];
-	images: string[];
-	avatar: string;
-	name: string;
-	date?: string | number | Date;
-	objective?: string;
-	dateCreated?: string | number;
-	cached?: boolean;
-	loading?: boolean;
-}
+import { ActorConfig, GenConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models"
 
 const openAiConfig = {
 	apiKey: process.env.OPENAI_API_KEY
@@ -102,7 +70,7 @@ const createImagePrompt = (messages: TextMessage[]) => {
 	return lastMessage.text[lastMessage.text.length - 1]
 }
 
-export const promptTypes: Record<string, PromptType> = {
+export const promptTypes: Record<string, ActorConfig> = {
 	chat          : {
 		key         : "chat",
 		name        : "Davinci",
@@ -200,7 +168,7 @@ export const useCompStore = defineStore("counter", {
 			}
 		},
 		async genTextCompletion(config: GenConfig): Promise<GenerationResult> {
-			const prompt = config.promptType.createPrompt(this.getThread.messages)
+			const prompt = config.actor.createPrompt(this.getThread.messages)
 			console.warn(prompt)
 			const hash = hashPrompt(prompt)
 			// if we already have a completion for this prompt, return it
@@ -212,8 +180,8 @@ export const useCompStore = defineStore("counter", {
 			}
 			// otherwise, generate a new completion
 			try {
-				const completion = await config.promptType.createComp({
-					...config.promptType.config,
+				const completion = await config.actor.createComp({
+					...config.actor.config,
 					prompt: prompt
 				}, options)
 
@@ -261,15 +229,6 @@ export const useCompStore = defineStore("counter", {
 		}
 	}
 })
-
-export interface GenerationResult {
-	result: any;
-	text?: string[];
-	images?: string[];
-	hash: number;
-	cached: boolean;
-	errorMsg?: string;
-}
 
 export const hashPrompt = (prompt: string): number => {
 	let hash = 0

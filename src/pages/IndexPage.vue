@@ -52,14 +52,16 @@
 
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue"
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
-import { GenConfig, GenerationResult, promptTypes, TextMessage, useCompStore } from "stores/compStore"
+import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue"
+import { promptTypes, useCompStore } from "stores/compStore"
 import { getSeededAvatarURL } from "src/util/Util"
+import { GenConfig, GenerationResult, TextMessage } from "src/util/Models"
+import { QCard, QInput } from "quasar"
 
 const comp = useCompStore()
 
-const inputCard = ref(null)
-const inputElem = ref(null)
+const inputCard: Ref<QCard | null> = ref(null)
+const inputElem: Ref<QInput | null> = ref(null)
 const scStyle = ref({})
 
 const myName = computed(() => comp.userName)
@@ -69,8 +71,8 @@ const isMessageValid = computed(() => {
 })
 
 const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
-  // if config.promptType.config has "model", use that, otherwise use "AI"
-  const name = cfg.promptType?.name || "AI"
+  // if config.actor.config has "model", use that, otherwise use "AI"
+  const name = cfg.actor?.name || "AI"
   return {
     text       : [],
     images     : [],
@@ -78,7 +80,7 @@ const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
     name       : name,
     date       : new Date(),
     dateCreated: undefined,
-    objective  : cfg.promptType?.key
+    objective  : cfg.actor?.key
   }
 }
 
@@ -86,11 +88,11 @@ function genFollowUp(objectiveStr: string, prompt: string) {
   objectiveStr = objectiveStr?.trim()
   prompt = prompt?.trim()
   const cfgFollowup: GenConfig = {
-    promptType : promptTypes[objectiveStr],
+    actor      : promptTypes[objectiveStr],
     ignoreCache: false
   }
   const msg: TextMessage = createAIMsgTemplate(cfgFollowup)
-  if (!cfgFollowup.promptType) {
+  if (!cfgFollowup.actor) {
     msg.text.push(`[ERR: Unknown follow-up prompt type: ${objectiveStr}]`)
     comp.pushMessage(msg)
     return
@@ -127,7 +129,7 @@ function genFollowUp(objectiveStr: string, prompt: string) {
 
 const getAIResponse = () => {
   const cfg: GenConfig = {
-    promptType   : promptTypes.chat,
+    actor        : promptTypes.chat,
     maxHistoryLen: 10,
     ignoreCache  : false
   }
@@ -159,7 +161,7 @@ const getAIResponse = () => {
     comp.pushMessage(msg)
 
     const cfgClassifyReq: GenConfig = {
-      promptType : promptTypes.coordinator,
+      actor      : promptTypes.coordinator,
       ignoreCache: false
     }
     comp.genTextCompletion(cfgClassifyReq).then((res_fw: GenerationResult) => {
@@ -218,7 +220,7 @@ watch(message, () => {
   updateIC()
 })
 
-const kbShortcuts = (e) => {
+const kbShortcuts = (e: KeyboardEvent) => {
   // ctrl+shift+x clears thread
   if (e.key === "X" && e.ctrlKey && e.shiftKey) {
     console.log("Clearing thread")

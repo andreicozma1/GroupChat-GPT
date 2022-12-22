@@ -80,9 +80,10 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue"
 import { getSeededQColor } from "src/util/ColorUtils"
-import { promptTypes, TextMessage, useCompStore } from "stores/compStore"
+import { promptTypes, useCompStore } from "stores/compStore"
 import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util"
 import { copyToClipboard } from "quasar"
+import { TextMessage } from "src/util/Models"
 
 const threadElem: any = ref(null)
 const comp = useCompStore()

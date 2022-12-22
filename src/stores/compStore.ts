@@ -50,10 +50,10 @@ const options = {
 const createChatStartPrompt = (messages: TextMessage[]) => {
 	const personality = [ "helpful", "creative", "clever", "very friendly" ]
 
-	let res = "The following is a conversation with an AI assistant."
+	let res = "The following is a conversation with an AI assistant named Davinci."
 	// res += `The assistant is helpful, creative, clever, and very friendly.`
 	res += `The assistant is ${personality.join(", ")}.`
-	res += "When specifically asked to create an image, the assistant will ask its friend DALL-E to help create the image by providing a prompt."
+	res += "When specifically asked to create an image, Davinci will let DALL-E know what the Human wants to see."
 	res += "\n"
 	res += "### Human:\nHello, who are you?\n"
 	res += "\n"
@@ -85,12 +85,12 @@ const createClassificationPrompt = (messages: TextMessage[]) => {
 	res += "\n"
 
 	res += "### Examples\n"
-	res += "Chat: I would be happy to help you with that. I have asked my friend DALL-E to create an image of a cat for you. Please wait a moment while I get the image from DALL-E.\n"
+	res += "Chat: Sure thing! DALL-E is generating an image of a teddy bear with a pink and white striped bowtie.\n"
 	res += "Task: generate_image\n"
-	res += "Prompt: A picture of a cat playing with a ball.\n"
+	res += "Prompt: A picture of a teddy bear with a pink and white striped bowtie.\n"
 	res += "\n"
 
-	messages = messages.filter((m) => m.name === "Davinci").slice(-5)
+	messages = messages.filter((m) => m.name === "Davinci").slice(-1)
 	const prompt = messages.map((m) => m.text.join(". ")).join(". ")
 	res += `\nChat: ${prompt}.`
 	res += "\nTask:"
@@ -123,7 +123,7 @@ export const promptTypes: Record<string, PromptType> = {
 		key         : "coordinator",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.7,
+			temperature      : 0.5,
 			max_tokens       : 100,
 			top_p            : 1,
 			frequency_penalty: 0,

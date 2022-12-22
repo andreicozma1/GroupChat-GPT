@@ -1,8 +1,8 @@
+import { OpenAIApi } from "openai"
 import { defineStore } from "pinia"
 import { LocalStorage } from "quasar"
-import { OpenAIApi } from "openai"
+import { ActorConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models"
 import { v4 as uuidv4 } from "uuid"
-import { ActorConfig, GenConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models"
 
 const openAiConfig = {
 	apiKey: process.env.OPENAI_API_KEY
@@ -48,7 +48,7 @@ const createChatStartPrompt = (messages: TextMessage[]) => {
 
 const createClassificationPrompt = (messages: TextMessage[]) => {
 	// create some example prompts
-	let res = "Based on the chat conversation please classify the task that needs to be done, and also generate a" + " suitable prompt for the task to be accomplished.\n"
+	let res = "Based on the chat conversation, please classify the task that needs to be done, and also generate a suitable prompt for the task to be accomplished.\n"
 	res += "Available tasks: generate_image, none.\n"
 	res += "\n"
 
@@ -70,7 +70,7 @@ const createImagePrompt = (messages: TextMessage[]) => {
 	return lastMessage.text[lastMessage.text.length - 1]
 }
 
-export const promptTypes: Record<string, ActorConfig> = {
+export const actors: Record<string, ActorConfig> = {
 	chat          : {
 		key         : "chat",
 		name        : "Davinci",
@@ -89,6 +89,7 @@ export const promptTypes: Record<string, ActorConfig> = {
 	},
 	coordinator   : {
 		key         : "coordinator",
+		name        : "Coordinator",
 		config      : {
 			model            : "text-davinci-003",
 			temperature      : 0.5,
@@ -167,12 +168,12 @@ export const useCompStore = defineStore("counter", {
 				hash  : hash
 			}
 		},
-		async genTextCompletion(config: GenConfig): Promise<GenerationResult> {
-			const prompt = config.actor.createPrompt(this.getThread.messages)
+		async genTextCompletion(actor: ActorConfig): Promise<GenerationResult> {
+			const prompt = actor.createPrompt(this.getThread.messages)
 			console.warn(prompt)
 			const hash = hashPrompt(prompt)
 			// if we already have a completion for this prompt, return it
-			if (!config.ignoreCache && this.completions[hash]) {
+			if (!actor.ignoreCache && this.completions[hash]) {
 				return {
 					...this.getCompletion(hash),
 					cached: true
@@ -180,8 +181,8 @@ export const useCompStore = defineStore("counter", {
 			}
 			// otherwise, generate a new completion
 			try {
-				const completion = await config.actor.createComp({
-					...config.actor.config,
+				const completion = await actor.createComp({
+					...actor.config,
 					prompt: prompt
 				}, options)
 

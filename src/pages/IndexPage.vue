@@ -53,9 +53,9 @@
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue"
 import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue"
-import { promptTypes, useCompStore } from "stores/compStore"
+import { actors, useCompStore } from "stores/compStore"
 import { getSeededAvatarURL } from "src/util/Util"
-import { GenConfig, GenerationResult, TextMessage } from "src/util/Models"
+import { ActorConfig, GenerationResult, TextMessage } from "src/util/Models"
 import { QCard, QInput } from "quasar"
 
 const comp = useCompStore()
@@ -70,9 +70,8 @@ const isMessageValid = computed(() => {
   return message.value.trim().length > 0
 })
 
-const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
-  // if config.actor.config has "model", use that, otherwise use "AI"
-  const name = cfg.actor?.name || "AI"
+const createAIMsgTemplate = (cfg: ActorConfig): TextMessage => {
+  const name = cfg.name
   return {
     text       : [],
     images     : [],
@@ -80,19 +79,17 @@ const createAIMsgTemplate = (cfg: GenConfig): TextMessage => {
     name       : name,
     date       : new Date(),
     dateCreated: undefined,
-    objective  : cfg.actor?.key
+    objective  : cfg.key
   }
 }
 
 function genFollowUp(objectiveStr: string, prompt: string) {
   objectiveStr = objectiveStr?.trim()
   prompt = prompt?.trim()
-  const cfgFollowup: GenConfig = {
-    actor      : promptTypes[objectiveStr],
-    ignoreCache: false
-  }
+  const cfgFollowup: ActorConfig = actors[objectiveStr]
+
   const msg: TextMessage = createAIMsgTemplate(cfgFollowup)
-  if (!cfgFollowup.actor) {
+  if (!cfgFollowup) {
     msg.text.push(`[ERR: Unknown follow-up prompt type: ${objectiveStr}]`)
     comp.pushMessage(msg)
     return
@@ -128,11 +125,7 @@ function genFollowUp(objectiveStr: string, prompt: string) {
 }
 
 const getAIResponse = () => {
-  const cfg: GenConfig = {
-    actor        : promptTypes.chat,
-    maxHistoryLen: 10,
-    ignoreCache  : false
-  }
+  const cfg: ActorConfig = actors.chat
   // push the initial message and then get the response to update it
 
   let msg: TextMessage = createAIMsgTemplate(cfg)
@@ -160,10 +153,8 @@ const getAIResponse = () => {
     msg.loading = false
     comp.pushMessage(msg)
 
-    const cfgClassifyReq: GenConfig = {
-      actor      : promptTypes.coordinator,
-      ignoreCache: false
-    }
+    const cfgClassifyReq: ActorConfig = actors.coordinator
+
     comp.genTextCompletion(cfgClassifyReq).then((res_fw: GenerationResult) => {
       console.log(res_fw)
       msg.loading = false

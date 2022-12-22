@@ -32,7 +32,7 @@
                   :name="getObjectiveIcon(message.objective)"
                   class="q-mr-sm"
               />
-              <q-tooltip v-if="promptTypes[message.objective]?.config">
+              <q-tooltip v-if="actors[message.objective]?.config">
                 Objective: {{ message.objective }}
               </q-tooltip>
             </span>
@@ -80,7 +80,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue"
 import { getSeededQColor } from "src/util/ColorUtils"
-import { promptTypes, useCompStore } from "stores/compStore"
+import { actors, useCompStore } from "stores/compStore"
 import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util"
 import { copyToClipboard } from "quasar"
 import { TextMessage } from "src/util/Models"
@@ -102,9 +102,9 @@ const props = defineProps({
 })
 
 const getObjectiveIcon = (objective: string) => {
-  if (!promptTypes[objective]) return "send"
-  if (!promptTypes[objective].icon) return "help"
-  return promptTypes[objective].icon
+  if (!actors[objective]) return "send"
+  if (!actors[objective].icon) return "help"
+  return actors[objective].icon
 }
 
 const threadMessages = computed(() => {

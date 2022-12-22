@@ -19,17 +19,12 @@ export interface TextMessage {
 
 export interface ActorConfig {
 	key: string;
-	name?: string;
+	name: string;
 	createPrompt: any;
 	config: CreateCompletionRequest | CreateImageRequest;
 	createComp: any;
 	icon: string;
-}
-
-export interface GenConfig {
-	actor: ActorConfig;
-	maxHistoryLen?: number;
-	ignoreCache: boolean;
+	ignoreCache?: boolean;
 }
 
 export interface GenerationResult {

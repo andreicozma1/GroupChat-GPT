@@ -74,6 +74,7 @@ export const actors: Record<string, ActorConfig> = {
 	chat          : {
 		key         : "chat",
 		name        : "Davinci",
+		icon        : "chat",
 		config      : {
 			model            : "text-davinci-003",
 			max_tokens       : 250,
@@ -84,12 +85,12 @@ export const actors: Record<string, ActorConfig> = {
 			stop             : [ "###" ]
 		},
 		createPrompt: getPromptDavinci,
-		createComp  : openai.createCompletion,
-		icon        : "chat"
+		createComp  : openai.createCompletion
 	},
 	coordinator   : {
 		key         : "coordinator",
 		name        : "Coordinator",
+		icon        : "question_answer",
 		config      : {
 			model            : "text-davinci-003",
 			temperature      : 0.5,
@@ -100,20 +101,19 @@ export const actors: Record<string, ActorConfig> = {
 			stop             : [ "###" ]
 		},
 		createPrompt: getPromptCoordinator,
-		createComp  : openai.createCompletion,
-		icon        : "question_answer"
+		createComp  : openai.createCompletion
 	},
 	generate_image: {
 		key         : "generate_image",
 		name        : "DALL-E",
+		icon        : "image",
 		config      : {
 			n     : 1,
 			size  : "256x256",
 			prompt: "A cute puppy"
 		},
 		createPrompt: getPromptDalle,
-		createComp  : openai.createImage,
-		icon        : "image"
+		createComp  : openai.createImage
 	}
 }
 

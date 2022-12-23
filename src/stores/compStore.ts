@@ -1,7 +1,7 @@
 import { OpenAIApi } from "openai";
 import { defineStore } from "pinia";
 import { LocalStorage } from "quasar";
-import { ActorConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models";
+import { ActorConfig, GenerationResult, MessageThread, MsgHistoryConfig, TextMessage } from "src/util/Models";
 import { v4 as uuidv4 } from "uuid";
 import { Ref, ref } from "vue";
 
@@ -16,13 +16,7 @@ const options = {
 	},
 };
 
-interface MsgHistoryConfig {
-	messages: TextMessage[];
-	includeSelf?: boolean;
-	includeActors?: ActorConfig[];
-	excludeActors?: ActorConfig[];
-	maxLength?: number;
-}
+export const humanName = "Human";
 
 const basePersonalityTraits = ["enthusiastic", "clever", "very friendly"];
 
@@ -57,7 +51,7 @@ const generationAbility: string[] = [
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
 	let hist = config.messages;
 	hist = hist.filter((m) => {
-		if (m.name === "Human") {
+		if (m.name === humanName) {
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;
 		}
@@ -112,28 +106,25 @@ function getBasePromptHistory(messages: TextMessage[]): string {
 		excludeActors: [actors.coordinator],
 		maxLength: 10,
 	});
-	return messages
-		.map((message) => {
-			return `### ${message.name}:\n${message.text.join("\n")}\n\n`;
-		})
-		.join("");
+	const hist = messages.map((message) => {
+		return `### ${message.name}:\n${message.text.join("\n")}\n\n`;
+	});
+	return hist.join("");
 }
 
 const getInfoList = (useKey: boolean, currentAI?: ActorConfig) => {
-	return (
-		getAvailable()
-			.map((ai) => {
-				const id = useKey ? ai.key : ai.name;
-				let res = `# ${id}`;
-				if (currentAI && currentAI.key === ai.key) res += " (You)";
-				res += ":\n";
-				if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`;
-				if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`;
-				if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`;
-				return res;
-			})
-			.join("\n") + "\n"
-	);
+	const available = getAvailable();
+	const infoList = available.map((ai) => {
+		const id = useKey ? ai.key : ai.name;
+		let res = `# ${id}`;
+		if (currentAI && currentAI.key === ai.key) res += " (You)";
+		res += ":\n";
+		if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`;
+		if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`;
+		if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`;
+		return res;
+	});
+	return infoList.join("\n") + "\n";
 };
 
 const getAvailable = (): ActorConfig[] => {
@@ -168,40 +159,40 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += getInfoList(true);
 
 	res += "### EXAMPLES ###\n";
-	res += "### Human:\n";
-	res += "Hello, what's up Davinci?\n";
+	res += `### ${humanName}:\n`;
+	res += `Hello, what's up ${actors.davinci.name}?\n`;
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `Will Ignore: ${toKeys(allExcept(actors.davinci)).join(", ")}\n`;
-	res += `Will Respond: ${actors.davinci.key}\n`;
+	res += `${actors.coordinator.vals.willIgnore}: ${toKeys(allExcept(actors.davinci)).join(", ")}\n`;
+	res += `${actors.coordinator.vals.willRespond}: ${actors.davinci.key}\n`;
 	res += "\n";
 
-	res += "### Human:\n";
+	res += `### ${humanName}:\n`;
 	res += "How are you all doing?\n";
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `Will Ignore: None\n`;
-	res += `Will Respond: ${toKeys(getAvailable()).join(", ")}\n`;
+	res += `${actors.coordinator.vals.willIgnore}: None\n`;
+	res += `${actors.coordinator.vals.willRespond}: ${toKeys(getAvailable()).join(", ")}\n`;
 	res += "\n";
 
-	res += "### Human:\n";
+	res += `### ${humanName}:\n`;
 	res += "I need to create a painting.\n";
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `Will Ignore: ${toKeys(allExcept(actors.dalle)).join(", ")}\n`;
-	res += `Will Respond: ${actors.dalle.key}\n`;
+	res += `${actors.coordinator.vals.willIgnore}: ${toKeys(allExcept(actors.dalle)).join(", ")}\n`;
+	res += `${actors.coordinator.vals.willRespond}: ${actors.dalle.key}\n`;
 	res += "\n";
 
-	res += "### Human:\n";
-	res += "Hey Codex, can you code something for me?\n";
+	res += `### ${humanName}:\n`;
+	res += `Hey ${actors.codex.name}, can you code something for me?\n`;
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `Will Ignore: ${toKeys(allExcept(actors.codex)).join(", ")}\n`;
-	res += `Will Respond: ${actors.codex.key}\n`;
+	res += `${actors.coordinator.vals.willIgnore}: ${toKeys(allExcept(actors.codex)).join(", ")}\n`;
+	res += `${actors.coordinator.vals.willRespond}: ${actors.codex.key}\n`;
 	res += "\n";
 
 	res += "### CONVERSATION ###\n";
@@ -263,13 +254,13 @@ export const actors: Record<string, ActorConfig> = {
 		config: {
 			model: "text-davinci-003",
 			max_tokens: 250,
-			temperature: 0.6,
+			temperature: 0.75,
 			top_p: 1,
 			frequency_penalty: 0,
 			presence_penalty: 0,
 			stop: ["###"],
 		},
-		personality: ["helpful", "creative", ...basePersonalityTraits],
+		personality: ["helpful", ...basePersonalityTraits],
 		strengths: ["making general conversation", "answering questions", "providing general information"],
 	},
 	dalle: {
@@ -281,7 +272,7 @@ export const actors: Record<string, ActorConfig> = {
 		createGen: "dalle_gen",
 		config: {
 			model: "text-davinci-003",
-			temperature: 0.85,
+			temperature: 0.75,
 			max_tokens: 250,
 			top_p: 1,
 			frequency_penalty: 0,
@@ -360,7 +351,7 @@ export const useCompStore = defineStore("counter", {
 			...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, MessageThread>>,
 		currentThread: "main",
-		userName: "Human",
+		userName: humanName,
 	}),
 	getters: {
 		getAllCompletions(state) {

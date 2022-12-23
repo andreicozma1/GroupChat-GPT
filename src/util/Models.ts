@@ -43,6 +43,14 @@ export interface GenerationResult {
 	errorMsg?: string;
 }
 
+export interface MsgHistoryConfig {
+	messages: TextMessage[];
+	includeSelf?: boolean;
+	includeActors?: ActorConfig[];
+	excludeActors?: ActorConfig[];
+	maxLength?: number;
+}
+
 export interface ColorConfig {
 	minLightness?: number;
 	maxLightness?: number;

@@ -28,7 +28,7 @@ const basePersonalityTraits = [ "enthusiastic", "clever", "very friendly" ]
 
 const baseAlways: string[] = [
 	"follow the user's directions",
-	"respond for yourself",
+	// "respond for yourself",
 	"add to information in the conversation if needed",
 	"make appropriate use of bulleted lists and new paragraphs using newline characters",
 	"stay true your own personality traits, specialties, interests, and behaviors"
@@ -36,10 +36,11 @@ const baseAlways: string[] = [
 
 const baseNever: string[] = [
 	"interrupt conversation with other AIs",
-	"repeat yourself too much",
-	"repeat what other AIs have just said",
-	"explain your behaviors to the human unless asked",
-	"make logical inconsistencies"
+	"repeat yourself too much nor repeat what other AIs have just said",
+	"ask more than one question at a time",
+	"make logical inconsistencies",
+	"explain your behaviors to the human unless asked"
+
 	// "ask the user to do something that is part of your job"
 ]
 
@@ -47,7 +48,8 @@ const generationBehaviors: string[] = [
 	"When the user wants to generate something, acquire information about the user's interests and preferences.",
 	"When you say you'll generate the result, you will always create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt> tags.",
 	"If there is a list of prompts, wrap each prompt with <prompt> and </prompt> tags.",
-	"Only show the final prompts to the user if the user has explicitly asked."
+	// "Only show the final prompts to the user if the user has explicitly asked.",
+	"When the AI says it'll generate the request, it will respond with the prompt and only with the prompt."
 ]
 
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
@@ -85,8 +87,10 @@ const getAssistantsList = () => {
 
 const getAssistantsDescList = (useKey: boolean, exclude?: ActorConfig) => {
 	return getAssistantsList().map((actor) => {
-		let res = `- ${useKey ? actor.key : actor.name}`
-		if (actor.specialties) res += `: specializes in ${actor.specialties.join(", ")}`
+		const id = useKey ? actor.key : actor.name
+		let res = `- ${id}`
+		if (actor.strengths) res += `: Very good at ${actor.strengths.join(", ")}. `
+		if (actor.weaknesses) res += `Not so good at ${actor.weaknesses.join(", ")}.`
 		return res
 	}).join("\n")
 }
@@ -95,7 +99,7 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	let res = "### Response Coordinator:\n"
 	res += "Classify which assistants would be best at responding to the next message."
 	res += "Only respond with the exact names of the assistants\n"
-	res += "If the conversation is specifically directed at multiple assistants, separate the names with a comma\n"
+	res += "If the user's request is specifically directed at multiple assistants, separate the names with a comma\n"
 	res += "Also keep the logical consistency of the conversation in mind.\n"
 	res += "\n"
 
@@ -139,7 +143,7 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 		messages,
 		includeSelf  : true, // includeActors: [ actors.coordinator ],
 		includeActors: undefined,
-		maxLength    : 3
+		maxLength    : 5
 	})
 	// now continue the prompt with the last 10 messages in the same format as the base prompt
 	const prompt = messages.map((message) => {
@@ -154,17 +158,37 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 const getBasePromptStart = (actor: ActorConfig) => {
 	let res = `The following is a group-chat conversation with several AI assistants.\n`
 	res += "\n"
-	res += `### Your are ${actor.name}\n`
 
-	res += "### Other Members:\n"
+	res += "### Chat Members:\n"
+	res += `* You are: ${actor.name}\n`
 	res += getAssistantsDescList(false, actor)
 	res += "\n\n"
 
+	res += "### Rules:\n"
+	if (baseAlways.length > 0) {
+		res += `# You will always:\n`
+		res += baseAlways.map((b) => `- Always ${b}`).join("\n")
+		res += "\n\n"
+		// res += `- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
+	}
+	if (baseNever.length > 0) {
+		res += `# You will never:\n`
+		res += baseNever.map((b) => `- Never ${b}`).join("\n")
+		res += "\n\n"
+		// res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
+	}
+
 	res += `### About ${actor.name}:\n`
-	if (actor.specialties) {
-		res += `# Your Specialties:\n`
+	if (actor.strengths) {
+		res += `# You are good at:\n`
 		// - ${actor.specialties.join(", ")}.\n`
-		res += actor.specialties.map((s) => `- ${s}`).join("\n")
+		res += actor.strengths.map((s) => `- ${s}`).join("\n")
+		res += "\n\n"
+	}
+	if (actor.weaknesses) {
+		res += `# You are not good at:\n`
+		// - ${actor.specialties.join(", ")}.\n`
+		res += actor.weaknesses.map((s) => `- ${s}`).join("\n")
 		res += "\n\n"
 	}
 	if (actor.personality) {
@@ -178,18 +202,7 @@ const getBasePromptStart = (actor: ActorConfig) => {
 		res += actor.behaviors.map((b) => `- ${b}`).join("\n")
 		res += "\n\n"
 	}
-	if (baseAlways.length > 0) {
-		res += `# You will always:\n`
-		res += baseAlways.map((b) => `- Always ${b}`).join("\n")
-		res += "\n\n"
-		// res += `- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
-	}
-	if (baseNever.length > 0) {
-		res += `# You will never:\n`
-		res += baseNever.map((b) => `- Never ${b}`).join("\n")
-		res += "\n\n"
-		// res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
-	}
+
 	res += "\n"
 	// res += "### Human:\n"
 	// res += "Hello, who are you?\n\n"
@@ -259,7 +272,7 @@ export const actors: Record<string, ActorConfig> = {
 			stop             : [ "###" ]
 		},
 		personality : [ "helpful", "creative", ...basePersonalityTraits ],
-		specialties : [ "making general conversation" ]
+		strengths   : [ "making general conversation", "answering questions", "providing general information" ]
 	},
 	dalle      : {
 		key         : "dalle",
@@ -270,7 +283,7 @@ export const actors: Record<string, ActorConfig> = {
 		createGen   : "dalle_gen",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.5,
+			temperature      : 0.9,
 			max_tokens       : 250,
 			top_p            : 1,
 			frequency_penalty: 0,
@@ -278,7 +291,8 @@ export const actors: Record<string, ActorConfig> = {
 			stop             : [ "###" ]
 		},
 		personality : [ "artistic", "creative", "visionary", ...basePersonalityTraits ],
-		specialties : [ "art", "painting", "drawing", "sketching", "image generation" ],
+		strengths   : [ "art", "painting", "drawing", "sketching", "image generation" ],
+		weaknesses  : [ "anything not related to my specialties" ],
 		behaviors   : [
 			...generationBehaviors
 		]
@@ -292,7 +306,7 @@ export const actors: Record<string, ActorConfig> = {
 		createGen   : "codex_gen",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.5,
+			temperature      : 0.7,
 			max_tokens       : 250,
 			top_p            : 1,
 			frequency_penalty: 0,
@@ -300,7 +314,8 @@ export const actors: Record<string, ActorConfig> = {
 			stop             : [ "###" ]
 		},
 		personality : [ "analytical", "logical", "rational", ...basePersonalityTraits ],
-		specialties : [ "programming", "software development", "code generation" ],
+		strengths   : [ "programming", "software development", "code generation" ],
+		weaknesses  : [ "anything not related to my specialties" ],
 		behaviors   : [
 			...generationBehaviors
 		]
@@ -313,7 +328,7 @@ export const actors: Record<string, ActorConfig> = {
 		createComp  : openai.createCompletion,
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.3,
+			temperature      : 0.7,
 			max_tokens       : 25,
 			top_p            : 1,
 			frequency_penalty: 0,
@@ -419,8 +434,8 @@ export const useCompStore = defineStore("counter", {
 					cached: false
 				}
 			} catch (error: any) {
-				let errorMsg = error
-				if (error.response) errorMsg = `${error.response.status} ${error.response.data}`
+				let errorMsg = JSON.stringify(error)
+				if (error.response) errorMsg = `${error.response.status} ${JSON.stringify(error.response.data)}`
 				return {
 					result  : null,
 					cached  : false,

@@ -27,7 +27,8 @@ export interface ActorConfig {
 	ignoreCache?: boolean;
 	available?: boolean;
 	personality?: string[];
-	specialties?: string[];
+	strengths?: string[];
+	weaknesses?: string[];
 	behaviors?: string[];
 	createGen?: string;
 }

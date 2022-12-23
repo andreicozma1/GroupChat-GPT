@@ -13,7 +13,6 @@
             label="Message"
             ref="inputElem"
             maxlength="2000"
-            hint="Press TAB to autocomplete suggested value or ESC to cancel suggestion"
         />
       </q-card-section>
       <q-card-actions>
@@ -173,25 +172,22 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
   const createGen = cfgFollowup?.createGen
   if (createGen) {
     // filter out texts that contain <prompt> tags
-    const promptTexts = msg.text.filter((t: string) => t.includes("<prompt>"))
-    if (promptTexts.length > 0) {
-      // Extract the prompt text for each element in promptTexts array
-      // for example if the text is: For sure! <prompt>What's your favorite color?</prompt>
-      // the promptText will be: What's your favorite color?
-      const promptText = promptTexts.map((t: string) => t.split("<prompt>")[1].split("</prompt>")[0])
-      // remove all prompt tags from around the original messages
+    const prompts = msg.text.filter((t: string) => t.includes("<prompt>")).map(
+        (t: string) => t.split("<prompt>")[1].trim().split("</prompt>")[0].trim()).filter(
+        (t: string) => t.split(" ").length > 1)
+    if (prompts.length > 0) {
       msg.text = msg.text.map((t: string) => {
         t = t.replace("<prompt>", "").replace("</prompt>", "")
         return t
       })
       comp.pushMessage(msg)
 
-      console.log("promptText", promptText)
+      console.log("promptText", prompts)
       // if the actor is actors.dalle, then use dalle_gen
       // if the actor is actors.codex, then use codex_gen
       const nextActor = `${actorKey}_gen`
-      for (let i = 0; i < promptText.length; i++) {
-        const prompt = promptText[i]
+      for (let i = 0; i < prompts.length; i++) {
+        const prompt = prompts[i]
         const nextMsg = createAIMessage(cfgFollowup)
         if (!prompt) {
           nextMsg.text.push(`[Error: Prompt text is empty]`)

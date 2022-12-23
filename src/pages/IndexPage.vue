@@ -167,13 +167,10 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
 		comp.pushMessage(msg)
 		return
 	}
+
 	msg.dateCreated = res?.result?.created * 1000
-
 	if (res?.images) msg.images.push(...res.images)
-
-	if (res?.text) {
-		msg.text.push(...res.text)
-	}
+	if (res?.text) msg.text.push(...res.text)
 	comp.pushMessage(msg)
 
 	const createGen = cfgFollowup?.createGen
@@ -184,12 +181,10 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
 			.map((t: string) => t.split("<prompt>")[1].trim().split("</prompt>")[0].trim())
 			.filter((t: string) => t.split(" ").length > 1)
 		if (prompts.length > 0) {
-			msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
-			comp.pushMessage(msg)
+			// msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
+			// comp.pushMessage(msg)
 
 			console.log("promptText", prompts)
-			// if the actor is actors.dalle, then use dalle_gen
-			// if the actor is actors.codex, then use codex_gen
 			const nextActor = `${actorKey}_gen`
 			for (let i = 0; i < prompts.length; i++) {
 				const prompt = prompts[i]
@@ -200,7 +195,8 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
 					comp.pushMessage(nextMsg)
 					continue
 				}
-				nextMsg.text.push(`[${prompt}]`)
+				// nextMsg.text.push(`[${prompt}]`)
+				nextMsg.text.push(`<gen>${prompt}</gen>`)
 				await handleNext(nextActor, nextMsg)
 			}
 		}

@@ -367,11 +367,11 @@ export const useCompStore = defineStore("counter", {
 			this.threads[this.currentThread].messages = []
 			this.updateCache()
 		},
-		getByHash(hash: number) {
+		getCached(hash: number) {
 			return this.completions[hash]
 		},
 		getCompletion(hash: number) {
-			const completion = this.getByHash(hash)
+			const completion = this.getCached(hash)
 			const choices = completion.choices
 			const images = completion.data?.map((d: any) => d.url)
 			console.log(choices)
@@ -393,9 +393,10 @@ export const useCompStore = defineStore("counter", {
 			}
 		},
 		async genCompletion(actor: ActorConfig): Promise<GenerationResult> {
-			const prpt = actor.createPrompt(actor, this.getThread.messages)
-			console.warn(prpt)
-			const hash = hashPrompt(prpt)
+			const prompt = actor.createPrompt(actor, this.getThread.messages)
+			const hash = hashPrompt(prompt)
+			console.warn(prompt)
+
 			// if we already have a completion for this prompt, return it
 			if (!actor.ignoreCache && this.completions[hash]) {
 				return {
@@ -404,21 +405,13 @@ export const useCompStore = defineStore("counter", {
 				}
 			}
 			// otherwise, generate a new completion
+			let completion
 			try {
-				const completion = await actor.createComp({
+				completion = await actor.createComp({
 					...actor.config,
-					prompt: prpt
+					prompt: prompt
 				}, options)
-
 				if (!completion) throw new Error("No completion returned")
-				// then add it to the cache
-				this.completions[hash] = completion.data
-				this.updateCache()
-
-				return {
-					...this.getCompletion(hash),
-					cached: false
-				}
 			} catch (error: any) {
 				let errorMsg = JSON.stringify(error)
 				if (error.response) errorMsg = `${error.response.status} ${JSON.stringify(error.response.data)}`
@@ -428,6 +421,14 @@ export const useCompStore = defineStore("counter", {
 					hash    : hash,
 					errorMsg: errorMsg
 				}
+			}
+
+			this.completions[hash] = completion.data
+			this.updateCache()
+
+			return {
+				...this.getCompletion(hash),
+				cached: false
 			}
 		},
 		pushMessage(message: TextMessage): TextMessage {

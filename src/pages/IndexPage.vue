@@ -91,7 +91,7 @@ const handleCoordinator = () => {
   const ai: ActorConfig = actors.coordinator
   const msg: TextMessage = createAIMessage(ai)
 
-  comp.genTextCompletion(ai).then(async (res: GenerationResult) => {
+  comp.genCompletion(ai).then(async (res: GenerationResult) => {
     console.log(res)
     msg.loading = false
     msg.cached = res.cached
@@ -142,7 +142,7 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
 
   comp.pushMessage(msg)
 
-  const res = await comp.genTextCompletion(cfgFollowup)
+  const res = await comp.genCompletion(cfgFollowup)
 
   console.log(res)
   msg.loading = false
@@ -176,10 +176,7 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
         (t: string) => t.split("<prompt>")[1].trim().split("</prompt>")[0].trim()).filter(
         (t: string) => t.split(" ").length > 1)
     if (prompts.length > 0) {
-      msg.text = msg.text.map((t: string) => {
-        t = t.replace("<prompt>", "").replace("</prompt>", "")
-        return t
-      })
+      msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
       comp.pushMessage(msg)
 
       console.log("promptText", prompts)

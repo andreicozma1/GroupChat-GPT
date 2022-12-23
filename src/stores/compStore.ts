@@ -30,7 +30,7 @@ const baseAlways: string[] = [
 	"follow the user's directions",
 	// "respond for yourself",
 	"add to information in the conversation if needed",
-	"make appropriate use of bulleted lists and new paragraphs using newline characters",
+	"use bulleted lists when listing multiple things",
 	"stay true your own personality traits, specialties, interests, and behaviors"
 ]
 
@@ -49,7 +49,7 @@ const generationBehaviors: string[] = [
 	"When you say you'll generate the result, you will always create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt> tags.",
 	"If there is a list of prompts, wrap each prompt with <prompt> and </prompt> tags.",
 	// "Only show the final prompts to the user if the user has explicitly asked.",
-	"When the AI says it'll generate the request, it will respond with the prompt and only with the prompt."
+	"When you say you will complete a request, it will respond with the prompt and only with the prompt."
 ]
 
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
@@ -265,7 +265,7 @@ export const actors: Record<string, ActorConfig> = {
 		config      : {
 			model            : "text-davinci-003",
 			max_tokens       : 250,
-			temperature      : 0.75,
+			temperature      : 0.6,
 			top_p            : 1,
 			frequency_penalty: 0,
 			presence_penalty : 0,
@@ -283,7 +283,7 @@ export const actors: Record<string, ActorConfig> = {
 		createGen   : "dalle_gen",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.9,
+			temperature      : 0.85,
 			max_tokens       : 250,
 			top_p            : 1,
 			frequency_penalty: 0,
@@ -306,7 +306,7 @@ export const actors: Record<string, ActorConfig> = {
 		createGen   : "codex_gen",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.7,
+			temperature      : 0.75,
 			max_tokens       : 250,
 			top_p            : 1,
 			frequency_penalty: 0,
@@ -394,8 +394,10 @@ export const useCompStore = defineStore("counter", {
 			const choices = completion.choices
 			const images = completion.data?.map((d: any) => d.url)
 			console.log(choices)
-			const text = choices?.flatMap((c: any) => c.text.split("\n")).map((t: string) => t.trim()).filter(
-				(t: string) => t.length > 0)
+			const text = choices?.flatMap(
+				(c: any) => c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>").split("\n"))
+				.map((t: string) => t.trim())
+				.filter((t: string) => t.length > 0)
 
 			console.warn("=> text:", text)
 			console.warn("=> images:", images)
@@ -406,7 +408,7 @@ export const useCompStore = defineStore("counter", {
 				hash  : hash
 			}
 		},
-		async genTextCompletion(actor: ActorConfig): Promise<GenerationResult> {
+		async genCompletion(actor: ActorConfig): Promise<GenerationResult> {
 			const prpt = actor.createPrompt(actor, this.getThread.messages)
 			console.warn(prpt)
 			const hash = hashPrompt(prpt)

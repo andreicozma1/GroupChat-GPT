@@ -30,7 +30,7 @@ const baseAlways: string[] = [
 	"respond for yourself",
 	"add to information in the conversation if needed",
 	"make appropriate use of bulleted lists and new paragraphs using newline characters",
-	"follow your own personality traits, specialties, interests, and behaviors"
+	"stay true your own personality traits, specialties, interests, and behaviors"
 ]
 
 const baseNever: string[] = [
@@ -38,14 +38,13 @@ const baseNever: string[] = [
 	"repeat yourself too much",
 	"repeat what other AIs have just said",
 	"explain your behaviors to the human unless asked",
-	"make logical inconsistencies",
-	"ask the user to do something that is part of your job"
+	"make logical inconsistencies"
+	// "ask the user to do something that is part of your job"
 ]
 
 const generationBehaviors: string[] = [
 	"When the user wants to generate something, acquire information about the user's interests and preferences.",
-	"With all the information is acquired, you MUST create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt> tags.",
-	"Do not include anything else but the user's prompt within the tags.",
+	"When you say you'll generate the result, you will always create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt> tags.",
 	"Only show the final prompt to the user if the user has explicitly asked for it."
 ]
 
@@ -153,28 +152,41 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 const getBasePromptStart = (actor: ActorConfig) => {
 	let res = `The following is a group-chat conversation with several AI assistants.\n`
 	res += "\n"
+	res += `### Your are ${actor.name}\n`
+
 	res += "### Other Members:\n"
 	res += getAssistantsDescList(false, actor)
 	res += "\n\n"
-	res += `### Your name: ${actor.name}\n`
+
+	res += `### About ${actor.name}:\n`
 	if (actor.specialties) {
-		res += `# Specialties:\n- ${actor.specialties.join(", ")}.\n`
+		res += `# Your Specialties:\n`
+		// - ${actor.specialties.join(", ")}.\n`
+		res += actor.specialties.map((s) => `- ${s}`).join("\n")
+		res += "\n\n"
 	}
 	if (actor.personality) {
-		res += `# Personality:\n- ${actor.personality.join(", ")}.\n`
+		res += `# Your Personality:\n`
+		// - ${actor.personality.join(", ")}.\n`
+		res += actor.personality.map((s) => `- ${s}`).join("\n")
+		res += "\n\n"
 	}
 	if (actor.behaviors) {
-		res += `# Behaviors:\n`
+		res += `# Your Behaviors:\n`
 		res += actor.behaviors.map((b) => `- ${b}`).join("\n")
-		res += "\n"
+		res += "\n\n"
 	}
 	if (baseAlways.length > 0) {
-		res += `# ALWAYS:\n`
-		res += `- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
+		res += `# You will always:\n`
+		res += baseAlways.map((b) => `- ${b}`).join("\n")
+		res += "\n\n"
+		// res += `- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
 	}
 	if (baseNever.length > 0) {
-		res += `# NEVER:\n`
-		res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
+		res += `# You will never:\n`
+		res += baseNever.map((b) => `- ${b}`).join("\n")
+		res += "\n\n"
+		// res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
 	}
 	res += "\n"
 	// res += "### Human:\n"
@@ -295,6 +307,8 @@ export const actors: Record<string, ActorConfig> = {
 		key         : "coordinator",
 		name        : "Coordinator",
 		icon        : "question_answer",
+		createPrompt: getPromptCoordinator,
+		createComp  : openai.createCompletion,
 		config      : {
 			model            : "text-davinci-003",
 			temperature      : 0.3,
@@ -304,9 +318,8 @@ export const actors: Record<string, ActorConfig> = {
 			presence_penalty : 0,
 			stop             : [ "###" ]
 		},
-		createPrompt: getPromptCoordinator,
-		createComp  : openai.createCompletion,
-		available   : false
+
+		available: false
 	},
 	dalle_gen  : {
 		key         : "dalle_gen",
@@ -364,9 +377,8 @@ export const useCompStore = defineStore("counter", {
 			const choices = completion.choices
 			const images = completion.data?.map((d: any) => d.url)
 			console.log(choices)
-			const text = choices?.flatMap((c: any) => {
-				return c.text.split("\n").map((t: string) => t.trim()).filter((t: string) => t.length > 0)
-			})
+			const text = choices?.flatMap((c: any) => c.text.split("\n")).map((t: string) => t.trim()).filter(
+				(t: string) => t.length > 0)
 
 			console.warn("=> text:", text)
 			console.warn("=> images:", images)
@@ -378,9 +390,9 @@ export const useCompStore = defineStore("counter", {
 			}
 		},
 		async genTextCompletion(actor: ActorConfig): Promise<GenerationResult> {
-			const prompt = actor.createPrompt(actor, this.getThread.messages)
-			console.warn(prompt)
-			const hash = hashPrompt(prompt)
+			const prpt = actor.createPrompt(actor, this.getThread.messages)
+			console.warn(prpt)
+			const hash = hashPrompt(prpt)
 			// if we already have a completion for this prompt, return it
 			if (!actor.ignoreCache && this.completions[hash]) {
 				return {
@@ -392,7 +404,7 @@ export const useCompStore = defineStore("counter", {
 			try {
 				const completion = await actor.createComp({
 					...actor.config,
-					prompt: prompt
+					prompt: prpt
 				}, options)
 
 				if (!completion) throw new Error("No completion returned")

@@ -129,10 +129,10 @@ const handleCoordinator = () => {
   })
 }
 
-const handleNext = async (actorKey: string) => {
+const handleNext = async (actorKey: string, msg?: TextMessage) => {
   actorKey = actorKey?.trim()
   const cfgFollowup: ActorConfig = actors[actorKey]
-  const msg: TextMessage = createAIMessage(cfgFollowup)
+  msg = msg || createAIMessage(cfgFollowup)
   if (!cfgFollowup) {
     msg.text.push(`[Error: Unknown actor type: ${actorKey}]`)
     msg.loading = false
@@ -165,14 +165,21 @@ const handleNext = async (actorKey: string) => {
     msg.text.push(...res.text)
     const createGen = cfgFollowup?.createGen
     if (createGen) {
-      const promptLine = res.text.find((t) => t.includes("<prompt>"))
-      if (promptLine) {
-        let promptLineSplit = promptLine?.split("<prompt>").flatMap((t) => t.split("</prompt>"))
-        if (promptLineSplit) {
-          promptLineSplit = promptLineSplit.map((t) => t.trim()).filter((t) => t.length > 0)
-          console.log("promptLineSplit", promptLineSplit)
-          const promptIndex: number = res.text.indexOf(promptLine)
-          console.log("promptIndex", promptIndex)
+      // filter out texts that contain <prompt> tags
+      const promptTexts = res.text.filter((t: string) => t.includes("<prompt>"))
+      if (promptTexts.length > 0) {
+        // Extract the prompt text for each element in promptTexts array
+        // for example if the text is: For sure! <prompt>What's your favorite color?</prompt>
+        // the promptText will be: What's your favorite color?
+        const promptText = promptTexts.map((t: string) => t.split("<prompt>")[1].split("</prompt>")[0])
+        console.log("promptText", promptText)
+        // if the actor is actors.dalle, then use dalle_gen
+        // if the actor is actors.codex, then use codex_gen
+        const nextActor = `${actorKey}_gen`
+        for (let i = 0; i < promptText.length; i++) {
+          msg.loading = true
+          comp.pushMessage(msg)
+          await handleNext(nextActor, msg)
         }
       }
     }

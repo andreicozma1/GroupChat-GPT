@@ -82,7 +82,7 @@ import { getSeededQColor } from "src/util/ColorUtils"
 import { TextMessage } from "src/util/Models"
 import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util"
 import { actors, useCompStore } from "stores/compStore"
-import { computed, onMounted, Ref, ref, watch, watchEffect } from "vue"
+import { computed, onMounted, Ref, ref, watch } from "vue"
 
 const props = defineProps({
   myName         : {
@@ -151,13 +151,14 @@ const isSentByMe = (msg: TextMessage) => {
 const getScrollAreaStyle = computed(() => {
   const propStyle = props.scrollAreaStyle ? props.scrollAreaStyle : {}
   const defaults = {
-    position    : "absolute",
-    left        : "0px",
-    right       : "0px",
-    top         : "50px",
-    bottom      : "0px",
-    paddingLeft : "5vw",
-    paddingRight: "5vw"
+    position     : "absolute",
+    left         : "0px",
+    right        : "0px",
+    top          : "50px",
+    bottom       : "0px",
+    paddingLeft  : "5vw",
+    paddingRight : "5vw",
+    paddingBottom: "2vh"
   }
   return {
     ...defaults, ...propStyle
@@ -190,10 +191,15 @@ watch(() => props.scrollAreaStyle, () => {
   scrollToBottom(1000)
 })
 
-watchEffect(() => {
+watch(comp.getThread, () => {
   threadMessages.value = parseThreadMessages()
   scrollToBottom(1000)
 })
+
+// watchEffect(() => {
+//   threadMessages.value = parseThreadMessages()
+//   console.log("HERE")
+// })
 
 onMounted(() => {
   scrollToBottom(1000)

@@ -98,7 +98,7 @@ const handleCoordinator = () => {
   const ai: ActorConfig = actors.coordinator
   const msg: TextMessage = createAIMessage(ai)
 
-  comp.genCompletion(ai).then(async (res: GenerationResult) => {
+  comp.genCompletion(ai).then((res: GenerationResult) => {
     console.log(res)
     msg.loading = false
     msg.cached = res.cached
@@ -122,14 +122,17 @@ const handleCoordinator = () => {
         .map((a: string) => a.trim().toLowerCase())
 
     // for each actor, call the appropriate handler
+    console.log("Next Actors: ", nextActors)
     for (let actor of nextActors) {
       actor = actor.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
-      await handleNext(actor)
+      handleNext(actor)
     }
   })
 }
 
 const handleNext = async (actorKey: string, msg?: TextMessage) => {
+  // await sleep(Math.random() * 2500)
+
   actorKey = actorKey?.trim()
   const cfgFollowup: ActorConfig = actors[actorKey]
   msg = msg || createAIMessage(cfgFollowup)
@@ -139,8 +142,6 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
     comp.pushMessage(msg)
     return
   }
-
-  comp.pushMessage(msg)
 
   const res = await comp.genCompletion(cfgFollowup)
 
@@ -157,6 +158,12 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
   msg.dateCreated = res?.result?.created * 1000
   if (res?.images) msg.images.push(...res.images)
   if (res?.text) msg.text.push(...res.text)
+
+  // const totalLength = msg.text.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
+  // const sleepTime = totalLength * 25
+  // console.log(`sleepTime: ${sleepTime}`)
+  // await sleep(sleepTime)
+
   comp.pushMessage(msg)
 
   const createGen = cfgFollowup?.createGen

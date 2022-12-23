@@ -100,6 +100,12 @@ const parseThreadMessages = (): TextMessage[] => {
     const bd = new Date(b.date)
     return ad.getTime() - bd.getTime()
   })
+  // keep loading last
+  thrd.sort((a, b) => {
+    if (a.loading && !b.loading) return 1
+    if (!a.loading && b.loading) return -1
+    return 0
+  })
   return thrd
 }
 

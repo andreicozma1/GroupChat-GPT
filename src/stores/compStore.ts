@@ -40,7 +40,7 @@ const baseNever: string[] = [
 
 const generationAbility: string[] = [
 	"When the user wants an image of something, acquire information about what it should look like based on the user's preferences.",
-	"For each request, you will create a detailed prompt describing what the end result will look like.",
+	"After enough information is acquired, for each request, you will create a detailed prompt describing what the end result will look like.",
 	"You will always wrap prompts with <prompt> and </prompt> tags around the description.",
 	"Only the detailed description should be within the prompt tags, and nothing else.",
 	"Only create the prompt when the user specifically requests it.",
@@ -98,19 +98,27 @@ const getBasePromptStart = (actor: ActorConfig) => {
 	return res;
 };
 
-function getBasePromptHistory(messages: TextMessage[]): string {
+const getBasePromptHistory = (
+	messages: TextMessage[],
+	include?: ActorConfig[],
+	exclude?: ActorConfig[],
+	length?: number
+): string => {
+	include = include || undefined;
+	exclude = exclude || [actors.coordinator];
+	length = length || 10;
 	messages = getMsgHistory({
 		messages,
 		includeSelf: true,
-		includeActors: undefined, // all ais
-		excludeActors: [actors.coordinator],
-		maxLength: 10,
+		includeActors: include,
+		excludeActors: exclude,
+		maxLength: length,
 	});
 	const hist = messages.map((message) => {
-		return `### ${message.name}:\n${message.text.join("\n")}\n\n`;
+		return `### ${message.name}:\n${message.text.join("\n")}\n`;
 	});
-	return hist.join("");
-}
+	return hist.join("\n") + "\n";
+};
 
 const getInfoList = (useKey: boolean, currentAI?: ActorConfig) => {
 	const available = getAvailable();
@@ -197,22 +205,10 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 
 	res += "### CONVERSATION ###\n";
 
-	messages = getMsgHistory({
-		messages,
-		includeSelf: true,
-		includeActors: [actors.coordinator],
-		maxLength: 5,
-	});
-
-	const prompt = messages
-		.map((message) => {
-			return `### ${message.name}:\n${message.text}\n`;
-		})
-		.join("\n");
-	res += prompt;
-	res += "\n";
-	res += `### ${actor.name}:\n`;
-	return res.trim();
+	const conv = getBasePromptHistory(messages, [actors.coordinator], undefined, 5);
+	const end = `### ${actor.name}:\n`;
+	const prompt = res + conv + end;
+	return prompt.trim();
 };
 
 const getPromptDavinci = (actor: ActorConfig, messages: TextMessage[]) => {
@@ -313,7 +309,7 @@ export const actors: Record<string, ActorConfig> = {
 		createComp: openai.createCompletion,
 		config: {
 			model: "text-davinci-003",
-			temperature: 0.9,
+			temperature: 0.75,
 			max_tokens: 25,
 			top_p: 1,
 			frequency_penalty: 0,

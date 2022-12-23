@@ -45,7 +45,8 @@ const baseNever: string[] = [
 const generationBehaviors: string[] = [
 	"When the user wants to generate something, acquire information about the user's interests and preferences.",
 	"When you say you'll generate the result, you will always create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt> tags.",
-	"Only show the final prompt to the user if the user has explicitly asked for it."
+	"If there is a list of prompts, wrap each prompt with <prompt> and </prompt> tags.",
+	"Only show the final prompts to the user if the user has explicitly asked."
 ]
 
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
@@ -178,13 +179,13 @@ const getBasePromptStart = (actor: ActorConfig) => {
 	}
 	if (baseAlways.length > 0) {
 		res += `# You will always:\n`
-		res += baseAlways.map((b) => `- ${b}`).join("\n")
+		res += baseAlways.map((b) => `- Always ${b}`).join("\n")
 		res += "\n\n"
 		// res += `- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
 	}
 	if (baseNever.length > 0) {
 		res += `# You will never:\n`
-		res += baseNever.map((b) => `- ${b}`).join("\n")
+		res += baseNever.map((b) => `- Never ${b}`).join("\n")
 		res += "\n\n"
 		// res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
 	}
@@ -436,7 +437,6 @@ export const useCompStore = defineStore("counter", {
 					for (const key in message) {
 						existing[key] = message[key]
 					}
-					existing.date = new Date()
 					console.log("Updated message", { ...existing })
 					this.updateCache()
 					return existing

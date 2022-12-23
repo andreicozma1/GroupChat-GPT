@@ -160,7 +160,11 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
     comp.pushMessage(msg)
     return
   }
+
   msg.dateCreated = res?.result?.created * 1000
+
+  if (res?.images) msg.images.push(...res.images)
+
   if (res?.text) {
     msg.text.push(...res.text)
     const createGen = cfgFollowup?.createGen
@@ -172,20 +176,30 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
         // for example if the text is: For sure! <prompt>What's your favorite color?</prompt>
         // the promptText will be: What's your favorite color?
         const promptText = promptTexts.map((t: string) => t.split("<prompt>")[1].split("</prompt>")[0])
+        // remove all prompt tags from around the original messages
+        msg.text = msg.text.map((t: string) => {
+          t = t.replace("<prompt>", "").replace("</prompt>", "")
+          return t
+        })
+
         console.log("promptText", promptText)
         // if the actor is actors.dalle, then use dalle_gen
         // if the actor is actors.codex, then use codex_gen
         const nextActor = `${actorKey}_gen`
         for (let i = 0; i < promptText.length; i++) {
-          msg.loading = true
-          comp.pushMessage(msg)
-          await handleNext(nextActor, msg)
+          const prompt = promptText[i]
+          const nextMsg = createAIMessage(cfgFollowup)
+          if (!prompt) {
+            nextMsg.text.push(`[Error: Prompt text is empty]`)
+            comp.pushMessage(nextMsg)
+            continue
+          }
+          nextMsg.text.push(`[${prompt}]`)
+          await handleNext(nextActor, nextMsg)
+          comp.pushMessage(nextMsg)
         }
       }
     }
-  }
-  if (res?.images) {
-    msg.images.push(...res.images)
   }
   comp.pushMessage(msg)
 }

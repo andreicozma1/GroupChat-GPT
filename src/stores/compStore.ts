@@ -84,16 +84,16 @@ const getAssistantsList = () => {
 	})
 }
 
-const getAssistantsDescList = (useKey: boolean, current?: ActorConfig) => {
+const getAssistantsDescList = (useKey: boolean, currentAI?: ActorConfig) => {
 	return getAssistantsList()
-		.map((actor) => {
-			const id = useKey ? actor.key : actor.name
+		.map((ai) => {
+			const id = useKey ? ai.key : ai.name
 			let res = `# ${id}`
-			if (current) res += " (You)"
+			if (currentAI && currentAI.key === ai.key) res += " (You)"
 			res += ":\n"
-			if (actor.personality) res += `- Personality Traits: ${actor.personality.join(", ")}.\n`
-			if (actor.strengths) res += `- Strengths: ${actor.strengths.join(", ")}.\n`
-			if (actor.weaknesses) res += `- Weaknesses: ${actor.weaknesses.join(", ")}.\n`
+			if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`
+			if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`
+			if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`
 			return res
 		})
 		.join("\n") + "\n"
@@ -103,7 +103,7 @@ const getBasePromptStart = (actor: ActorConfig) => {
 	let res = `The following is a group-chat conversation between a human and several AI assistants.\n`
 	res += "\n"
 
-	res += "### Assistant Rules:\n"
+	res += "### ASSISTANT RULES ###\n"
 	if (baseAlways.length > 0) {
 		res += `# Assistants always:\n`
 		res += baseAlways.map((b) => `- Always ${b}`).join("\n")
@@ -117,7 +117,7 @@ const getBasePromptStart = (actor: ActorConfig) => {
 		// res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
 	}
 
-	res += "### Group Chat Members:\n"
+	res += "### ASSISTANTS ###\n"
 	res += getAssistantsDescList(false, actor)
 
 	// res += `### Your name is ${actor.name}\n`
@@ -141,6 +141,8 @@ const getBasePromptStart = (actor: ActorConfig) => {
 		res += actor.abilities.map((b) => `- ${b}`).join("\n")
 		res += "\n\n"
 	}
+
+	res += "### CONVERSATION ###\n"
 
 	// res += "### Human:\n"
 	// res += "Hello, who are you?\n\n"
@@ -167,17 +169,17 @@ function getBasePromptHistory(messages: TextMessage[]): string {
 }
 
 const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
-	let res = "### Response Coordinator:\n"
+	let res = "### COORDINATOR ###\n"
 	res += "Classify which assistants would be best at responding to the next message."
 	res += "Only respond with the exact names of the assistants\n"
 	res += "If the user's request is specifically directed at multiple assistants, separate the names with a comma\n"
 	res += "Also keep the logical consistency of the conversation in mind.\n"
 	res += "\n"
 
-	res += "### Available Assistants:\n"
+	res += "### ASSISTANTS ###\n"
 	res += getAssistantsDescList(true)
-	res += "\n\n"
 
+	res += "### EXAMPLES ###\n"
 	res += "### Human:\n"
 	res += "Hello, what's up?\n"
 	res += "\n"
@@ -211,6 +213,8 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += `### ${actor.name}:\n`
 	res += `Next: ${actors.dalle.key}\n`
 	res += "\n"
+
+	res += "### CONVERSATION ###\n"
 
 	messages = getMsgHistory({
 		messages,

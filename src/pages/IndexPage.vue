@@ -14,9 +14,6 @@
             ref="inputElem"
             maxlength="2000"
             hint="Press TAB to autocomplete suggested value or ESC to cancel suggestion"
-            :shadow-text="textareaShadowText"
-            @keydown="processTextareaFill"
-            @focus="processTextareaFill"
         />
       </q-card-section>
       <q-card-actions>
@@ -287,17 +284,17 @@ const kbShortcuts = (e: KeyboardEvent) => {
     return
   }
   // on escape first clear the input, then unfocus it
-  // if (e.key === "Escape") {
-  //   if (inputElem.value) {
-  //     if (inputText.value) {
-  //       inputText.value = ""
-  //     } else {
-  //       inputElem.value.blur()
-  //     }
-  //     updateIC()
-  //     return
-  //   }
-  // }
+  if (e.key === "Escape") {
+    if (inputElem.value) {
+      if (inputText.value) {
+        inputText.value = ""
+      } else {
+        inputElem.value.blur()
+      }
+      updateIC()
+      return
+    }
+  }
   // if any number or letter is pressed, focus the input
   // if no modifier keys are pressed, focus the input
   if (inputElem.value && !e.ctrlKey && !e.altKey && e.key.match(/^[a-z0-9]$/i)) {

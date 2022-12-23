@@ -40,7 +40,6 @@ const baseNever: string[] = [
 	"ask more than one question at a time",
 	"make logical inconsistencies",
 	"explain your behaviors to the human unless asked"
-
 	// "ask the user to do something that is part of your job"
 ]
 
@@ -95,6 +94,75 @@ const getAssistantsDescList = (useKey: boolean, exclude?: ActorConfig) => {
 			return res
 		})
 		.join("\n")
+}
+
+const getBasePromptStart = (actor: ActorConfig) => {
+	let res = `The following is a group-chat conversation between a human and several AI assistants.\n`
+	res += "\n"
+
+	res += "### Available Assistants:\n"
+	res += getAssistantsDescList(false, actor)
+	res += "\n\n"
+
+	res += "### Assistant Rules:\n"
+	if (baseAlways.length > 0) {
+		res += `# Assistants always:\n`
+		res += baseAlways.map((b) => `- Always ${b}`).join("\n")
+		res += "\n\n"
+		// res += `- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
+	}
+	if (baseNever.length > 0) {
+		res += `# Assistants never:\n`
+		res += baseNever.map((b) => `- Never ${b}`).join("\n")
+		res += "\n\n"
+		// res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
+	}
+
+	res += `### Your name is ${actor.name}\n`
+	if (actor.strengths) {
+		res += `# You are good at:\n`
+		res += actor.strengths.map((s) => `- ${s}`).join("\n")
+		res += "\n\n"
+	}
+	if (actor.weaknesses) {
+		res += `# You are not good at:\n`
+		res += actor.weaknesses.map((s) => `- ${s}`).join("\n")
+		res += "\n\n"
+	}
+	if (actor.personality) {
+		res += `# Your Personality:\n`
+		res += actor.personality.map((s) => `- ${s}`).join("\n")
+		res += "\n\n"
+	}
+	if (actor.behaviors) {
+		res += `# Your Behaviors:\n`
+		res += actor.behaviors.map((b) => `- ${b}`).join("\n")
+		res += "\n\n"
+	}
+
+	res += "\n"
+	// res += "### Human:\n"
+	// res += "Hello, who are you?\n\n"
+	// res += `### ${actor.name}:\n`
+	// res += "I am an AI created by OpenAI. How can I help you today?\n\n"
+	return res
+}
+
+function getBasePromptHistory(messages: TextMessage[]): string {
+	messages = getMsgHistory({
+		messages,
+		includeSelf  : true,
+		includeActors: undefined, // all ais
+		excludeActors: [ actors.coordinator ],
+		maxLength    : 10
+	})
+	// now continue the prompt with the last 10 messages in the same format as the base prompt
+	const prompt = messages
+		.map((message) => {
+			return `### ${message.name}:\n${message.text.join("\n")}\n\n`
+		})
+		.join("")
+	return prompt
 }
 
 const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
@@ -160,78 +228,6 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += `### ${actor.name}:\n`
 	res += "Next:"
 	return res.trim()
-}
-const getBasePromptStart = (actor: ActorConfig) => {
-	let res = `The following is a group-chat conversation with several AI assistants.\n`
-	res += "\n"
-
-	res += "### Chat Members:\n"
-	res += `* You are: ${actor.name}\n`
-	res += getAssistantsDescList(false, actor)
-	res += "\n\n"
-
-	res += "### Rules:\n"
-	if (baseAlways.length > 0) {
-		res += `# You will always:\n`
-		res += baseAlways.map((b) => `- Always ${b}`).join("\n")
-		res += "\n\n"
-		// res += `- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
-	}
-	if (baseNever.length > 0) {
-		res += `# You will never:\n`
-		res += baseNever.map((b) => `- Never ${b}`).join("\n")
-		res += "\n\n"
-		// res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
-	}
-
-	res += `### About ${actor.name}:\n`
-	if (actor.strengths) {
-		res += `# You are good at:\n`
-		// - ${actor.specialties.join(", ")}.\n`
-		res += actor.strengths.map((s) => `- ${s}`).join("\n")
-		res += "\n\n"
-	}
-	if (actor.weaknesses) {
-		res += `# You are not good at:\n`
-		// - ${actor.specialties.join(", ")}.\n`
-		res += actor.weaknesses.map((s) => `- ${s}`).join("\n")
-		res += "\n\n"
-	}
-	if (actor.personality) {
-		res += `# Your Personality:\n`
-		// - ${actor.personality.join(", ")}.\n`
-		res += actor.personality.map((s) => `- ${s}`).join("\n")
-		res += "\n\n"
-	}
-	if (actor.behaviors) {
-		res += `# Your Behaviors:\n`
-		res += actor.behaviors.map((b) => `- ${b}`).join("\n")
-		res += "\n\n"
-	}
-
-	res += "\n"
-	// res += "### Human:\n"
-	// res += "Hello, who are you?\n\n"
-	// res += `### ${actor.name}:\n`
-	// res += "I am an AI created by OpenAI. How can I help you today?\n\n"
-	return res
-}
-
-function getBasePromptHistory(messages: TextMessage[]): string {
-	messages = getMsgHistory({
-		messages,
-		includeSelf  : true,
-		includeActors: undefined, // all ais
-		excludeActors: [ actors.coordinator ],
-		maxLength    : 10
-	})
-	// now continue the prompt with the last 10 messages in the same format as the base prompt
-	const prompt = messages
-		.map((message) => {
-			return `### ${message.name}:\n${message.text.join("\n")}\n\n`
-		})
-		.join("")
-	return prompt
 }
 
 const getPromptDavinci = (actor: ActorConfig, messages: TextMessage[]) => {

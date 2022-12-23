@@ -1,11 +1,11 @@
 <template>
     <div class="full-width">
-        <ChatThread :my-name="myName" :scroll-area-style="scStyle"/>
-        <q-card ref="inputCard" class="fixed-bottom">
+        <ChatThread :my-name="myName" :scroll-area-style="scrollAreaStyle"/>
+        <q-card ref="controlsCard" class="fixed-bottom">
             <q-card-section class="q-px-sm q-pt-sm q-pb-none">
                 <q-input
-                        ref="inputElem"
-                        v-model="inputText"
+                        ref="userMsgEl"
+                        v-model="userMsgStr"
                         autofocus
                         autogrow
                         clearable
@@ -17,7 +17,7 @@
             </q-card-section>
             <q-card-actions>
                 <q-btn
-                        :disable="!isMessageValid"
+                        :disable="!userMsgValid"
                         color="primary"
                         icon="send"
                         label="Send"
@@ -61,15 +61,21 @@ import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue"
 
 const comp = useCompStore()
 
-const inputCard: Ref<QCard | null> = ref(null)
-const inputElem: Ref<QInput | null> = ref(null)
-const scStyle = ref({})
+const controlsCard: Ref<QCard | null> = ref(null)
+const scrollAreaStyle = ref({})
 
 const myName = computed(() => comp.userName)
-const inputText = ref("")
-const isMessageValid = computed(() => {
-	return inputText.value.trim().length > 0
+
+const userMsgEl: Ref<QInput | null> = ref(null)
+const userMsgStr = ref("")
+const userMsgValid = computed(() => {
+	return userMsgStr.value.trim().length > 0
 })
+const userMsgObj: Ref<any> = ref(null)
+
+const isTyping = ref(false)
+const isTypingTimeout: Ref<any> = ref(null)
+const responseTimeout: Ref<any> = ref(null)
 
 const createAIMessage = (cfg: ActorConfig): TextMessage => {
 	const name: string = cfg?.name || "Anonymous AI"
@@ -201,58 +207,52 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
 	}
 }
 
-const isTyping = ref(false)
-const typingTimeout: Ref<any> = ref(null)
-const coordInterv: Ref<any> = ref(null)
-
-const currMsg: Ref<any> = ref(null)
-
 const sendMessage = () => {
-	if (!isMessageValid.value) return
-	if (currMsg.value === null) {
-		currMsg.value = {
+	if (!userMsgValid.value) return
+	if (userMsgObj.value === null) {
+		userMsgObj.value = {
 			text  : [],
 			images: [],
 			avatar: getSeededAvatarURL(myName.value),
 			name  : myName.value,
 			date  : new Date()
 		}
-		comp.pushMessage(currMsg.value)
+		comp.pushMessage(userMsgObj.value)
 	}
-	currMsg.value.text.push(inputText.value)
-	inputText.value = ""
+	userMsgObj.value.text.push(userMsgStr.value)
+	userMsgStr.value = ""
 
-	if (coordInterv.value) clearInterval(coordInterv.value)
-	coordInterv.value = setInterval(() => {
+	if (responseTimeout.value) clearInterval(responseTimeout.value)
+	responseTimeout.value = setInterval(() => {
 		if (!isTyping.value) {
-			currMsg.value = null
+			userMsgObj.value = null
 			handleCoordinator()
-			clearInterval(coordInterv.value)
+			clearInterval(responseTimeout.value)
 		}
 	}, 500)
 }
 
 const updateIC = () => {
 	setTimeout(() => {
-		const ic = inputCard.value
+		const ic = controlsCard.value
 		let bottom = 0
 		if (ic) bottom = ic.$el.clientHeight
 		const newStyle = { bottom: bottom + "px" }
-		if (newStyle.bottom !== scStyle.value.bottom) {
-			scStyle.value = newStyle
+		if (newStyle.bottom !== scrollAreaStyle.value.bottom) {
+			scrollAreaStyle.value = newStyle
 		}
 	}, 100)
 }
 
-watch(inputText, () => {
+watch(userMsgStr, () => {
 	updateIC()
 	// introduce a delay to detect if the user is typing.
 	// The coordinator will not be called until the user stops typing for a while.
 	isTyping.value = true
-	if (typingTimeout.value) clearTimeout(typingTimeout.value)
-	typingTimeout.value = setTimeout(() => {
+	if (isTypingTimeout.value) clearTimeout(isTypingTimeout.value)
+	isTypingTimeout.value = setTimeout(() => {
 		isTyping.value = false
-	}, isMessageValid.value ? 1000 : 250)
+	}, userMsgValid.value ? 1000 : 250)
 })
 
 const kbShortcuts = (e: KeyboardEvent) => {
@@ -270,7 +270,7 @@ const kbShortcuts = (e: KeyboardEvent) => {
 		comp.clearCache()
 		return
 	}
-	// enter sends inputText
+	// enter sends userMsgStr
 	if (e.key === "Enter" && !e.shiftKey) {
 		console.log("Sending message")
 		e.preventDefault()
@@ -279,11 +279,11 @@ const kbShortcuts = (e: KeyboardEvent) => {
 	}
 	// on escape first clear the input, then unfocus it
 	if (e.key === "Escape") {
-		if (inputElem.value) {
-			if (inputText.value) {
-				inputText.value = ""
+		if (userMsgEl.value) {
+			if (userMsgStr.value) {
+				userMsgStr.value = ""
 			} else {
-				inputElem.value.blur()
+				userMsgEl.value.blur()
 			}
 			updateIC()
 			return
@@ -291,9 +291,9 @@ const kbShortcuts = (e: KeyboardEvent) => {
 	}
 	// if any number or letter is pressed, focus the input
 	// if no modifier keys are pressed, focus the input
-	if (inputElem.value && !e.ctrlKey && !e.altKey && e.key.match(/^[a-z0-9]$/i)) {
+	if (userMsgEl.value && !e.ctrlKey && !e.altKey && e.key.match(/^[a-z0-9]$/i)) {
 		console.log("Focusing input")
-		inputElem.value.focus()
+		userMsgEl.value.focus()
 		return
 	}
 }

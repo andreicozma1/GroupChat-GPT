@@ -3,6 +3,7 @@ import { defineStore } from "pinia"
 import { LocalStorage } from "quasar"
 import { ActorConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models"
 import { v4 as uuidv4 } from "uuid"
+import { Ref, ref } from "vue"
 
 const openAiConfig = {
 	apiKey: process.env.OPENAI_API_KEY
@@ -340,11 +341,11 @@ export const actors: Record<string, ActorConfig> = {
 export const useCompStore = defineStore("counter", {
 	state  : () => ({
 		completions  : LocalStorage.getItem("completions") || {},
-		threads      : {
+		threads      : ref({
 			main: {
 				messages: []
 			}, ...(LocalStorage.getItem("threads") || {})
-		} as Record<string, MessageThread>,
+		}) as Ref<Record<string, MessageThread>>,
 		currentThread: "main",
 		userName     : "Human"
 	}),
@@ -352,7 +353,7 @@ export const useCompStore = defineStore("counter", {
 		getAllCompletions(state) {
 			return state.completions
 		},
-		getThread(state) {
+		getThread(state): MessageThread {
 			return state.threads[state.currentThread]
 		}
 	},
@@ -432,14 +433,14 @@ export const useCompStore = defineStore("counter", {
 			if (message.id) {
 				// look back through the messages to see if we already have this message
 				// and update it if we do
-				const existing = this.getThread.messages.find((m) => m.id === message.id)
-				if (existing !== undefined) {
-					for (const key in message) {
-						existing[key] = message[key]
+				const existingIdx = this.getThread.messages.findIndex((m) => m.id === message.id)
+				if (existingIdx !== -1) {
+					this.threads[this.currentThread].messages[existingIdx] = {
+						...this.threads[this.currentThread].messages[existingIdx], ...message
 					}
-					console.log("Updated message", { ...existing })
+					console.log("Updated message: ", { ...message })
 					this.updateCache()
-					return existing
+					return existingIdx
 				}
 			}
 			// otherwise, create uuid and push it

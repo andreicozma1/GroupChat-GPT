@@ -82,10 +82,7 @@ import { getSeededQColor } from "src/util/ColorUtils"
 import { TextMessage } from "src/util/Models"
 import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util"
 import { actors, useCompStore } from "stores/compStore"
-import { computed, onMounted, ref, watch } from "vue"
-
-const threadElem: any = ref(null)
-const comp = useCompStore()
+import { computed, onMounted, Ref, ref, watch, watchEffect } from "vue"
 
 const props = defineProps({
   myName         : {
@@ -100,14 +97,19 @@ const props = defineProps({
   }
 })
 
+const comp = useCompStore()
+
+const threadElem: any = ref(null)
+const threadMessages: Ref<TextMessage[]> = ref([])
+
 const getObjectiveIcon = (objective: string) => {
   if (!actors[objective]) return "send"
   if (!actors[objective].icon) return "help"
   return actors[objective].icon
 }
 
-const threadMessages = computed(() => {
-  const thrd = comp.getThread.messages.map((msg: TextMessage) => {
+const parseThreadMessages = (): TextMessage[] => {
+  const thrd: TextMessage[] = comp.getThread.messages.map((msg: TextMessage) => {
     const text = msg.text.length === 0 ? [] : [ ...msg.text ]
     if (!msg.loading && text.length === 0) text.push("[No message]")
     return {
@@ -123,7 +125,7 @@ const threadMessages = computed(() => {
     return ad.getTime() - bd.getTime()
   })
   return thrd
-})
+}
 
 const createStamp = (msg: TextMessage) => {
   const timeAgo = getTimeAgo(msg.date)
@@ -188,12 +190,13 @@ watch(() => props.scrollAreaStyle, () => {
   scrollToBottom(1000)
 })
 
-// scroll to bottom if the thread changes
-watch(threadMessages, () => {
+watchEffect(() => {
+  threadMessages.value = parseThreadMessages()
   scrollToBottom(1000)
 })
 
 onMounted(() => {
   scrollToBottom(1000)
+  threadMessages.value = parseThreadMessages()
 })
 </script>

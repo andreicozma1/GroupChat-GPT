@@ -1,54 +1,54 @@
-import { CreateCompletionRequest, CreateImageRequest } from "openai/api"
+import { CreateCompletionRequest, CreateImageRequest } from "openai/api";
 
 export interface MessageThread {
-	messages: TextMessage[];
+  messages: TextMessage[];
 }
 
 export interface TextMessage {
-	id?: string | number;
-	text: string[];
-	images: string[];
-	avatar: string;
-	name: string;
-	date: string | number | Date;
-	objective?: string;
-	dateCreated?: string | number | Date;
-	cached?: boolean;
-	loading?: boolean;
+  id?: string | number;
+  text: string[];
+  images: string[];
+  avatar: string;
+  name: string;
+  date: string | number | Date;
+  objective?: string;
+  dateCreated?: string | number | Date;
+  cached?: boolean;
+  loading?: boolean;
 }
 
 export interface ActorConfig {
-	key: string;
-	name: string;
-	createPrompt: any;
-	config: CreateCompletionRequest | CreateImageRequest;
-	createComp: any;
-	icon: string;
-	ignoreCache?: boolean;
-	available?: boolean;
-	personality?: string[];
-	strengths?: string[];
-	weaknesses?: string[];
-	abilities?: string[];
-	createGen?: string;
+  key: string;
+  name: string;
+  createPrompt: any;
+  config: CreateCompletionRequest | CreateImageRequest;
+  createComp: any;
+  icon: string;
+  ignoreCache?: boolean;
+  available?: boolean;
+  personality?: string[];
+  strengths?: string[];
+  weaknesses?: string[];
+  abilities?: string[];
+  createGen?: string;
 }
 
 export interface GenerationResult {
-	result: any;
-	text?: string[];
-	images?: string[];
-	hash: number;
-	cached: boolean;
-	errorMsg?: string;
+  result: any;
+  text?: string[];
+  images?: string[];
+  hash: number;
+  cached: boolean;
+  errorMsg?: string;
 }
 
 export interface ColorConfig {
-	minLightness?: number;
-	maxLightness?: number;
-	minSaturation?: number;
-	maxSaturation?: number;
-	minHue?: number;
-	maxHue?: number;
-	minAlpha?: number;
-	maxAlpha?: number;
+  minLightness?: number;
+  maxLightness?: number;
+  minSaturation?: number;
+  maxSaturation?: number;
+  minHue?: number;
+  maxHue?: number;
+  minAlpha?: number;
+  maxAlpha?: number;
 }

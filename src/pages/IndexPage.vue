@@ -115,10 +115,11 @@ const handleCoordinator = () => {
     msg.dateCreated = res.result.created * 1000
     msg.text = res.text ? [ ...res.text ] : [ "An error occurred" ]
     comp.pushMessage(msg)
-    let nextActors: string[] = res.text[0].split(":")
-    // if the length is 2, grab index 1, otherwise 0
-    const nextActorsCommaSep: string = nextActors.length === 2 ? nextActors[1] : nextActors[0]
-    nextActors = nextActorsCommaSep.trim().toLowerCase().split(", ")
+    const nextActors = res.text
+        .filter((t: string) => t.startsWith(actors.coordinator.vals.willRespond))[0]
+        .split(":")[1]
+        .split(",")
+        .map((a: string) => a.trim().toLowerCase())
 
     // for each actor, call the appropriate handler
     for (let actor of nextActors) {
@@ -161,14 +162,23 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
   const createGen = cfgFollowup?.createGen
   if (createGen) {
     // filter out texts that contain <prompt> tags
-    const prompts = msg.text
+    let prompts = msg.text
         .filter((t: string) => t.includes("<prompt>"))
         .map((t: string) => t.split("<prompt>")[1].trim().split("</prompt>")[0].trim())
-        .filter((t: string) => t.split(" ").length > 3)
-    if (prompts.length > 0) {
-      msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
-      comp.pushMessage(msg)
 
+    msg.text = msg.text.map((t: string) => {
+      if (t.includes("<prompt>")) {
+        const parts = t.split("<prompt>")
+        const end = parts[1].split("</prompt>")
+        return parts[0] + end[1]
+      }
+      return t
+    })
+    // msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
+    comp.pushMessage(msg)
+
+    prompts = prompts.filter((t: string) => t.split(" ").length > 3)
+    if (prompts.length > 0) {
       console.log("promptText", prompts)
       const nextActor = `${actorKey}_gen`
       for (let i = 0; i < prompts.length; i++) {

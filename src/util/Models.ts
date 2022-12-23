@@ -31,6 +31,7 @@ export interface ActorConfig {
 	weaknesses?: string[];
 	abilities?: string[];
 	createGen?: string;
+	vals?: any;
 }
 
 export interface GenerationResult {

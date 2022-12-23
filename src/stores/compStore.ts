@@ -36,6 +36,7 @@ const baseAlways: string[] = [
 
 const baseNever: string[] = [
 	"interrupt conversation with other AIs.",
+	"offer to help with something that you're not good at.",
 	"repeat yourself too much nor repeat what other AIs have just said.",
 	"ask more than one question at a time.",
 	"make logical inconsistencies.",
@@ -74,30 +75,6 @@ function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
 	return hist;
 }
 
-const getAssistantsList = () => {
-	return Object.values(actors).filter((a) => {
-		if (a.available === undefined) return true;
-		return a.available;
-	});
-};
-
-const getAssistantsDescList = (useKey: boolean, currentAI?: ActorConfig) => {
-	return (
-		getAssistantsList()
-			.map((ai) => {
-				const id = useKey ? ai.key : ai.name;
-				let res = `# ${id}`;
-				if (currentAI && currentAI.key === ai.key) res += " (You)";
-				res += ":\n";
-				if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`;
-				if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`;
-				if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`;
-				return res;
-			})
-			.join("\n") + "\n"
-	);
-};
-
 const getBasePromptStart = (actor: ActorConfig) => {
 	let res = `The following is a group-chat conversation between a human and several AI assistants.\n`;
 	res += "\n";
@@ -115,10 +92,10 @@ const getBasePromptStart = (actor: ActorConfig) => {
 	}
 
 	res += "### ASSISTANTS ###\n";
-	res += getAssistantsDescList(false, actor);
+	res += getInfoList(false, actor);
 
 	if (actor.abilities) {
-		res += `### Besides chatting, ${actor.name} can also:\n`;
+		res += `### Besides chatting, you (${actor.name}) can also:\n`;
 		res += actor.abilities.map((b) => `- ${b}`).join("\n");
 		res += "\n\n";
 	}
@@ -142,59 +119,97 @@ function getBasePromptHistory(messages: TextMessage[]): string {
 		.join("");
 }
 
+const getInfoList = (useKey: boolean, currentAI?: ActorConfig) => {
+	return (
+		getAvailable()
+			.map((ai) => {
+				const id = useKey ? ai.key : ai.name;
+				let res = `# ${id}`;
+				if (currentAI && currentAI.key === ai.key) res += " (You)";
+				res += ":\n";
+				if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`;
+				if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`;
+				if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`;
+				return res;
+			})
+			.join("\n") + "\n"
+	);
+};
+
+const getAvailable = (): ActorConfig[] => {
+	return Object.values(actors).filter((a) => {
+		if (a.available === undefined) return true;
+		return a.available;
+	});
+};
+
+const allExcept = (actor: ActorConfig): ActorConfig[] => {
+	return getAvailable().filter((a) => a.key !== actor.key);
+};
+
+const toKeys = (actors: ActorConfig[]): string[] => {
+	return actors.map((a) => a.key);
+};
+
+const toNames = (actors: ActorConfig[]): string[] => {
+	return actors.map((a) => a.name);
+};
+
 const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	let res = "### COORDINATOR ###\n";
 	res += "Choose which assistant(s) would be the absolute best at responding to the user's message.\n";
 	res += "Only respond with the exact names of the assistant(s).\n";
-	res += "If multiple assistants should respond, separate the names with a comma.\n";
+	res += "If multiple assistants are requested or fit to respond, separate each of their names by commas.\n";
 	res += "Take into consideration their personalities, strengths, weaknesses, and abilities.\n";
 	res += "Also keep the logical consistency of the conversation in mind.\n";
 	res += "\n";
 
 	res += "### ASSISTANTS ###\n";
-	res += getAssistantsDescList(true);
+	res += getInfoList(true);
 
-	// res += "### EXAMPLES ###\n";
-	// res += "### Human:\n";
-	// res += "Hello, what's up?\n";
-	// res += "\n";
-	//
-	// res += `### ${actor.name}:\n`;
-	// res += `Next: ${actors.davinci.key}\n`;
-	// res += "\n";
-	//
-	// res += "### Human:\n";
-	// res += "How are you all doing?\n";
-	// res += "\n";
-	//
-	// res += `### ${actor.name}:\n`;
-	// res += `Next: ${getAssistantsList()
-	// 	.map((a) => a.key)
-	// 	.join(", ")}\n`;
-	// res += "\n";
-	//
-	// res += "### Human:\n";
-	// res += "I need to create a painting.\n";
-	// res += "\n";
-	//
-	// res += `### ${actor.name}:\n`;
-	// res += `Next: ${actors.dalle.key}\n`;
-	// res += "\n";
-	//
-	// res += "### Human:\n";
-	// res += "Hey Codex, can you code something for me?\n";
-	// res += "\n";
-	//
-	// res += `### ${actor.name}:\n`;
-	// res += `Next: ${actors.codex.key}\n`;
-	// res += "\n";
+	res += "### EXAMPLES ###\n";
+	res += "### Human:\n";
+	res += "Hello, what's up Davinci?\n";
+	res += "\n";
+
+	res += `### ${actor.name}:\n`;
+	res += `Will Ignore: ${toKeys(allExcept(actors.davinci)).join(", ")}\n`;
+	res += `Will Respond: ${actors.davinci.key}\n`;
+	res += "\n";
+
+	res += "### Human:\n";
+	res += "How are you all doing?\n";
+	res += "\n";
+
+	res += `### ${actor.name}:\n`;
+	res += `Will Ignore: None\n`;
+	res += `Will Respond: ${toKeys(getAvailable()).join(", ")}\n`;
+	res += "\n";
+
+	res += "### Human:\n";
+	res += "I need to create a painting.\n";
+	res += "\n";
+
+	res += `### ${actor.name}:\n`;
+	res += `Will Ignore: ${toKeys(allExcept(actors.dalle)).join(", ")}\n`;
+	res += `Will Respond: ${actors.dalle.key}\n`;
+	res += "\n";
+
+	res += "### Human:\n";
+	res += "Hey Codex, can you code something for me?\n";
+	res += "\n";
+
+	res += `### ${actor.name}:\n`;
+	res += `Will Ignore: ${toKeys(allExcept(actors.codex)).join(", ")}\n`;
+	res += `Will Respond: ${actors.codex.key}\n`;
+	res += "\n";
 
 	res += "### CONVERSATION ###\n";
 
 	messages = getMsgHistory({
 		messages,
 		includeSelf: true,
-		includeActors: undefined,
+		includeActors: [actors.coordinator],
 		maxLength: 5,
 	});
 
@@ -206,7 +221,6 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += prompt;
 	res += "\n";
 	res += `### ${actor.name}:\n`;
-	res += "Next:";
 	return res.trim();
 };
 
@@ -276,7 +290,7 @@ export const actors: Record<string, ActorConfig> = {
 		},
 		personality: ["artistic", "creative", "visionary", ...basePersonalityTraits],
 		strengths: ["art", "painting", "drawing", "sketching"],
-		weaknesses: ["code generation"],
+		weaknesses: ["generating code"],
 		abilities: [...generationAbility],
 	},
 	codex: {
@@ -297,7 +311,7 @@ export const actors: Record<string, ActorConfig> = {
 		},
 		personality: ["analytical", "logical", "rational", ...basePersonalityTraits],
 		strengths: ["programming", "software development"],
-		weaknesses: ["image generation"],
+		weaknesses: ["generating images"],
 		abilities: [...generationAbility],
 	},
 	coordinator: {
@@ -308,14 +322,17 @@ export const actors: Record<string, ActorConfig> = {
 		createComp: openai.createCompletion,
 		config: {
 			model: "text-davinci-003",
-			temperature: 0.6,
+			temperature: 0.9,
 			max_tokens: 25,
 			top_p: 1,
 			frequency_penalty: 0,
 			presence_penalty: 0,
 			stop: ["###"],
 		},
-
+		vals: {
+			willRespond: "Will Respond",
+			willIgnore: "Will Ignore",
+		},
 		available: false,
 	},
 	dalle_gen: {

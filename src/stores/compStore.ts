@@ -17,11 +17,11 @@ const options = {
 }
 
 interface MsgHistoryConfig {
-	messages: TextMessage[]
-	includeSelf?: boolean
-	includeActors?: ActorConfig[]
-	excludeActors?: ActorConfig[]
-	maxLength?: number
+	messages: TextMessage[];
+	includeSelf?: boolean;
+	includeActors?: ActorConfig[];
+	excludeActors?: ActorConfig[];
+	maxLength?: number;
 }
 
 const basePersonalityTraits = [ "enthusiastic", "clever", "very friendly" ]
@@ -86,13 +86,15 @@ const getAssistantsList = () => {
 }
 
 const getAssistantsDescList = (useKey: boolean, exclude?: ActorConfig) => {
-	return getAssistantsList().map((actor) => {
-		const id = useKey ? actor.key : actor.name
-		let res = `- ${id}`
-		if (actor.strengths) res += `: Very good at ${actor.strengths.join(", ")}. `
-		if (actor.weaknesses) res += `Not so good at ${actor.weaknesses.join(", ")}.`
-		return res
-	}).join("\n")
+	return getAssistantsList()
+		.map((actor) => {
+			const id = useKey ? actor.key : actor.name
+			let res = `- ${id}`
+			if (actor.strengths) res += `: Very good at ${actor.strengths.join(", ")}. `
+			if (actor.weaknesses) res += `Not so good at ${actor.weaknesses.join(", ")}.`
+			return res
+		})
+		.join("\n")
 }
 
 const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
@@ -120,7 +122,9 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += "\n"
 
 	res += `### ${actor.name}:\n`
-	res += `Next: ${getAssistantsList().map((a) => a.key).join(", ")}\n`
+	res += `Next: ${getAssistantsList()
+		.map((a) => a.key)
+		.join(", ")}\n`
 	res += "\n"
 
 	res += "### Human:\n"
@@ -146,9 +150,11 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 		maxLength    : 5
 	})
 	// now continue the prompt with the last 10 messages in the same format as the base prompt
-	const prompt = messages.map((message) => {
-		return `### ${message.name}:\n${message.text}\n`
-	}).join("\n")
+	const prompt = messages
+		.map((message) => {
+			return `### ${message.name}:\n${message.text}\n`
+		})
+		.join("\n")
 	res += prompt
 	res += "\n"
 	res += `### ${actor.name}:\n`
@@ -220,9 +226,11 @@ function getBasePromptHistory(messages: TextMessage[]): string {
 		maxLength    : 10
 	})
 	// now continue the prompt with the last 10 messages in the same format as the base prompt
-	const prompt = messages.map((message) => {
-		return `### ${message.name}:\n${message.text.join("\n")}\n\n`
-	}).join("")
+	const prompt = messages
+		.map((message) => {
+			return `### ${message.name}:\n${message.text.join("\n")}\n\n`
+		})
+		.join("")
 	return prompt
 }
 
@@ -272,7 +280,9 @@ export const actors: Record<string, ActorConfig> = {
 			stop             : [ "###" ]
 		},
 		personality : [ "helpful", "creative", ...basePersonalityTraits ],
-		strengths   : [ "making general conversation", "answering questions", "providing general information" ]
+		strengths   : [
+			"making general conversation", "answering questions", "providing general information"
+		]
 	},
 	dalle      : {
 		key         : "dalle",
@@ -290,12 +300,12 @@ export const actors: Record<string, ActorConfig> = {
 			presence_penalty : 0,
 			stop             : [ "###" ]
 		},
-		personality : [ "artistic", "creative", "visionary", ...basePersonalityTraits ],
+		personality : [
+			"artistic", "creative", "visionary", ...basePersonalityTraits
+		],
 		strengths   : [ "art", "painting", "drawing", "sketching", "image generation" ],
 		weaknesses  : [ "anything not related to my specialties" ],
-		behaviors   : [
-			...generationBehaviors
-		]
+		behaviors   : [ ...generationBehaviors ]
 	},
 	codex      : {
 		key         : "codex",
@@ -313,12 +323,12 @@ export const actors: Record<string, ActorConfig> = {
 			presence_penalty : 0,
 			stop             : [ "###" ]
 		},
-		personality : [ "analytical", "logical", "rational", ...basePersonalityTraits ],
+		personality : [
+			"analytical", "logical", "rational", ...basePersonalityTraits
+		],
 		strengths   : [ "programming", "software development", "code generation" ],
 		weaknesses  : [ "anything not related to my specialties" ],
-		behaviors   : [
-			...generationBehaviors
-		]
+		behaviors   : [ ...generationBehaviors ]
 	},
 	coordinator: {
 		key         : "coordinator",
@@ -394,8 +404,11 @@ export const useCompStore = defineStore("counter", {
 			const choices = completion.choices
 			const images = completion.data?.map((d: any) => d.url)
 			console.log(choices)
-			const text = choices?.flatMap(
-				(c: any) => c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>").split("\n"))
+			const text = choices
+				?.flatMap((c: any) => c.text
+					.replace("<prompt>\n", "<prompt>")
+					.replace("\n</prompt>", "</prompt>")
+					.split("\n"))
 				.map((t: string) => t.trim())
 				.filter((t: string) => t.length > 0)
 

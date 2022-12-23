@@ -54,11 +54,7 @@ const generationAbility: string[] = [
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
 	let hist = config.messages
 	hist = hist.filter((m) => {
-		// filter out coordinator messages
-		// if (m.name === actors.coordinator.name) return false
-		// keep self by default if includeSelf is not set
 		if (m.name === "Human") {
-			// default to true
 			if (config.includeSelf === undefined) return true
 			return config.includeSelf
 		}
@@ -72,7 +68,6 @@ function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
 		return true
 	})
 	hist = hist.filter((m) => m.text.length > 0)
-	// slice the history
 	if (config.maxLength !== undefined) hist = hist.slice(-config.maxLength)
 	return hist
 }
@@ -108,34 +103,16 @@ const getBasePromptStart = (actor: ActorConfig) => {
 		res += `# Assistants always:\n`
 		res += baseAlways.map((b) => `- Always ${b}`).join("\n")
 		res += "\n\n"
-		// res += `- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
 	}
 	if (baseNever.length > 0) {
 		res += `# Assistants never:\n`
 		res += baseNever.map((b) => `- Never ${b}`).join("\n")
 		res += "\n\n"
-		// res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
 	}
 
 	res += "### ASSISTANTS ###\n"
 	res += getAssistantsDescList(false, actor)
 
-	// res += `### Your name is ${actor.name}\n`
-	// if (actor.strengths) {
-	// 	res += `# You are good at:\n`
-	// 	res += actor.strengths.map((s) => `- ${s}`).join("\n")
-	// 	res += "\n\n"
-	// }
-	// if (actor.weaknesses) {
-	// 	res += `# You are not good at:\n`
-	// 	res += actor.weaknesses.map((s) => `- ${s}`).join("\n")
-	// 	res += "\n\n"
-	// }
-	// if (actor.personality) {
-	// 	res += `# Your Personality:\n`
-	// 	res += actor.personality.map((s) => `- ${s}`).join("\n")
-	// 	res += "\n\n"
-	// }
 	if (actor.abilities) {
 		res += `### ${actor.name}'s Abilities:\n`
 		res += actor.abilities.map((b) => `- ${b}`).join("\n")
@@ -143,11 +120,6 @@ const getBasePromptStart = (actor: ActorConfig) => {
 	}
 
 	res += "### CONVERSATION ###\n"
-
-	// res += "### Human:\n"
-	// res += "Hello, who are you?\n\n"
-	// res += `### ${actor.name}:\n`
-	// res += "I am an AI created by OpenAI. How can I help you today?\n\n"
 	return res
 }
 
@@ -159,13 +131,11 @@ function getBasePromptHistory(messages: TextMessage[]): string {
 		excludeActors: [ actors.coordinator ],
 		maxLength    : 10
 	})
-	// now continue the prompt with the last 10 messages in the same format as the base prompt
-	const prompt = messages
+	return messages
 		.map((message) => {
 			return `### ${message.name}:\n${message.text.join("\n")}\n\n`
 		})
 		.join("")
-	return prompt
 }
 
 const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
@@ -218,11 +188,11 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 
 	messages = getMsgHistory({
 		messages,
-		includeSelf  : true, // includeActors: [ actors.coordinator ],
+		includeSelf  : true,
 		includeActors: undefined,
 		maxLength    : 5
 	})
-	// now continue the prompt with the last 10 messages in the same format as the base prompt
+
 	const prompt = messages
 		.map((message) => {
 			return `### ${message.name}:\n${message.text}\n`

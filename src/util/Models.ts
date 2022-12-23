@@ -25,9 +25,10 @@ export interface ActorConfig {
 	createComp: any;
 	icon: string;
 	ignoreCache?: boolean;
+	available?: boolean;
 	personality?: string[];
 	specialties?: string[];
-	available?: boolean;
+	behaviors?: string[];
 }
 
 export interface GenerationResult {

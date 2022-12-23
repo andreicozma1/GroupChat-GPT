@@ -97,7 +97,16 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += "\n"
 
 	res += `### ${actor.name}:\n`
-	res += `Next: ${Object.keys(actors).join(", ")}\n`
+	res += `Next: ${Object.values(actors).filter((a) => a.key !== actors.coordinator.key).map((a) => a.key).join(
+		", ")}\n`
+	res += "\n"
+
+	res += "### You:\n"
+	res += "I need to create a painting.\n"
+	res += "\n"
+
+	res += `### ${actor.name}:\n`
+	res += `Next: ${actors.dalle.key}\n`
 	res += "\n"
 
 	messages = getMsgHistory({
@@ -129,6 +138,10 @@ const getBasePromptStart = (actor: ActorConfig) => {
 	if (actor.personality) {
 		res += `Personality:\n- ${actor.personality.join(", ")}.\n`
 	}
+	if (actor.behaviors) {
+		res += `Behaviors:\n`
+		res += actor.behaviors.map((b) => `- ${b}`).join("\n")
+	}
 	if (baseAlways.length > 0) {
 		res += `ALWAYS:\n- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
 	}
@@ -152,7 +165,7 @@ function getBasePromptHistory(messages: TextMessage[]): string {
 	})
 	// now continue the prompt with the last 10 messages in the same format as the base prompt
 	const prompt = messages.map((message) => {
-		return `### ${message.name}:\n${message.text}\n\n`
+		return `### ${message.name}:\n${message.text.join("\n")}\n\n`
 	}).join("")
 	return prompt
 }
@@ -221,7 +234,8 @@ export const actors: Record<string, ActorConfig> = {
 			stop             : [ "###" ]
 		},
 		personality : [ "artistic", "creative", "visionary", ...basePersonalityTraits ],
-		specialties : [ "art", "painting", "drawing", "sketching" ]
+		specialties : [ "art", "painting", "drawing", "sketching", "image generation" ],
+		behaviors   : [ "When ready to generate an image, it will create a detailed prompt based on the information acquired." ]
 	},
 	codex      : {
 		key         : "codex",
@@ -239,7 +253,8 @@ export const actors: Record<string, ActorConfig> = {
 			stop             : [ "###" ]
 		},
 		personality : [ "analytical", "logical", "rational", ...basePersonalityTraits ],
-		specialties : [ "programming", "coding", "software development" ]
+		specialties : [ "programming", "software development", "code generation" ],
+		behaviors   : [ "When ready to generate code, it will create a detailed prompt based on the information acquired." ]
 	},
 	coordinator: {
 		key         : "coordinator",

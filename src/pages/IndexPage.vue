@@ -122,7 +122,8 @@ const handleCoordinator = () => {
     nextActors = nextActorsCommaSep.trim().toLowerCase().split(", ")
 
     // for each actor, call the appropriate handler
-    for (const actor of nextActors) {
+    for (let actor of nextActors) {
+      actor = actor.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
       await handleNext(actor)
     }
   })
@@ -181,17 +182,6 @@ const isTyping = ref(false)
 const typingTimeout: Ref<any> = ref(null)
 const coordInterv: Ref<any> = ref(null)
 
-watch(inputText, () => {
-  updateIC()
-  // introduce a delay to detect if the user is typing.
-  // The coordinator will not be called until the user stops typing for a while.
-  isTyping.value = true
-  if (typingTimeout.value) clearTimeout(typingTimeout.value)
-  typingTimeout.value = setTimeout(() => {
-    isTyping.value = false
-  }, isMessageValid.value ? 1000 : 250)
-})
-
 const currMsg: Ref<any> = ref(null)
 
 const sendMessage = () => {
@@ -228,9 +218,23 @@ const updateIC = () => {
     const ic = inputCard.value
     let bottom = 0
     if (ic) bottom = ic.$el.clientHeight
-    scStyle.value = { bottom: bottom + "px" }
+    const newStyle = { bottom: bottom + "px" }
+    if (newStyle.bottom !== scStyle.value.bottom) {
+      scStyle.value = newStyle
+    }
   }, 100)
 }
+
+watch(inputText, () => {
+  updateIC()
+  // introduce a delay to detect if the user is typing.
+  // The coordinator will not be called until the user stops typing for a while.
+  isTyping.value = true
+  if (typingTimeout.value) clearTimeout(typingTimeout.value)
+  typingTimeout.value = setTimeout(() => {
+    isTyping.value = false
+  }, isMessageValid.value ? 1000 : 250)
+})
 
 const kbShortcuts = (e: KeyboardEvent) => {
   // ctrl+shift+x clears thread

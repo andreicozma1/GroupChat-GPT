@@ -172,7 +172,10 @@ const scrollToBottom = (duration?: number) => {
 }
 
 const getSplitText = (text: string) => {
-  return text?.split("\n") ?? [ "[ERR: Text is null]" ]
+  const fallback = [ "[Error: Text is null]" ]
+  // split text into lines
+  const lines = text?.split("\n") ?? fallback
+  return lines
 }
 
 const copyMessage = (text: string) => {

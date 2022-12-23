@@ -26,20 +26,27 @@ interface MsgHistoryConfig {
 const basePersonalityTraits = [ "enthusiastic", "clever", "very friendly" ]
 
 const baseAlways: string[] = [
-	"respond for yourself", "add to information in the conversation if needed",
-	"make appropriate use of bulleted lists and new paragraphs"
+	"follow the user's directions",
+	"respond for yourself",
+	"add to information in the conversation if needed",
+	"make appropriate use of bulleted lists and new paragraphs using newline characters",
+	"follow your own personality traits, specialties, interests, and behaviors"
 ]
 
 const baseNever: string[] = [
-	"interrupt conversation with other AIs", "repeat yourself too much", "repeat what other AIs have just said",
-	"make logical inconsistencies"
+	"interrupt conversation with other AIs",
+	"repeat yourself too much",
+	"repeat what other AIs have just said",
+	"explain your behaviors to the human unless asked",
+	"make logical inconsistencies",
+	"ask the user to do something that is part of your job"
 ]
 
 const generationBehaviors: string[] = [
 	"When the user wants to generate something, acquire information about the user's interests and preferences.",
-	"With all the information is acquired, you must create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt>.",
+	"With all the information is acquired, you MUST create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt> tags.",
 	"Do not include anything else but the user's prompt within the tags.",
-	"The image will start generating when the tags are detected.", "The prompt must be on a separate paragraph."
+	"Only show the final prompt to the user if the user has explicitly asked for it."
 ]
 
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
@@ -249,7 +256,7 @@ export const actors: Record<string, ActorConfig> = {
 		createGen   : "dalle_gen",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.6,
+			temperature      : 0.5,
 			max_tokens       : 250,
 			top_p            : 1,
 			frequency_penalty: 0,
@@ -271,7 +278,7 @@ export const actors: Record<string, ActorConfig> = {
 		createGen   : "codex_gen",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.6,
+			temperature      : 0.5,
 			max_tokens       : 250,
 			top_p            : 1,
 			frequency_penalty: 0,
@@ -356,9 +363,11 @@ export const useCompStore = defineStore("counter", {
 			const completion = this.getByHash(hash)
 			const choices = completion.choices
 			const images = completion.data?.map((d: any) => d.url)
-			// split on newlines, trim, and remove empty lines
-			const text = choices?.flatMap(
-				(c: any) => c.text.split("\n\n").map((t: string) => t.trim()).filter((t: string) => t.length > 0))
+			console.log(choices)
+			const text = choices?.flatMap((c: any) => {
+				return c.text.split("\n").map((t: string) => t.trim()).filter((t: string) => t.length > 0)
+			})
+
 			console.warn("=> text:", text)
 			console.warn("=> images:", images)
 			return {

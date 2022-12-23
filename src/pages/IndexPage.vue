@@ -97,19 +97,19 @@ const handleCoordinator = () => {
     msg.cached = res.cached
     if (res.errorMsg) {
       console.error(res.errorMsg)
-      msg.text.push(`[ERR: ${res.errorMsg}]`)
+      msg.text.push(`[${res.errorMsg}]`)
       comp.pushMessage(msg)
       return
     }
     if (!res.result) {
       console.error("No result")
-      msg.text.push("[ERR: No result]")
+      msg.text.push("[Error: No result]")
       comp.pushMessage(msg)
       return
     }
     if (!res.text) {
       console.error("No text in result")
-      msg.text.push("[ERR: No text in result]")
+      msg.text.push("[Error: No text in result]")
       comp.pushMessage(msg)
       return
     }
@@ -134,7 +134,7 @@ const handleNext = async (actorKey: string) => {
   const cfgFollowup: ActorConfig = actors[actorKey]
   const msg: TextMessage = createAIMessage(cfgFollowup)
   if (!cfgFollowup) {
-    msg.text.push(`[ERR: Unknown actor type: ${actorKey}]`)
+    msg.text.push(`[Error: Unknown actor type: ${actorKey}]`)
     msg.loading = false
     comp.pushMessage(msg)
     return
@@ -150,32 +150,29 @@ const handleNext = async (actorKey: string) => {
   msg.date = new Date()
   if (res.errorMsg) {
     console.error(res.errorMsg)
-    msg.text.push(`[ERR: ${res.errorMsg}]`)
+    msg.text.push(`[${res.errorMsg}]`)
     comp.pushMessage(msg)
     return
   }
   if (!res.result) {
     console.error("No result")
-    msg.text.push("[ERR: No result]")
+    msg.text.push("[Error: No result]")
     comp.pushMessage(msg)
     return
   }
   msg.dateCreated = res?.result?.created * 1000
   if (res?.text) {
     msg.text.push(...res.text)
-    // check if the actor has a createGen string param and if any of the generated text contains the tags <prompt></prompt>
-    // if so, extracct the text between the tags and use it as the prompt for the next actor.
-    // The next actor's key is the value of the createGen param
     const createGen = cfgFollowup?.createGen
     if (createGen) {
-      const prompt = res.text.find((t) => t.includes("<prompt>") && t.includes("</prompt>"))
-      if (prompt) {
-        const promptText = prompt.replace("<prompt>", "").replace("</prompt>", "")
-        const nextActor = actors[createGen]
-        if (nextActor) {
-          // append something to that the prompt to indicate the generation and replace the original prompt
-          const promptIdx = msg.text.indexOf(prompt)
-          // msg.text[promptIdx] = `<generated>${promptText}</generated>`
+      const promptLine = res.text.find((t) => t.includes("<prompt>"))
+      if (promptLine) {
+        let promptLineSplit = promptLine?.split("<prompt>").flatMap((t) => t.split("</prompt>"))
+        if (promptLineSplit) {
+          promptLineSplit = promptLineSplit.map((t) => t.trim()).filter((t) => t.length > 0)
+          console.log("promptLineSplit", promptLineSplit)
+          const promptIndex: number = res.text.indexOf(promptLine)
+          console.log("promptIndex", promptIndex)
         }
       }
     }
@@ -207,10 +204,6 @@ const sendMessage = () => {
   currMsg.value.text.push(inputText.value)
   inputText.value = ""
 
-  // only call the coordinator if the user has stopped typing for a while
-  // wait until the user stops typing
-  // handleCoordinator()
-  // use setTimeout to wait until the user stops typing
   if (coordInterv.value) clearInterval(coordInterv.value)
   coordInterv.value = setInterval(() => {
     if (!isTyping.value) {
@@ -279,13 +272,11 @@ const kbShortcuts = (e: KeyboardEvent) => {
     }
   }
   // if any number or letter is pressed, focus the input
-  if (e.key.match(/^[a-z0-9]$/i)) {
-    // if no modifier keys are pressed, focus the input
-    if (!e.ctrlKey && !e.altKey && inputElem.value) {
-      console.log("Focusing input")
-      inputElem.value.focus()
-      return
-    }
+  // if no modifier keys are pressed, focus the input
+  if (inputElem.value && !e.ctrlKey && !e.altKey && e.key.match(/^[a-z0-9]$/i)) {
+    console.log("Focusing input")
+    inputElem.value.focus()
+    return
   }
 }
 

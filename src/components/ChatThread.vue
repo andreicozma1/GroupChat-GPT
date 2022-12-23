@@ -4,10 +4,11 @@
     <div v-for="msg in threadMessages" :key="msg.date">
       <q-chat-message :bg-color="msg.sent ? null : getSeededQColor(msg.name, 1, 2)" size="6" v-bind="msg">
         <div v-for="text in msg.text" :key="text">
-          <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)">
-            {{ line }}
-            <br/>
-          </div>
+          <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)"
+               v-html="sanitizeLine(line)"/>
+          <!--            {{ line }}-->
+          <!--            <br/>-->
+          <!--          </div>-->
           <q-tooltip v-if="msg.dateCreated" :delay="750">
             {{ createHoverHint(msg) }}
           </q-tooltip>
@@ -159,10 +160,23 @@ const scrollToBottom = (duration?: number) => {
 const getSplitText = (text: string) => {
   const fallback = [ "[Error: Text is null]" ]
   // split text into lines
-  const lines = text?.split("\n") ?? fallback
-  return lines
+  return text?.split("\n") ?? fallback
 }
 
+const sanitizeLine = (line: string) => {
+  // remove all html tags except for allowed tags
+  const allowed = {
+    "gen"   : "b",
+    "prompt": "i"
+  }
+  // remove all opening and closing tags except for the keys in allowed
+  const regex = /<\/?([a-z]+)[^>]*>/gi
+  const sanitized = line.replace(regex, (match, p1) => {
+    if (p1 in allowed) return `<${allowed[p1]}>`
+    return ""
+  })
+  return sanitized
+}
 const copyMessage = (text: string) => {
   copyToClipboard(text).then(() => {
     smartNotify(`Copied message to clipboard`)

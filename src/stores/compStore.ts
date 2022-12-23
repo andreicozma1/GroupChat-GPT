@@ -43,7 +43,7 @@ const baseNever: string[] = [
 	// "ask the user to do something that is part of your job"
 ]
 
-const generationBehaviors: string[] = [
+const generationAbility: string[] = [
 	"When the user wants to generate something, acquire information about the user's interests and preferences.",
 	"When you say you'll generate the result, you will always create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt> tags.",
 	"If there is a list of prompts, wrap each prompt with <prompt> and </prompt> tags.",
@@ -84,25 +84,24 @@ const getAssistantsList = () => {
 	})
 }
 
-const getAssistantsDescList = (useKey: boolean, exclude?: ActorConfig) => {
+const getAssistantsDescList = (useKey: boolean, current?: ActorConfig) => {
 	return getAssistantsList()
 		.map((actor) => {
 			const id = useKey ? actor.key : actor.name
-			let res = `- ${id}`
-			if (actor.strengths) res += `: Very good at ${actor.strengths.join(", ")}. `
-			if (actor.weaknesses) res += `Not so good at ${actor.weaknesses.join(", ")}.`
+			let res = `# ${id}`
+			if (current) res += " (You)"
+			res += ":\n"
+			if (actor.personality) res += `- Personality Traits: ${actor.personality.join(", ")}.\n`
+			if (actor.strengths) res += `- Strengths: ${actor.strengths.join(", ")}.\n`
+			if (actor.weaknesses) res += `- Weaknesses: ${actor.weaknesses.join(", ")}.\n`
 			return res
 		})
-		.join("\n")
+		.join("\n") + "\n"
 }
 
 const getBasePromptStart = (actor: ActorConfig) => {
 	let res = `The following is a group-chat conversation between a human and several AI assistants.\n`
 	res += "\n"
-
-	res += "### Available Assistants:\n"
-	res += getAssistantsDescList(false, actor)
-	res += "\n\n"
 
 	res += "### Assistant Rules:\n"
 	if (baseAlways.length > 0) {
@@ -118,29 +117,31 @@ const getBasePromptStart = (actor: ActorConfig) => {
 		// res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
 	}
 
-	res += `### Your name is ${actor.name}\n`
-	if (actor.strengths) {
-		res += `# You are good at:\n`
-		res += actor.strengths.map((s) => `- ${s}`).join("\n")
-		res += "\n\n"
-	}
-	if (actor.weaknesses) {
-		res += `# You are not good at:\n`
-		res += actor.weaknesses.map((s) => `- ${s}`).join("\n")
-		res += "\n\n"
-	}
-	if (actor.personality) {
-		res += `# Your Personality:\n`
-		res += actor.personality.map((s) => `- ${s}`).join("\n")
-		res += "\n\n"
-	}
-	if (actor.behaviors) {
-		res += `# Your Behaviors:\n`
-		res += actor.behaviors.map((b) => `- ${b}`).join("\n")
+	res += "### Group Chat Members:\n"
+	res += getAssistantsDescList(false, actor)
+
+	// res += `### Your name is ${actor.name}\n`
+	// if (actor.strengths) {
+	// 	res += `# You are good at:\n`
+	// 	res += actor.strengths.map((s) => `- ${s}`).join("\n")
+	// 	res += "\n\n"
+	// }
+	// if (actor.weaknesses) {
+	// 	res += `# You are not good at:\n`
+	// 	res += actor.weaknesses.map((s) => `- ${s}`).join("\n")
+	// 	res += "\n\n"
+	// }
+	// if (actor.personality) {
+	// 	res += `# Your Personality:\n`
+	// 	res += actor.personality.map((s) => `- ${s}`).join("\n")
+	// 	res += "\n\n"
+	// }
+	if (actor.abilities) {
+		res += `### ${actor.name}'s Abilities:\n`
+		res += actor.abilities.map((b) => `- ${b}`).join("\n")
 		res += "\n\n"
 	}
 
-	res += "\n"
 	// res += "### Human:\n"
 	// res += "Hello, who are you?\n\n"
 	// res += `### ${actor.name}:\n`
@@ -301,7 +302,7 @@ export const actors: Record<string, ActorConfig> = {
 		],
 		strengths   : [ "art", "painting", "drawing", "sketching", "image generation" ],
 		weaknesses  : [ "anything not related to my specialties" ],
-		behaviors   : [ ...generationBehaviors ]
+		abilities   : [ ...generationAbility ]
 	},
 	codex      : {
 		key         : "codex",
@@ -324,7 +325,7 @@ export const actors: Record<string, ActorConfig> = {
 		],
 		strengths   : [ "programming", "software development", "code generation" ],
 		weaknesses  : [ "anything not related to my specialties" ],
-		behaviors   : [ ...generationBehaviors ]
+		abilities   : [ ...generationAbility ]
 	},
 	coordinator: {
 		key         : "coordinator",

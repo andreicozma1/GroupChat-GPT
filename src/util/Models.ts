@@ -29,7 +29,7 @@ export interface ActorConfig {
 	personality?: string[];
 	strengths?: string[];
 	weaknesses?: string[];
-	behaviors?: string[];
+	abilities?: string[];
 	createGen?: string;
 }
 

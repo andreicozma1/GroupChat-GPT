@@ -29,6 +29,7 @@ export interface ActorConfig {
 	personality?: string[];
 	specialties?: string[];
 	behaviors?: string[];
+	createGen?: string;
 }
 
 export interface GenerationResult {

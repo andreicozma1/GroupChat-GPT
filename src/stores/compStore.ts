@@ -24,20 +24,29 @@ interface MsgHistoryConfig {
 }
 
 const basePersonalityTraits = [ "enthusiastic", "clever", "very friendly" ]
+
 const baseAlways: string[] = [
 	"respond for yourself", "add to information in the conversation if needed",
-	"separate responses into proper paragraphs"
+	"make appropriate use of bulleted lists and new paragraphs"
 ]
+
 const baseNever: string[] = [
-	"respond if not involved in the conversation", "repeat yourself too much", "repeat what other AIs have just said",
+	"interrupt conversation with other AIs", "repeat yourself too much", "repeat what other AIs have just said",
 	"make logical inconsistencies"
+]
+
+const generationBehaviors: string[] = [
+	"When the user wants to generate something, acquire information about the user's interests and preferences.",
+	"With all the information is acquired, you must create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt>.",
+	"Do not include anything else but the user's prompt within the tags.",
+	"The image will start generating when the tags are detected.", "The prompt must be on a separate paragraph."
 ]
 
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
 	let hist = config.messages
 	hist = hist.filter((m) => {
 		// filter out coordinator messages
-		if (m.name === actors.coordinator.name) return false
+		// if (m.name === actors.coordinator.name) return false
 		// keep self by default if includeSelf is not set
 		if (m.name === "Human") {
 			// default to true
@@ -59,13 +68,15 @@ function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
 	return hist
 }
 
-const getAssistantsList = (useKey: boolean, exclude?: ActorConfig) => {
+const getAssistantsList = () => {
 	return Object.values(actors).filter((a) => {
-		if (a.key === actors.coordinator.key) return false
-		if (exclude && a.key === exclude.key) return false
 		if (a.available === undefined) return true
 		return a.available
-	}).map((actor) => {
+	})
+}
+
+const getAssistantsDescList = (useKey: boolean, exclude?: ActorConfig) => {
+	return getAssistantsList().map((actor) => {
 		let res = `- ${useKey ? actor.key : actor.name}`
 		if (actor.specialties) res += `: specializes in ${actor.specialties.join(", ")}`
 		return res
@@ -81,10 +92,10 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += "\n"
 
 	res += "### Available Assistants:\n"
-	res += getAssistantsList(true)
+	res += getAssistantsDescList(true)
 	res += "\n\n"
 
-	res += "### You:\n"
+	res += "### Human:\n"
 	res += "Hello, what's up?\n"
 	res += "\n"
 
@@ -92,16 +103,23 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += `Next: ${actors.davinci.key}\n`
 	res += "\n"
 
-	res += "### You:\n"
+	res += "### Human:\n"
 	res += "How are you all doing?\n"
 	res += "\n"
 
 	res += `### ${actor.name}:\n`
-	res += `Next: ${Object.values(actors).filter((a) => a.key !== actors.coordinator.key).map((a) => a.key).join(
-		", ")}\n`
+	res += `Next: ${getAssistantsList().map((a) => a.key).join(", ")}\n`
 	res += "\n"
 
-	res += "### You:\n"
+	res += "### Human:\n"
+	res += "Hey Codex!\n"
+	res += "\n"
+
+	res += `### ${actor.name}:\n`
+	res += `Next: ${actors.codex.key}\n`
+	res += "\n"
+
+	res += "### Human:\n"
 	res += "I need to create a painting.\n"
 	res += "\n"
 
@@ -111,8 +129,8 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 
 	messages = getMsgHistory({
 		messages,
-		includeSelf  : true,
-		includeActors: undefined, 	// all ais
+		includeSelf  : true, // includeActors: [ actors.coordinator ],
+		includeActors: undefined,
 		maxLength    : 3
 	})
 	// now continue the prompt with the last 10 messages in the same format as the base prompt
@@ -129,24 +147,27 @@ const getBasePromptStart = (actor: ActorConfig) => {
 	let res = `The following is a group-chat conversation with several AI assistants.\n`
 	res += "\n"
 	res += "### Other Members:\n"
-	res += getAssistantsList(false, actor)
+	res += getAssistantsDescList(false, actor)
 	res += "\n\n"
 	res += `### Your name: ${actor.name}\n`
 	if (actor.specialties) {
-		res += `Specialties:\n- ${actor.specialties.join(", ")}.\n`
+		res += `# Specialties:\n- ${actor.specialties.join(", ")}.\n`
 	}
 	if (actor.personality) {
-		res += `Personality:\n- ${actor.personality.join(", ")}.\n`
+		res += `# Personality:\n- ${actor.personality.join(", ")}.\n`
 	}
 	if (actor.behaviors) {
-		res += `Behaviors:\n`
+		res += `# Behaviors:\n`
 		res += actor.behaviors.map((b) => `- ${b}`).join("\n")
+		res += "\n"
 	}
 	if (baseAlways.length > 0) {
-		res += `ALWAYS:\n- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
+		res += `# ALWAYS:\n`
+		res += `- ${baseAlways.slice(0, -1).join(", ")}, and ${baseAlways.slice(-1)}.\n`
 	}
 	if (baseNever.length > 0) {
-		res += `NEVER:\n- ${baseNever.slice(0, -1).join(", ")}, or ${baseNever.slice(-1)}.\n`
+		res += `# NEVER:\n`
+		res += `- ${baseNever.slice(0, -1).join(", ")}, and ${baseNever.slice(-1)}.\n`
 	}
 	res += "\n"
 	// res += "### Human:\n"
@@ -160,7 +181,8 @@ function getBasePromptHistory(messages: TextMessage[]): string {
 	messages = getMsgHistory({
 		messages,
 		includeSelf  : true,
-		includeActors: undefined, // includeActors: undefined, 	// all ais
+		includeActors: undefined, // all ais
+		excludeActors: [ actors.coordinator ],
 		maxLength    : 10
 	})
 	// now continue the prompt with the last 10 messages in the same format as the base prompt
@@ -224,10 +246,11 @@ export const actors: Record<string, ActorConfig> = {
 		icon        : "image",
 		createPrompt: getPromptDalle,
 		createComp  : openai.createCompletion,
+		createGen   : "dalle_gen",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.75,
-			max_tokens       : 100,
+			temperature      : 0.6,
+			max_tokens       : 250,
 			top_p            : 1,
 			frequency_penalty: 0,
 			presence_penalty : 0,
@@ -235,7 +258,9 @@ export const actors: Record<string, ActorConfig> = {
 		},
 		personality : [ "artistic", "creative", "visionary", ...basePersonalityTraits ],
 		specialties : [ "art", "painting", "drawing", "sketching", "image generation" ],
-		behaviors   : [ "When ready to generate an image, it will create a detailed prompt based on the information acquired." ]
+		behaviors   : [
+			...generationBehaviors
+		]
 	},
 	codex      : {
 		key         : "codex",
@@ -243,10 +268,11 @@ export const actors: Record<string, ActorConfig> = {
 		icon        : "code",
 		createPrompt: getPromptCodex,
 		createComp  : openai.createCompletion,
+		createGen   : "codex_gen",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.75,
-			max_tokens       : 100,
+			temperature      : 0.6,
+			max_tokens       : 250,
 			top_p            : 1,
 			frequency_penalty: 0,
 			presence_penalty : 0,
@@ -254,7 +280,9 @@ export const actors: Record<string, ActorConfig> = {
 		},
 		personality : [ "analytical", "logical", "rational", ...basePersonalityTraits ],
 		specialties : [ "programming", "software development", "code generation" ],
-		behaviors   : [ "When ready to generate code, it will create a detailed prompt based on the information acquired." ]
+		behaviors   : [
+			...generationBehaviors
+		]
 	},
 	coordinator: {
 		key         : "coordinator",
@@ -262,27 +290,30 @@ export const actors: Record<string, ActorConfig> = {
 		icon        : "question_answer",
 		config      : {
 			model            : "text-davinci-003",
-			temperature      : 0.25,
-			max_tokens       : 100,
+			temperature      : 0.3,
+			max_tokens       : 25,
 			top_p            : 1,
 			frequency_penalty: 0,
 			presence_penalty : 0,
 			stop             : [ "###" ]
 		},
 		createPrompt: getPromptCoordinator,
-		createComp  : openai.createCompletion
-	} // dalle_gen  : {
-	// 	key         : "dalle_gen",
-	// 	name        : "DALL-E",
-	// 	icon        : "image",
-	// 	config      : {
-	// 		n     : 1,
-	// 		size  : "256x256",
-	// 		prompt: "A cute puppy"
-	// 	},
-	// 	createPrompt: getPromptDalleGen,
-	// 	createComp  : openai.createImage
-	// }
+		createComp  : openai.createCompletion,
+		available   : false
+	},
+	dalle_gen  : {
+		key         : "dalle_gen",
+		name        : "DALL-E",
+		icon        : "image",
+		createPrompt: getPromptDalleGen,
+		createComp  : openai.createImage,
+		config      : {
+			n     : 1,
+			size  : "256x256",
+			prompt: "A cute puppy"
+		},
+		available   : false
+	}
 }
 
 export const useCompStore = defineStore("counter", {
@@ -325,8 +356,9 @@ export const useCompStore = defineStore("counter", {
 			const completion = this.getByHash(hash)
 			const choices = completion.choices
 			const images = completion.data?.map((d: any) => d.url)
-			// const text = choices ? choices[0].text.trim() : undefined
-			const text = choices?.map((c: any) => c.text.trim())
+			// split on newlines, trim, and remove empty lines
+			const text = choices?.flatMap(
+				(c: any) => c.text.split("\n\n").map((t: string) => t.trim()).filter((t: string) => t.length > 0))
 			console.warn("=> text:", text)
 			console.warn("=> images:", images)
 			return {

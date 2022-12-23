@@ -10,8 +10,8 @@
           size="6"
           :bg-color="msg.sent ? null : getSeededQColor(msg.name, 1, 2)"
       >
-        <div v-for="text in msg.text" :key="text" @click="copyMessage(msg.text.join('\n'))">
-          <div v-for="line in getSplitText(text)" :key="line" @click="line">
+        <div v-for="text in msg.text" :key="text">
+          <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)">
             {{ line }}
             <br/>
           </div>

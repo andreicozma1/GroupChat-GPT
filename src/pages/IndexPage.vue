@@ -129,10 +129,8 @@ const handleCoordinator = () => {
   })
 }
 
-// function handleNext(objectiveStr: string, prompt: string) {
 const handleNext = async (actorKey: string) => {
   actorKey = actorKey?.trim()
-  // prompt = prompt?.trim()
   const cfgFollowup: ActorConfig = actors[actorKey]
   const msg: TextMessage = createAIMessage(cfgFollowup)
   if (!cfgFollowup) {
@@ -141,15 +139,9 @@ const handleNext = async (actorKey: string) => {
     comp.pushMessage(msg)
     return
   }
-  // if (!prompt || prompt.length === 0) {
-  //   msg.text.push(`[ERR: No follow-up prompt provided for ${objectiveStr}]`)
-  //   comp.pushMessage(msg)
-  //   return
-  // }
-  // msg.text.push(prompt)
+
   comp.pushMessage(msg)
 
-  // await new Promise(resolve => setTimeout(resolve, Math.random() * 5000))
   const res = await comp.genTextCompletion(cfgFollowup)
 
   console.log(res)
@@ -171,6 +163,22 @@ const handleNext = async (actorKey: string) => {
   msg.dateCreated = res?.result?.created * 1000
   if (res?.text) {
     msg.text.push(...res.text)
+    // check if the actor has a createGen string param and if any of the generated text contains the tags <prompt></prompt>
+    // if so, extracct the text between the tags and use it as the prompt for the next actor.
+    // The next actor's key is the value of the createGen param
+    const createGen = cfgFollowup?.createGen
+    if (createGen) {
+      const prompt = res.text.find((t) => t.includes("<prompt>") && t.includes("</prompt>"))
+      if (prompt) {
+        const promptText = prompt.replace("<prompt>", "").replace("</prompt>", "")
+        const nextActor = actors[createGen]
+        if (nextActor) {
+          // append something to that the prompt to indicate the generation and replace the original prompt
+          const promptIdx = msg.text.indexOf(prompt)
+          // msg.text[promptIdx] = `<generated>${promptText}</generated>`
+        }
+      }
+    }
   }
   if (res?.images) {
     msg.images.push(...res.images)
@@ -273,7 +281,7 @@ const kbShortcuts = (e: KeyboardEvent) => {
   // if any number or letter is pressed, focus the input
   if (e.key.match(/^[a-z0-9]$/i)) {
     // if no modifier keys are pressed, focus the input
-    if (!e.ctrlKey && !e.altKey && !e.shiftKey && inputElem.value) {
+    if (!e.ctrlKey && !e.altKey && inputElem.value) {
       console.log("Focusing input")
       inputElem.value.focus()
       return

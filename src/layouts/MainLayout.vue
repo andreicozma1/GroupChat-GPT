@@ -2,14 +2,7 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar>
-        <q-btn
-          aria-label="Menu"
-          dense
-          flat
-          icon="menu"
-          round
-          @click="toggleLeftDrawer"
-        />
+        <q-btn aria-label="Menu" dense flat icon="menu" round @click="toggleLeftDrawer" />
 
         <q-toolbar-title> GroupChat-GPT</q-toolbar-title>
 
@@ -21,11 +14,7 @@
       <q-list>
         <q-item-label header> Essential Links</q-item-label>
 
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
+        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
 
@@ -36,9 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import EssentialLink, {
-  EssentialLinkProps,
-} from "components/EssentialLink.vue";
+import EssentialLink, { EssentialLinkProps } from "components/EssentialLink.vue";
 import { ref } from "vue";
 
 const essentialLinks: EssentialLinkProps[] = [

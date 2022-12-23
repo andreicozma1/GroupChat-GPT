@@ -125,8 +125,7 @@ const handleCoordinator = () => {
     comp.pushMessage(msg);
     let nextActors: string[] = res.text[0].split(":");
     // if the length is 2, grab index 1, otherwise 0
-    const nextActorsCommaSep: string =
-      nextActors.length === 2 ? nextActors[1] : nextActors[0];
+    const nextActorsCommaSep: string = nextActors.length === 2 ? nextActors[1] : nextActors[0];
     nextActors = nextActorsCommaSep.trim().toLowerCase().split(", ");
 
     // for each actor, call the appropriate handler
@@ -179,9 +178,7 @@ const handleNext = async (actorKey: string, msg?: TextMessage) => {
     // filter out texts that contain <prompt> tags
     const prompts = msg.text
       .filter((t: string) => t.includes("<prompt>"))
-      .map((t: string) =>
-        t.split("<prompt>")[1].trim().split("</prompt>")[0].trim()
-      )
+      .map((t: string) => t.split("<prompt>")[1].trim().split("</prompt>")[0].trim())
       .filter((t: string) => t.split(" ").length > 1);
     if (prompts.length > 0) {
       // msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
@@ -293,12 +290,7 @@ const kbShortcuts = (e: KeyboardEvent) => {
   }
   // if any number or letter is pressed, focus the input
   // if no modifier keys are pressed, focus the input
-  if (
-    userMsgEl.value &&
-    !e.ctrlKey &&
-    !e.altKey &&
-    e.key.match(/^[a-z0-9]$/i)
-  ) {
+  if (userMsgEl.value && !e.ctrlKey && !e.altKey && e.key.match(/^[a-z0-9]$/i)) {
     console.log("Focusing input");
     userMsgEl.value.focus();
     return;

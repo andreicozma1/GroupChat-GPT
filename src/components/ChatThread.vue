@@ -1,21 +1,10 @@
 <template>
   <q-scroll-area ref="threadElem" :style="getScrollAreaStyle">
-    <q-chat-message
-      :label="threadMessages.length.toString() + ' messages'"
-      class="q-pt-md"
-    />
+    <q-chat-message :label="threadMessages.length.toString() + ' messages'" class="q-pt-md" />
     <div v-for="msg in threadMessages" :key="msg.date">
-      <q-chat-message
-        :bg-color="msg.sent ? null : getSeededQColor(msg.name, 1, 2)"
-        size="6"
-        v-bind="msg"
-      >
+      <q-chat-message :bg-color="msg.sent ? null : getSeededQColor(msg.name, 1, 2)" size="6" v-bind="msg">
         <div v-for="text in msg.text" :key="text">
-          <div
-            v-for="line in getSplitText(text)"
-            :key="line"
-            @click="copyMessage(text)"
-          >
+          <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)">
             {{ line }}
             <br />
           </div>
@@ -32,9 +21,7 @@
           <div class="row items-center">
             <span>
               <q-icon :name="getObjectiveIcon(msg.objective)" class="q-mr-sm" />
-              <q-tooltip v-if="actors[msg.objective]?.config">
-                Objective: {{ msg.objective }}
-              </q-tooltip>
+              <q-tooltip v-if="actors[msg.objective]?.config"> Objective: {{ msg.objective }} </q-tooltip>
             </span>
             <span class="text-caption text-italic">
               {{ createStamp(msg) }}
@@ -55,20 +42,9 @@
         </template>
 
         <div v-if="msg.images.length > 0">
-          <q-card
-            v-for="image in msg.images"
-            :key="image"
-            :title="image"
-            class="bg-grey-1"
-            flat
-          >
+          <q-card v-for="image in msg.images" :key="image" :title="image" class="bg-grey-1" flat>
             <q-card-section class="q-pa-none">
-              <q-img
-                :src="image"
-                draggable
-                fit="contain"
-                style="max-height: 400px"
-              />
+              <q-img :src="image" draggable fit="contain" style="max-height: 400px" />
             </q-card-section>
           </q-card>
         </div>
@@ -110,18 +86,16 @@ const getObjectiveIcon = (objective: string) => {
 };
 
 const parseThreadMessages = (): TextMessage[] => {
-  const thrd: TextMessage[] = comp.getThread.messages.map(
-    (msg: TextMessage) => {
-      const text = msg.text.length === 0 ? [] : [...msg.text];
-      if (!msg.loading && text.length === 0) text.push("[No message]");
-      return {
-        ...msg,
-        text: text,
-        stamp: createStamp(msg),
-        sent: isSentByMe(msg),
-      };
-    }
-  );
+  const thrd: TextMessage[] = comp.getThread.messages.map((msg: TextMessage) => {
+    const text = msg.text.length === 0 ? [] : [...msg.text];
+    if (!msg.loading && text.length === 0) text.push("[No message]");
+    return {
+      ...msg,
+      text: text,
+      stamp: createStamp(msg),
+      sent: isSentByMe(msg),
+    };
+  });
   thrd.sort((a, b) => {
     const ad = new Date(a.date);
     const bd = new Date(b.date);
@@ -141,9 +115,9 @@ const createHoverHint = (msg: TextMessage) => {
   const numImage = msg.images?.length ?? 0;
   const numTotal = numText + numImage;
   const who = isSentByMe(msg) ? "You" : msg.name;
-  const what = `${numTotal} msg${
-    numTotal > 1 ? "s" : ""
-  } (${numText} text, ${numImage} image${numImage > 1 ? "s" : ""})`;
+  const what = `${numTotal} msg${numTotal > 1 ? "s" : ""} (${numText} text, ${numImage} image${
+    numImage > 1 ? "s" : ""
+  })`;
   const when = dateToStr(msg.date);
   return `${who} sent ${what} on ${when}`;
 };

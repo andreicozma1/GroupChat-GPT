@@ -82,7 +82,7 @@ import { getSeededQColor } from "src/util/ColorUtils"
 import { TextMessage } from "src/util/Models"
 import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util"
 import { actors, useCompStore } from "stores/compStore"
-import { computed, ref, watch } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
 
 const threadElem: any = ref(null)
 const comp = useCompStore()
@@ -188,8 +188,12 @@ watch(() => props.scrollAreaStyle, () => {
   scrollToBottom(1000)
 })
 
-watch(() => comp.getThread, () => {
-  console.log("HERE")
+// scroll to bottom if the thread changes
+watch(threadMessages, () => {
+  scrollToBottom(1000)
+})
+
+onMounted(() => {
   scrollToBottom(1000)
 })
 </script>

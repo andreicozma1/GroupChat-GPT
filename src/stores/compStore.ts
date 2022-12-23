@@ -27,28 +27,30 @@ interface MsgHistoryConfig {
 const basePersonalityTraits = ["enthusiastic", "clever", "very friendly"];
 
 const baseAlways: string[] = [
-	"follow the user's directions",
+	"follow the user's directions, requests, and answer their questions.",
 	// "respond for yourself",
-	"add to information in the conversation if needed",
-	"use bulleted lists when listing multiple things",
-	"stay true your own personality traits, specialties, interests, and behaviors",
+	"add to information in the conversation if needed.",
+	"use bulleted lists when listing multiple things.",
+	"hold true your own character, including personality traits, interests, strengths, weaknesses, and abilities.",
 ];
 
 const baseNever: string[] = [
-	"interrupt conversation with other AIs",
-	"repeat yourself too much nor repeat what other AIs have just said",
-	"ask more than one question at a time",
-	"make logical inconsistencies",
-	"explain your behaviors to the human unless asked",
+	"interrupt conversation with other AIs.",
+	"repeat yourself too much nor repeat what other AIs have just said.",
+	"ask more than one question at a time.",
+	"make logical inconsistencies.",
+	"explain your the process of your abilities.",
 	// "ask the user to do something that is part of your job"
 ];
 
 const generationAbility: string[] = [
-	"When the user wants to generate something, acquire information about the user's interests and preferences.",
-	"When you say you'll generate the result, you will always create a detailed prompt which you will wrap the final prompt with <prompt> and </prompt> tags.",
-	"If there is a list of prompts, wrap each prompt with <prompt> and </prompt> tags.",
+	"When the user wants an image of something, acquire information about what it should look like based on the user's preferences.",
+	"For each request, you will create a detailed prompt describing what the end result will look like.",
+	"You will always wrap prompts with <prompt> and </prompt> tags around the description.",
+	"Only the detailed description should be within the prompt tags, and nothing else.",
+	"Only create the prompt when the user specifically requests it.",
+	"Never talk about the tags specifically. Only you know about the tags.",
 	// "Only show the final prompts to the user if the user has explicitly asked.",
-	"When you say you will complete a request, it will respond with the prompt and only with the prompt.",
 ];
 
 function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
@@ -116,7 +118,7 @@ const getBasePromptStart = (actor: ActorConfig) => {
 	res += getAssistantsDescList(false, actor);
 
 	if (actor.abilities) {
-		res += `### ${actor.name} can also:\n`;
+		res += `### Besides chatting, ${actor.name} can also:\n`;
 		res += actor.abilities.map((b) => `- ${b}`).join("\n");
 		res += "\n\n";
 	}
@@ -142,49 +144,50 @@ function getBasePromptHistory(messages: TextMessage[]): string {
 
 const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	let res = "### COORDINATOR ###\n";
-	res += "Classify which assistants would be best at responding to the next message.";
-	res += "Only respond with the exact names of the assistants\n";
-	res += "If the user's request is specifically directed at multiple assistants, separate the names with a comma\n";
+	res += "Choose which assistant(s) would be the absolute best at responding to the user's message.\n";
+	res += "Only respond with the exact names of the assistant(s).\n";
+	res += "If multiple assistants should respond, separate the names with a comma.\n";
+	res += "Take into consideration their personalities, strengths, weaknesses, and abilities.\n";
 	res += "Also keep the logical consistency of the conversation in mind.\n";
 	res += "\n";
 
 	res += "### ASSISTANTS ###\n";
 	res += getAssistantsDescList(true);
 
-	res += "### EXAMPLES ###\n";
-	res += "### Human:\n";
-	res += "Hello, what's up?\n";
-	res += "\n";
-
-	res += `### ${actor.name}:\n`;
-	res += `Next: ${actors.davinci.key}\n`;
-	res += "\n";
-
-	res += "### Human:\n";
-	res += "How are you all doing?\n";
-	res += "\n";
-
-	res += `### ${actor.name}:\n`;
-	res += `Next: ${getAssistantsList()
-		.map((a) => a.key)
-		.join(", ")}\n`;
-	res += "\n";
-
-	res += "### Human:\n";
-	res += "Hey Codex!\n";
-	res += "\n";
-
-	res += `### ${actor.name}:\n`;
-	res += `Next: ${actors.codex.key}\n`;
-	res += "\n";
-
-	res += "### Human:\n";
-	res += "I need to create a painting.\n";
-	res += "\n";
-
-	res += `### ${actor.name}:\n`;
-	res += `Next: ${actors.dalle.key}\n`;
-	res += "\n";
+	// res += "### EXAMPLES ###\n";
+	// res += "### Human:\n";
+	// res += "Hello, what's up?\n";
+	// res += "\n";
+	//
+	// res += `### ${actor.name}:\n`;
+	// res += `Next: ${actors.davinci.key}\n`;
+	// res += "\n";
+	//
+	// res += "### Human:\n";
+	// res += "How are you all doing?\n";
+	// res += "\n";
+	//
+	// res += `### ${actor.name}:\n`;
+	// res += `Next: ${getAssistantsList()
+	// 	.map((a) => a.key)
+	// 	.join(", ")}\n`;
+	// res += "\n";
+	//
+	// res += "### Human:\n";
+	// res += "I need to create a painting.\n";
+	// res += "\n";
+	//
+	// res += `### ${actor.name}:\n`;
+	// res += `Next: ${actors.dalle.key}\n`;
+	// res += "\n";
+	//
+	// res += "### Human:\n";
+	// res += "Hey Codex, can you code something for me?\n";
+	// res += "\n";
+	//
+	// res += `### ${actor.name}:\n`;
+	// res += `Next: ${actors.codex.key}\n`;
+	// res += "\n";
 
 	res += "### CONVERSATION ###\n";
 
@@ -272,8 +275,8 @@ export const actors: Record<string, ActorConfig> = {
 			stop: ["###"],
 		},
 		personality: ["artistic", "creative", "visionary", ...basePersonalityTraits],
-		strengths: ["art", "painting", "drawing", "sketching", "image generation"],
-		weaknesses: ["anything not related to my specialties"],
+		strengths: ["art", "painting", "drawing", "sketching"],
+		weaknesses: ["code generation"],
 		abilities: [...generationAbility],
 	},
 	codex: {
@@ -293,8 +296,8 @@ export const actors: Record<string, ActorConfig> = {
 			stop: ["###"],
 		},
 		personality: ["analytical", "logical", "rational", ...basePersonalityTraits],
-		strengths: ["programming", "software development", "code generation"],
-		weaknesses: ["anything not related to my specialties"],
+		strengths: ["programming", "software development"],
+		weaknesses: ["image generation"],
 		abilities: [...generationAbility],
 	},
 	coordinator: {
@@ -305,7 +308,7 @@ export const actors: Record<string, ActorConfig> = {
 		createComp: openai.createCompletion,
 		config: {
 			model: "text-davinci-003",
-			temperature: 0.7,
+			temperature: 0.6,
 			max_tokens: 25,
 			top_p: 1,
 			frequency_penalty: 0,
@@ -364,35 +367,43 @@ export const useCompStore = defineStore("counter", {
 			this.threads[this.currentThread].messages = [];
 			this.updateCache();
 		},
-		getCached(hash: number) {
+		getCachedResponse(hash: number) {
 			return this.completions[hash];
 		},
-		getCompletion(hash: number) {
-			const completion = this.getCached(hash);
-			const choices = completion.choices;
-			const images = completion.data?.map((d: any) => d.url);
-			console.log(choices);
+		getCompletion(hash: number): GenerationResult {
+			const cachedResponse = this.getCachedResponse(hash);
+			if (cachedResponse === null || cachedResponse === undefined) {
+				return {
+					errorMsg: "Cached response was null/undefined",
+					result: null,
+					cached: undefined,
+					hash: hash,
+				};
+			}
+
+			const choices = cachedResponse.choices;
 			const text = choices
 				?.flatMap((c: any) =>
 					c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>").split("\n")
 				)
 				.map((t: string) => t.trim())
 				.filter((t: string) => t.length > 0);
-
 			console.warn("=> text:", text);
+
+			const images = cachedResponse.data?.map((d: any) => d.url);
 			console.warn("=> images:", images);
 			return {
-				result: completion,
+				cached: undefined,
+				hash: hash,
 				text: text,
 				images: images,
-				hash: hash,
+				result: cachedResponse,
 			};
 		},
 		async genCompletion(actor: ActorConfig): Promise<GenerationResult> {
 			const prompt = actor.createPrompt(actor, this.getThread.messages);
 			const hash = hashPrompt(prompt);
 			console.warn(prompt);
-
 			// if we already have a completion for this prompt, return it
 			if (!actor.ignoreCache && this.completions[hash]) {
 				return {
@@ -400,9 +411,10 @@ export const useCompStore = defineStore("counter", {
 					cached: true,
 				};
 			}
-			// otherwise, generate a new completion
+
 			let completion;
 			try {
+				// otherwise, generate a new completion
 				completion = await actor.createComp(
 					{
 						...actor.config,
@@ -410,18 +422,23 @@ export const useCompStore = defineStore("counter", {
 					},
 					options
 				);
-				if (!completion) throw new Error("No completion returned");
+				if (completion === null || completion === undefined) throw new Error("No response");
 			} catch (error: any) {
-				let errorMsg = JSON.stringify(error);
-				if (error.response) errorMsg = `${error.response.status} ${JSON.stringify(error.response.data)}`;
+				console.error(error);
+				if (error.stack) console.error(error.stack);
+				let errorMsg = "";
+				if (error.message) errorMsg += error.message;
+				if (error.response) {
+					errorMsg += "\n" + "Status: " + error.response.status;
+					errorMsg += "\n" + "Data: " + JSON.stringify(error.response.data, null, 4);
+				}
 				return {
+					errorMsg: errorMsg,
 					result: null,
 					cached: false,
 					hash: hash,
-					errorMsg: errorMsg,
 				};
 			}
-
 			this.completions[hash] = completion.data;
 			this.updateCache();
 

@@ -14,7 +14,7 @@
         </div>
 
         <template v-if="msg.loading">
-          <q-spinner-dots class="q-ml-md" color="primary" size="1.5em" />
+          <q-spinner-dots class="q-ml-md" color="primary" size="2em" />
         </template>
 
         <template v-slot:stamp>

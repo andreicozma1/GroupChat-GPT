@@ -38,7 +38,7 @@ export interface GenerationResult {
 	text?: string[];
 	images?: string[];
 	hash: number;
-	cached: boolean;
+	cached?: boolean;
 	errorMsg?: string;
 }
 

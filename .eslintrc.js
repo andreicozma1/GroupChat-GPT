@@ -4,7 +4,7 @@ module.exports = {
         node: true,
         es6: true,
     },
-    extends: ["eslint:recommended", "plugin:vue/vue3-essential", "@vue/typescript/recommended", "prettier"],
+    extends: ["eslint:recommended", "plugin:vue/vue3-essential", "@vue/typescript/recommended"],
     parserOptions: {
         ecmaVersion: 2020,
     },
@@ -13,9 +13,9 @@ module.exports = {
         "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
         "vue/no-deprecated-slot-attribute": "off",
         "@typescript-eslint/no-explicit-any": "off",
-        "prettier/prettier": "error",
+        // "prettier/prettier": "error",
     },
-    plugins: ["prettier"],
+    // plugins: ["prettier"],
     overrides: [
         {
             files: ["**/__tests__/*.{j,t}s?(x)", "**/tests/unit/**/*.spec.{j,t}s?(x)"],

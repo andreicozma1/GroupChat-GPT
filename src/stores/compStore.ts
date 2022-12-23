@@ -429,7 +429,7 @@ export const useCompStore = defineStore("counter", {
 				}
 			}
 		},
-		pushMessage(message: TextMessage) {
+		pushMessage(message: TextMessage): TextMessage {
 			if (message.id) {
 				// look back through the messages to see if we already have this message
 				// and update it if we do
@@ -440,7 +440,7 @@ export const useCompStore = defineStore("counter", {
 					}
 					console.log("Updated message: ", { ...message })
 					this.updateCache()
-					return existingIdx
+					return this.threads[this.currentThread].messages[existingIdx]
 				}
 			}
 			// otherwise, create uuid and push it

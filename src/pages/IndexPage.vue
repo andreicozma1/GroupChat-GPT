@@ -1,5 +1,4 @@
 <template>
-  <!--  <q-page class="row items-center justify-evenly">-->
   <div class="full-width">
     <ChatThread :my-name="myName" :scroll-area-style="scStyle"/>
     <q-card class="fixed-bottom" ref="inputCard">
@@ -9,9 +8,15 @@
             autofocus
             autogrow
             outlined
+            type="textarea"
             v-model="inputText"
             label="Message"
             ref="inputElem"
+            maxlength="2000"
+            hint="Press TAB to autocomplete suggested value or ESC to cancel suggestion"
+            :shadow-text="textareaShadowText"
+            @keydown="processTextareaFill"
+            @focus="processTextareaFill"
         />
       </q-card-section>
       <q-card-actions>
@@ -48,7 +53,6 @@
       </q-card-actions>
     </q-card>
   </div>
-  <!--  </q-page>-->
 </template>
 
 <script lang="ts" setup>
@@ -283,17 +287,17 @@ const kbShortcuts = (e: KeyboardEvent) => {
     return
   }
   // on escape first clear the input, then unfocus it
-  if (e.key === "Escape") {
-    if (inputElem.value) {
-      if (inputText.value) {
-        inputText.value = ""
-      } else {
-        inputElem.value.blur()
-      }
-      updateIC()
-      return
-    }
-  }
+  // if (e.key === "Escape") {
+  //   if (inputElem.value) {
+  //     if (inputText.value) {
+  //       inputText.value = ""
+  //     } else {
+  //       inputElem.value.blur()
+  //     }
+  //     updateIC()
+  //     return
+  //   }
+  // }
   // if any number or letter is pressed, focus the input
   // if no modifier keys are pressed, focus the input
   if (inputElem.value && !e.ctrlKey && !e.altKey && e.key.match(/^[a-z0-9]$/i)) {

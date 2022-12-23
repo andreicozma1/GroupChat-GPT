@@ -73,6 +73,7 @@ const isMessageValid = computed(() => {
 
 const createAIMessage = (cfg: ActorConfig): TextMessage => {
 	const name: string = cfg?.name || "Anonymous AI"
+	const objective: string = cfg?.key || "unknown"
 	let msg: TextMessage = {
 		text       : [],
 		images     : [],
@@ -80,7 +81,7 @@ const createAIMessage = (cfg: ActorConfig): TextMessage => {
 		name       : name,
 		date       : new Date(),
 		dateCreated: undefined,
-		objective  : cfg?.key || "unknown",
+		objective  : objective,
 		loading    : true
 	}
 	msg = comp.pushMessage(msg)

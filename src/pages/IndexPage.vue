@@ -1,6 +1,6 @@
 <template>
   <div class="full-width">
-    <ChatThread :my-name="myName" :scroll-area-style="scrollAreaStyle"/>
+    <ChatThread :hideCoordinator="hideCoordinator" :my-name="myName" :scroll-area-style="scrollAreaStyle"/>
     <q-card ref="controlsCard" class="fixed-bottom">
       <q-card-section class="q-px-sm q-pt-sm q-pb-none">
         <q-input
@@ -26,6 +26,7 @@
             @click="sendMessage"
         />
         <q-space/>
+        <q-checkbox v-model="hideCoordinator" label="Hide Coordinator" left-label/>
         <q-btn
             color="orange"
             dense
@@ -63,6 +64,7 @@ const comp = useCompStore()
 
 const controlsCard: Ref<QCard | null> = ref(null)
 const scrollAreaStyle = ref({})
+const hideCoordinator = ref(false)
 
 const myName = computed(() => comp.userName)
 

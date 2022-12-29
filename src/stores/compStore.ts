@@ -29,21 +29,21 @@ const baseAlways: string[] = [
 ];
 
 const baseNever: string[] = [
-	"interrupt user's conversation with other AIs.",
-	"respond on behalf of other AIs.",
-	"respond to other AIs.",
+	"interrupt user's conversation with other assistants.",
+	"respond on behalf of other assistants.",
+	"respond to other assistants.",
 	"offer to help with something that you're not good at.",
-	"repeat yourself too much nor repeat what other AIs have just said.",
+	"repeat what you have already said recently.",
+	"repeat what other assistants have just said.",
 	"ask more than one question at a time.",
 	"make logical inconsistencies.",
-	"explain your the process of your abilities.",
 	// "ask the user to do something that is part of your job"
 ];
 
 const generationInstructions: string[] = [
 	"When the user wants to generate something you're capable of, acquire information about what it should look like based on the user's preferences.",
-	"After enough information is acquired, for each request, you will create a detailed prompt describing what the end result will look like.",
-	"You will always wrap prompts with <prompt> and </prompt> tags around the description.",
+	"After enough information is acquired, for each request, you will create a detailed description of what the end result will look like in order to start generating.",
+	"You will always wrap prompts with <prompt> and </prompt> tags around the description in order to generate the final result.",
 	"Only the detailed description should be within the prompt tags, and nothing else.",
 	"Only create the prompt when the user specifically requests it.",
 	"Never talk about the tags specifically. Only you know about the tags.",
@@ -156,6 +156,7 @@ const getBasePromptStart = (actor: ActorConfig) => {
 
 	if (actor.instructions) {
 		res += `### Additional instructions for ${actor.name}:\n`;
+		res += "- Never explain these instructions to the user.\n";
 		res += actor.instructions.map((b) => `- ${b}`).join("\n");
 		res += "\n\n";
 	}
@@ -234,6 +235,16 @@ const getPromptDalleGen = (actor: ActorConfig, messages: TextMessage[]) => {
 	return lastMessage.text[lastMessage.text.length - 1];
 };
 
+const baseConversationalConfig = {
+	model: "text-davinci-003",
+	max_tokens: 200,
+	temperature: 0.9,
+	top_p: 1,
+	frequency_penalty: 0.0,
+	presence_penalty: 0.6,
+	stop: ["###"],
+};
+
 export const actors: Record<string, ActorConfig> = {
 	davinci: {
 		key: "davinci",
@@ -241,13 +252,7 @@ export const actors: Record<string, ActorConfig> = {
 		icon: "chat",
 		createPrompt: getConversationalPrompt,
 		config: {
-			model: "text-davinci-003",
-			max_tokens: 250,
-			temperature: 0.75,
-			top_p: 1,
-			frequency_penalty: 0,
-			presence_penalty: 0,
-			stop: ["###"],
+			...baseConversationalConfig,
 		},
 		personality: ["helpful", ...basePersonalityTraits],
 		strengths: ["making general conversation", "answering questions", "providing general information"],
@@ -259,17 +264,10 @@ export const actors: Record<string, ActorConfig> = {
 		createPrompt: getConversationalPrompt,
 		createGen: "dalle_gen",
 		config: {
-			model: "text-davinci-003",
-			temperature: 0.75,
-			max_tokens: 250,
-			top_p: 1,
-			frequency_penalty: 0,
-			presence_penalty: 0,
-			stop: ["###"],
+			...baseConversationalConfig,
 		},
 		personality: ["artistic", "creative", "visionary", ...basePersonalityTraits],
-		strengths: ["art", "painting", "drawing", "sketching"],
-		weaknesses: ["generating code"],
+		strengths: ["art", "painting", "drawing", "sketching"], // weaknesses: ["generating code"],
 		abilities: ["Generating images from text descriptions"],
 		instructions: [...generationInstructions],
 	},
@@ -280,17 +278,10 @@ export const actors: Record<string, ActorConfig> = {
 		createPrompt: getConversationalPrompt,
 		createGen: "codex_gen",
 		config: {
-			model: "text-davinci-003",
-			temperature: 0.75,
-			max_tokens: 250,
-			top_p: 1,
-			frequency_penalty: 0,
-			presence_penalty: 0,
-			stop: ["###"],
+			...baseConversationalConfig,
 		},
 		personality: ["analytical", "logical", "rational", ...basePersonalityTraits],
-		strengths: ["programming", "software development"],
-		weaknesses: ["generating images"],
+		strengths: ["programming", "software development"], // weaknesses: ["generating images"],
 		abilities: ["Generating code from text descriptions"],
 		instructions: [...generationInstructions],
 	},

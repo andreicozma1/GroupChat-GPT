@@ -67,7 +67,7 @@ const controlsCard: Ref<QCard | null> = ref(null)
 const scrollAreaStyle = ref({})
 const hideCoordinator = ref(true)
 
-const orderedResponses = ref(true)
+const orderedResponses = ref(false)
 
 const myName = computed(() => comp.userName)
 

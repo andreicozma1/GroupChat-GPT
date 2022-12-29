@@ -23,14 +23,15 @@ const basePersonalityTraits = ["enthusiastic", "clever", "very friendly"];
 const baseAlways: string[] = [
 	"follow the user's directions, requests, and answer their questions.",
 	// "respond for yourself",
-	"add to information in the conversation if needed.",
+	"add to information in the conversation only if appropriate or requested.",
 	"use bulleted lists when listing multiple things.",
 	"hold true your own character, including personality traits, interests, strengths, weaknesses, and abilities.",
 ];
 
 const baseNever: string[] = [
-	"interrupt conversation with other AIs.",
-	"respond for other AIs.",
+	"interrupt user's conversation with other AIs.",
+	"respond on behalf of other AIs.",
+	"respond to other AIs.",
 	"offer to help with something that you're not good at.",
 	"repeat yourself too much nor repeat what other AIs have just said.",
 	"ask more than one question at a time.",
@@ -39,7 +40,7 @@ const baseNever: string[] = [
 	// "ask the user to do something that is part of your job"
 ];
 
-const generationAbility: string[] = [
+const generationInstructions: string[] = [
 	"When the user wants to generate something you're capable of, acquire information about what it should look like based on the user's preferences.",
 	"After enough information is acquired, for each request, you will create a detailed prompt describing what the end result will look like.",
 	"You will always wrap prompts with <prompt> and </prompt> tags around the description.",
@@ -70,35 +71,6 @@ function getMsgHistory(config: MsgHistoryConfig): TextMessage[] {
 	return hist;
 }
 
-const getBasePromptStart = (actor: ActorConfig) => {
-	let res = `The following is a group-chat conversation between a human and several AI assistants.\n`;
-	res += "\n";
-
-	res += "### ASSISTANT RULES ###\n";
-	if (baseAlways.length > 0) {
-		res += `# Assistants always:\n`;
-		res += baseAlways.map((b) => `- Always ${b}`).join("\n");
-		res += "\n\n";
-	}
-	if (baseNever.length > 0) {
-		res += `# Assistants never:\n`;
-		res += baseNever.map((b) => `- Never ${b}`).join("\n");
-		res += "\n\n";
-	}
-
-	res += "### ASSISTANTS ###\n";
-	res += getInfoList(false, actor);
-
-	if (actor.abilities) {
-		res += `### Besides chatting, you (${actor.name}) can also:\n`;
-		res += actor.abilities.map((b) => `- ${b}`).join("\n");
-		res += "\n\n";
-	}
-
-	res += "### CONVERSATION ###\n";
-	return res;
-};
-
 const getBasePromptHistory = (
 	messages: TextMessage[],
 	include?: ActorConfig[],
@@ -121,19 +93,39 @@ const getBasePromptHistory = (
 	return hist.join("\n") + "\n";
 };
 
-const getInfoList = (useKey: boolean, currentAI?: ActorConfig) => {
+const getMembersPrompt = (useKey: boolean, currentAI?: ActorConfig) => {
 	const available = getAvailable();
-	const infoList = available.map((ai) => {
-		const id = useKey ? ai.key : ai.name;
-		let res = `# ${id}`;
-		if (currentAI && currentAI.key === ai.key) res += " (You)";
-		res += ":\n";
-		if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`;
-		if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`;
-		if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`;
-		return res;
-	});
-	return infoList.join("\n") + "\n";
+	let res = "### ASSISTANTS ###\n";
+	res += available
+		.map((ai) => {
+			const id = useKey ? ai.key : ai.name;
+			let res = `# ${id}`;
+			if (currentAI && currentAI.key === ai.key) res += " (You)";
+			res += ":\n";
+			if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`;
+			if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`;
+			if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`;
+			if (ai.abilities) res += `- Abilities: ${ai.abilities.join(", ")}.\n`;
+			return res;
+		})
+		.join("\n");
+	res += "\n";
+	return res;
+};
+
+const getRulesPrompt = (): string => {
+	let res = "### ASSISTANT RULES ###\n";
+	if (baseAlways.length > 0) {
+		res += `# Assistants always:\n`;
+		res += baseAlways.map((b) => `- Always ${b}`).join("\n");
+		res += "\n\n";
+	}
+	if (baseNever.length > 0) {
+		res += `# Assistants never:\n`;
+		res += baseNever.map((b) => `- Never ${b}`).join("\n");
+		res += "\n\n";
+	}
+	return res;
 };
 
 const getAvailable = (): ActorConfig[] => {
@@ -155,6 +147,23 @@ const toNames = (actors: ActorConfig[]): string[] => {
 	return actors.map((a) => a.name);
 };
 
+const getBasePromptStart = (actor: ActorConfig) => {
+	let res = `The following is a group-chat conversation between a human and several AI assistants.\n`;
+	res += "\n";
+
+	res += getRulesPrompt();
+	res += getMembersPrompt(false, actor);
+
+	if (actor.instructions) {
+		res += `### Additional instructions for ${actor.name}:\n`;
+		res += actor.instructions.map((b) => `- ${b}`).join("\n");
+		res += "\n\n";
+	}
+
+	res += "### CONVERSATION ###\n";
+	return res;
+};
+
 const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	let res = "### COORDINATOR ###\n";
 	res += "Choose which assistant(s) would be the absolute best at responding to the user's message.\n";
@@ -164,8 +173,8 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += "Also keep the logical consistency of the conversation in mind.\n";
 	res += "\n";
 
-	res += "### ASSISTANTS ###\n";
-	res += getInfoList(true);
+	res += getRulesPrompt();
+	res += getMembersPrompt(true);
 
 	res += "### EXAMPLES ###\n";
 	res += `### ${humanName}:\n`;
@@ -196,7 +205,7 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	res += "\n";
 
 	res += `### ${humanName}:\n`;
-	res += `Hey ${actors.codex.name}, can you code something for me?\n`;
+	res += `Hey ${actors.codex.name}, could you write some code something for me?\n`;
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
@@ -206,7 +215,7 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 
 	res += "### CONVERSATION ###\n";
 
-	const conv = getBasePromptHistory(messages, [actors.coordinator], [], 5);
+	const conv = getBasePromptHistory(messages, [], [actors.coordinator], 5);
 	const end = `### ${actor.name}:\n`;
 	const prompt = res + conv + end;
 	return prompt.trim();
@@ -261,7 +270,8 @@ export const actors: Record<string, ActorConfig> = {
 		personality: ["artistic", "creative", "visionary", ...basePersonalityTraits],
 		strengths: ["art", "painting", "drawing", "sketching"],
 		weaknesses: ["generating code"],
-		abilities: [...generationAbility],
+		abilities: ["Generating images from text descriptions"],
+		instructions: [...generationInstructions],
 	},
 	codex: {
 		key: "codex",
@@ -281,7 +291,8 @@ export const actors: Record<string, ActorConfig> = {
 		personality: ["analytical", "logical", "rational", ...basePersonalityTraits],
 		strengths: ["programming", "software development"],
 		weaknesses: ["generating images"],
-		abilities: [...generationAbility],
+		abilities: ["Generating code from text descriptions"],
+		instructions: [...generationInstructions],
 	},
 	coordinator: {
 		key: "coordinator",
@@ -290,7 +301,7 @@ export const actors: Record<string, ActorConfig> = {
 		createPrompt: getPromptCoordinator,
 		config: {
 			model: "text-davinci-003",
-			temperature: 0.75,
+			temperature: 0.5,
 			max_tokens: 25,
 			top_p: 1,
 			frequency_penalty: 0,

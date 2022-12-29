@@ -30,6 +30,7 @@ export interface ActorConfig {
 	strengths?: string[];
 	weaknesses?: string[];
 	abilities?: string[];
+	instructions?: string[];
 	createGen?: string;
 	vals?: any;
 }

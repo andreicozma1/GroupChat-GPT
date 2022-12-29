@@ -211,29 +211,13 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 	return prompt.trim();
 };
 
-const getPromptDavinci = (actor: ActorConfig, messages: TextMessage[]) => {
+function getConversationalPrompt(actor: ActorConfig, messages: TextMessage[]): string {
 	const start = getBasePromptStart(actor);
 	const conv = getBasePromptHistory(messages);
 	const end = `### ${actor.name}:\n`;
 	const prompt = start + conv + end;
 	return prompt.trim();
-};
-
-const getPromptDalle = (actor: ActorConfig, messages: TextMessage[]) => {
-	const start = getBasePromptStart(actor);
-	const conv = getBasePromptHistory(messages);
-	const end = `### ${actor.name}:\n`;
-	const prompt = start + conv + end;
-	return prompt.trim();
-};
-
-const getPromptCodex = (actor: ActorConfig, messages: TextMessage[]) => {
-	const start = getBasePromptStart(actor);
-	const conv = getBasePromptHistory(messages);
-	const end = `### ${actor.name}:\n`;
-	const prompt = start + conv + end;
-	return prompt.trim();
-};
+}
 
 const getPromptDalleGen = (actor: ActorConfig, messages: TextMessage[]) => {
 	const lastMessage = messages[messages.length - 1];
@@ -245,7 +229,7 @@ export const actors: Record<string, ActorConfig> = {
 		key: "davinci",
 		name: "Davinci",
 		icon: "chat",
-		createPrompt: getPromptDavinci,
+		createPrompt: getConversationalPrompt,
 		createComp: openai.createCompletion,
 		config: {
 			model: "text-davinci-003",
@@ -263,7 +247,7 @@ export const actors: Record<string, ActorConfig> = {
 		key: "dalle",
 		name: "DALL-E",
 		icon: "image",
-		createPrompt: getPromptDalle,
+		createPrompt: getConversationalPrompt,
 		createComp: openai.createCompletion,
 		createGen: "dalle_gen",
 		config: {
@@ -284,7 +268,7 @@ export const actors: Record<string, ActorConfig> = {
 		key: "codex",
 		name: "Codex",
 		icon: "code",
-		createPrompt: getPromptCodex,
+		createPrompt: getConversationalPrompt,
 		createComp: openai.createCompletion,
 		createGen: "codex_gen",
 		config: {

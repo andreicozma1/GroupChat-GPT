@@ -26,6 +26,7 @@
             @click="sendMessage"
         />
         <q-space/>
+        <q-checkbox v-model="orderedResponses" label="Ordered Responses" left-label/>
         <q-checkbox v-model="hideCoordinator" label="Hide Coordinator" left-label/>
         <q-btn
             color="orange"
@@ -66,6 +67,8 @@ const controlsCard: Ref<QCard | null> = ref(null)
 const scrollAreaStyle = ref({})
 const hideCoordinator = ref(true)
 
+const orderedResponses = ref(true)
+
 const myName = computed(() => comp.userName)
 
 const userMsgEl: Ref<QInput | null> = ref(null)
@@ -100,7 +103,7 @@ const handleCoordinator = () => {
   const ai: ActorConfig = actors.coordinator
   const msg: TextMessage = createAIMessage(ai)
 
-  comp.genCompletion(ai).then((res: GenerationResult) => {
+  comp.genCompletion(ai).then(async (res: GenerationResult) => {
     console.log(res)
     msg.loading = false
     msg.cached = res.cached
@@ -127,7 +130,11 @@ const handleCoordinator = () => {
     console.log("Next Actors: ", nextActors)
     for (let actor of nextActors) {
       actor = actor.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
-      handleNext(actor)
+      if (orderedResponses.value) {
+        await handleNext(actor)
+      } else {
+        handleNext(actor)
+      }
     }
   })
 }

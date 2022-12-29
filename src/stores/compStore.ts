@@ -40,7 +40,7 @@ const baseNever: string[] = [
 ];
 
 const generationAbility: string[] = [
-	"When the user wants an image of something, acquire information about what it should look like based on the user's preferences.",
+	"When the user wants to generate something you're capable of, acquire information about what it should look like based on the user's preferences.",
 	"After enough information is acquired, for each request, you will create a detailed prompt describing what the end result will look like.",
 	"You will always wrap prompts with <prompt> and </prompt> tags around the description.",
 	"Only the detailed description should be within the prompt tags, and nothing else.",

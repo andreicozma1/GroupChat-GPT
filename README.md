@@ -48,3 +48,7 @@ quasar build
 ### Customize the configuration
 
 See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+
+### License & Credit
+
+You may use this software and modify its functionality as you wish given that you provide proper credit to the original author (Andrei Cozma - www.andreicozma.com) and include the link to the original software repository.

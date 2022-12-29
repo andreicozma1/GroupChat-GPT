@@ -102,7 +102,10 @@ const parseThreadMessages = (): TextMessage[] => {
   })
   // filter out messages from Coordinator messages if hideCoordinator is true
   if (props.hideCoordinator) {
-    thrd = thrd.filter((msg: TextMessage) => msg.name !== actors.coordinator.name)
+    thrd = thrd.filter((msg: TextMessage) => {
+      if (msg.text.some((line: string) => line.includes("[ERROR]") || line.includes("[WARN]"))) return true
+      return msg.name !== actors.coordinator.name
+    })
   }
   thrd.sort((a, b) => {
     const ad = new Date(a.date)

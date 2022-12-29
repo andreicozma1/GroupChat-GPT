@@ -14,6 +14,8 @@ Features:
 ## Demo:
 
 ![image](https://user-images.githubusercontent.com/14914491/209245190-6734d6a2-7935-41fc-9d4e-b7b57e2f6a53.png)
+![image](https://user-images.githubusercontent.com/14914491/209996928-906cb9dc-74d4-4c92-adcd-be9ecb507570.png)
+
 
 ## Install the dependencies
 

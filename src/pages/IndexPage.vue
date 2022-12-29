@@ -64,7 +64,7 @@ const comp = useCompStore()
 
 const controlsCard: Ref<QCard | null> = ref(null)
 const scrollAreaStyle = ref({})
-const hideCoordinator = ref(false)
+const hideCoordinator = ref(true)
 
 const myName = computed(() => comp.userName)
 

@@ -70,6 +70,11 @@ const props = defineProps({
     type    : Object,
     required: false,
     default : null
+  },
+  hideCoordinator: {
+    type    : Boolean,
+    required: false,
+    default : false
   }
 })
 
@@ -85,7 +90,7 @@ const getObjectiveIcon = (objective: string) => {
 }
 
 const parseThreadMessages = (): TextMessage[] => {
-  const thrd: TextMessage[] = comp.getThread.messages.map((msg: TextMessage) => {
+  let thrd: TextMessage[] = comp.getThread.messages.map((msg: TextMessage) => {
     const text = msg.text.length === 0 ? [] : [ ...msg.text ]
     if (!msg.loading && text.length === 0) text.push("[No message]")
     return {
@@ -95,6 +100,10 @@ const parseThreadMessages = (): TextMessage[] => {
       sent : isSentByMe(msg)
     }
   })
+  // filter out messages from Coordinator messages if hideCoordinator is true
+  if (props.hideCoordinator) {
+    thrd = thrd.filter((msg: TextMessage) => msg.name !== actors.coordinator.name)
+  }
   thrd.sort((a, b) => {
     const ad = new Date(a.date)
     const bd = new Date(b.date)
@@ -191,10 +200,10 @@ watch(comp.getThread, () => {
   scrollToBottom(1000)
 })
 
-// watchEffect(() => {
-//   threadMessages.value = parseThreadMessages()
-//   console.log("HERE")
-// })
+watch(() => props.hideCoordinator, () => {
+  threadMessages.value = parseThreadMessages()
+  scrollToBottom(1000)
+})
 
 onMounted(() => {
   scrollToBottom(1000)

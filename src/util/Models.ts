@@ -22,7 +22,7 @@ export interface ActorConfig {
 	name: string;
 	createPrompt: any;
 	config: CreateCompletionRequest | CreateImageRequest;
-	createComp: any;
+	createComp?: any;
 	icon: string;
 	ignoreCache?: boolean;
 	available?: boolean;

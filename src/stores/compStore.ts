@@ -30,6 +30,7 @@ const baseAlways: string[] = [
 
 const baseNever: string[] = [
 	"interrupt conversation with other AIs.",
+	"respond for other AIs.",
 	"offer to help with something that you're not good at.",
 	"repeat yourself too much nor repeat what other AIs have just said.",
 	"ask more than one question at a time.",
@@ -205,7 +206,7 @@ const getPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
 
 	res += "### CONVERSATION ###\n";
 
-	const conv = getBasePromptHistory(messages, [actors.coordinator], undefined, 5);
+	const conv = getBasePromptHistory(messages, [actors.coordinator], [], 5);
 	const end = `### ${actor.name}:\n`;
 	const prompt = res + conv + end;
 	return prompt.trim();
@@ -230,7 +231,6 @@ export const actors: Record<string, ActorConfig> = {
 		name: "Davinci",
 		icon: "chat",
 		createPrompt: getConversationalPrompt,
-		createComp: openai.createCompletion,
 		config: {
 			model: "text-davinci-003",
 			max_tokens: 250,
@@ -248,7 +248,6 @@ export const actors: Record<string, ActorConfig> = {
 		name: "DALL-E",
 		icon: "image",
 		createPrompt: getConversationalPrompt,
-		createComp: openai.createCompletion,
 		createGen: "dalle_gen",
 		config: {
 			model: "text-davinci-003",
@@ -269,7 +268,6 @@ export const actors: Record<string, ActorConfig> = {
 		name: "Codex",
 		icon: "code",
 		createPrompt: getConversationalPrompt,
-		createComp: openai.createCompletion,
 		createGen: "codex_gen",
 		config: {
 			model: "text-davinci-003",
@@ -290,7 +288,6 @@ export const actors: Record<string, ActorConfig> = {
 		name: "Coordinator",
 		icon: "question_answer",
 		createPrompt: getPromptCoordinator,
-		createComp: openai.createCompletion,
 		config: {
 			model: "text-davinci-003",
 			temperature: 0.75,
@@ -403,13 +400,24 @@ export const useCompStore = defineStore("counter", {
 			let completion;
 			try {
 				// otherwise, generate a new completion
-				completion = await actor.createComp(
-					{
-						...actor.config,
-						prompt: prompt,
-					},
-					options
-				);
+				if (actor.createComp) {
+					completion = await actor.createComp(
+						{
+							...actor.config,
+							prompt: prompt,
+						},
+						options
+					);
+				} else {
+					completion = await openai.createCompletion(
+						{
+							...actor.config,
+							prompt: prompt,
+						},
+						options
+					);
+				}
+
 				if (completion === null || completion === undefined) throw new Error("No response");
 			} catch (error: any) {
 				console.error(error);

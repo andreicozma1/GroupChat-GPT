@@ -105,7 +105,7 @@ const handleCoordinator = () => {
   const ai: AssistantConfig = AssistantConfigs.coordinator;
   const msg: ChatMessage = createAIMessage(ai);
 
-  comp.genCompletion(ai).then(async (res: GenerationResult) => {
+  comp.generate(ai).then(async (res: GenerationResult) => {
     console.log(res);
     msg.loading = false;
     msg.cached = res.cached;
@@ -123,7 +123,7 @@ const handleCoordinator = () => {
     msg.text = res.text ? [...res.text] : ["An error occurred"];
     comp.pushMessage(msg);
     const nextActors = res.text
-        .filter((t: string) => t.startsWith(AssistantConfigs.coordinator.vals.willRespond))[0]
+        .filter((t: string) => t.startsWith(AssistantConfigs.coordinator.extras.willRespond))[0]
         .split(":")[1]
         .split(",")
         .map((a: string) => a.trim().toLowerCase());
@@ -154,7 +154,7 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
     return;
   }
 
-  const res = await comp.genCompletion(cfgFollowup);
+  const res = await comp.generate(cfgFollowup);
 
   console.log(res);
   msg.loading = false;
@@ -177,8 +177,13 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
 
   comp.pushMessage(msg);
 
-  const createGen = cfgFollowup?.createGen;
-  if (createGen) {
+  let createGen = cfgFollowup?.followUps;
+  // if null or undefined, exit
+  if (!createGen) return;
+  // if string, make it an array
+  if (typeof createGen === "string") createGen = [createGen];
+  // for each
+  for (const nextActor of createGen) {
     // filter out texts that contain <prompt> tags
     let prompts = msg.text
         .filter((t: string) => t.includes("<prompt>"))

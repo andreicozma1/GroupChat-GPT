@@ -1,9 +1,8 @@
 import { defineStore } from "pinia";
 import { LocalStorage } from "quasar";
-import { ApiOptsValidTypes, getApiOpts } from "src/util/assistant/Configs";
 import { AssistantConfig } from "src/util/assistant/Util";
 import { ChatMessage, ChatThread } from "src/util/Chat";
-import { openai, options } from "src/util/OpenAi";
+import { makeApiRequest } from "src/util/OpenAi";
 import { v4 as uuidv4 } from "uuid";
 import { Ref, ref } from "vue";
 
@@ -85,8 +84,9 @@ export const useCompStore = defineStore("counter", {
 				result: cachedResponse,
 			};
 		},
-		async genCompletion(actor: AssistantConfig): Promise<GenerationResult> {
-			const prompt = actor.createPrompt(actor, this.getThread.messages);
+
+		async generate(actor: AssistantConfig): Promise<GenerationResult> {
+			const prompt = actor.promptStyle(actor, this.getThread.messages);
 			const hash = hashPrompt(prompt);
 			console.warn(prompt);
 			// if we already have a completion for this prompt, return it
@@ -99,26 +99,7 @@ export const useCompStore = defineStore("counter", {
 
 			let completion;
 			try {
-				// otherwise, generate a new completion
-				const apiConfig: ApiOptsValidTypes = getApiOpts(actor.config);
-				if (actor.genType) {
-					completion = await actor.genType(
-						{
-							...apiConfig,
-							prompt: prompt,
-						},
-						options
-					);
-				} else {
-					completion = await openai.createCompletion(
-						{
-							...apiConfig,
-							prompt: prompt,
-						},
-						options
-					);
-				}
-
+				completion = await makeApiRequest(actor, prompt);
 				if (completion === null || completion === undefined) throw new Error("No response");
 			} catch (error: any) {
 				console.error(error);

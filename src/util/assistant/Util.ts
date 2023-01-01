@@ -3,19 +3,25 @@ import { AssistantConfigs } from "src/util/assistant/Configs";
 export interface AssistantConfig {
 	key: string;
 	name: string;
-	createPrompt: any;
-	config: string;
-	genType?: any;
 	icon: string;
-	ignoreCache?: boolean;
-	available?: boolean;
-	personality?: string[];
-	strengths?: string[];
-	weaknesses?: string[];
-	abilities?: string[];
+	promptStyle: any;
+	apiConfig: {
+		apiReqType: string;
+		apiReqOpts?: string;
+	};
+	traits?: {
+		personality?: string[];
+		strengths?: string[];
+		weaknesses?: string[];
+		abilities?: string[];
+	};
+	extras?: {
+		[key: string]: any;
+	};
 	instructions?: string[];
-	createGen?: string;
-	vals?: any;
+	followUps?: string | string[];
+	available?: boolean;
+	ignoreCache?: boolean;
 }
 
 export const getAvailable = (): AssistantConfig[] => {

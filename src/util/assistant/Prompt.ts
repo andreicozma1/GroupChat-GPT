@@ -42,10 +42,16 @@ export const getAssistantsInfo = (useKey: boolean, currentAI?: AssistantConfig) 
 			let res = `# ${id}`;
 			if (currentAI && currentAI.key === ai.key) res += " (You)";
 			res += ":\n";
-			if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`;
-			if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`;
-			if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`;
-			if (ai.abilities) res += `- Abilities: ${ai.abilities.join(", ")}.\n`;
+			if (ai.traits) {
+				// if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`;
+				// if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`;
+				// if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`;
+				// if (ai.abilities) res += `- Abilities: ${ai.abilities.join(", ")}.\n`;
+				res += Object.entries(ai.traits)
+					.map(([k, v]) => `- ${k}: ${v.join(", ")}`)
+					.join("\n");
+			}
+			res += "\n";
 			return res;
 		})
 		.join("\n");

@@ -18,7 +18,7 @@ export const createPromptCoordinator = (actor: AssistantConfig, messages: ChatMe
 	const rules = getAssistantRules();
 	const info = getAssistantsInfo(true);
 	const examples = coordinatorPromptExamples(actor);
-	const conv = getConversation(messages, [], [AssistantConfigs.coordinator], 5);
+	const conv = getConversation(messages, [], [ AssistantConfigs.coordinator ], 5);
 	const end = `### ${actor.name}:\n`;
 	return (start + info + rules + examples + conv + end).trim();
 };
@@ -30,10 +30,9 @@ const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${AssistantConfigs.coordinator.vals.willIgnore}: ${actorsToKeys(
-		getAllExcept(AssistantConfigs.davinci)
-	).join(", ")}\n`;
-	res += `${AssistantConfigs.coordinator.vals.willRespond}: ${AssistantConfigs.davinci.key}\n`;
+	res += `${AssistantConfigs.coordinator.extras.willIgnore}: ${actorsToKeys(
+		getAllExcept(AssistantConfigs.davinci)).join(", ")}\n`;
+	res += `${AssistantConfigs.coordinator.extras.willRespond}: ${AssistantConfigs.davinci.key}\n`;
 	res += "\n";
 
 	res += `### ${humanName}:\n`;
@@ -41,8 +40,8 @@ const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${AssistantConfigs.coordinator.vals.willIgnore}: None\n`;
-	res += `${AssistantConfigs.coordinator.vals.willRespond}: ${actorsToKeys(getAvailable()).join(", ")}\n`;
+	res += `${AssistantConfigs.coordinator.extras.willIgnore}: None\n`;
+	res += `${AssistantConfigs.coordinator.extras.willRespond}: ${actorsToKeys(getAvailable()).join(", ")}\n`;
 	res += "\n";
 
 	res += `### ${humanName}:\n`;
@@ -50,10 +49,9 @@ const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${AssistantConfigs.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(AssistantConfigs.dalle)).join(
-		", "
-	)}\n`;
-	res += `${AssistantConfigs.coordinator.vals.willRespond}: ${AssistantConfigs.dalle.key}\n`;
+	res += `${AssistantConfigs.coordinator.extras.willIgnore}: ${actorsToKeys(
+		getAllExcept(AssistantConfigs.dalle)).join(", ")}\n`;
+	res += `${AssistantConfigs.coordinator.extras.willRespond}: ${AssistantConfigs.dalle.key}\n`;
 	res += "\n";
 
 	res += `### ${humanName}:\n`;
@@ -61,10 +59,9 @@ const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${AssistantConfigs.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(AssistantConfigs.codex)).join(
-		", "
-	)}\n`;
-	res += `${AssistantConfigs.coordinator.vals.willRespond}: ${AssistantConfigs.codex.key}\n`;
+	res += `${AssistantConfigs.coordinator.extras.willIgnore}: ${actorsToKeys(
+		getAllExcept(AssistantConfigs.codex)).join(", ")}\n`;
+	res += `${AssistantConfigs.coordinator.extras.willRespond}: ${AssistantConfigs.codex.key}\n`;
 	res += "\n";
 	return res;
 };

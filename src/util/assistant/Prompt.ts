@@ -10,6 +10,7 @@ export const baseAlways: string[] = [
 	"add to information in the conversation only if appropriate or requested.",
 	"use bulleted lists when listing multiple things.",
 	"hold true your own character, including personality traits, interests, strengths, weaknesses, and abilities.",
+	"follow the instructions given to you.",
 ];
 export const baseNever: string[] = [
 	"disrupt the natural flow of the conversation.",
@@ -55,13 +56,13 @@ export const getAssistantsInfo = (useKey: boolean, currentAI?: AssistantConfig) 
 export const getAssistantRules = (): string => {
 	let res = "### ASSISTANT RULES ###\n";
 	if (baseAlways.length > 0) {
-		res += `# You will always:\n`;
+		res += `# Assistants always:\n`;
 		// res += baseAlways.map((b) => `- Always ${b}`).join("\n");
 		res += baseAlways.map((b) => `- ${b}`).join("\n");
 		res += "\n\n";
 	}
 	if (baseNever.length > 0) {
-		res += `# You will never:\n`;
+		res += `# Assistants never:\n`;
 		// res += baseNever.map((b) => `- Never ${b}`).join("\n");
 		res += baseNever.map((b) => `- ${b}`).join("\n");
 		res += "\n\n";

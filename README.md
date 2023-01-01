@@ -5,8 +5,7 @@ Well, this application is a step towards that world.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<details>
-<summary>Table of Contents</summary>
+**Table of Contents**
 
 - [Features:](#features)
 - [Setup Project & Dependencies](#setup-project--dependencies)
@@ -19,7 +18,6 @@ Well, this application is a step towards that world.
 - [License & Credit](#license--credit)
 - [Demo Screenshots:](#demo-screenshots)
 
-</details>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Features: 

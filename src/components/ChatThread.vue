@@ -57,7 +57,7 @@ import { TextMessage } from "src/util/Models";
 import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util";
 import { useCompStore } from "stores/compStore";
 import { computed, onMounted, Ref, ref, watch } from "vue";
-import { actors } from "src/util/ActorsConfig";
+import {actors} from "src/util/assistants/Configs";
 
 const props = defineProps({
   myName: {

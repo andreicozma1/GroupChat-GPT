@@ -60,7 +60,7 @@ import { ActorConfig, GenerationResult, TextMessage } from "src/util/Models";
 import { getSeededAvatarURL } from "src/util/Util";
 import { useCompStore } from "stores/compStore";
 import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue";
-import { actors } from "src/util/ActorsConfig";
+import {actors} from "src/util/assistants/Configs";
 
 const comp = useCompStore();
 

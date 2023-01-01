@@ -1,5 +1,5 @@
 import { ActorConfig, TextMessage } from "src/util/Models";
-import { getPromptAssistantsInfo, getPromptAssistantRules, getPromptChatHistory } from "src/util/AIPromptUtil";
+import { getPromptAssistantsInfo, getPromptAssistantRules, getPromptChatHistory } from "src/util/AiPrompts";
 
 export const assistantPromptStart = (actor: ActorConfig) => {
 	let res = `The following is a group-chat conversation between a human and several AI assistants.\n`;

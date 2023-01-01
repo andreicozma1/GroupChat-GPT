@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { LocalStorage } from "quasar";
-import { actors } from "src/util/ActorsConfig";
+import { actors } from "src/util/assistants/Configs"
 import { ActorConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models";
 import { openai, options } from "src/util/OpenAIUtil";
 import { v4 as uuidv4 } from "uuid";

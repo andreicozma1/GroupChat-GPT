@@ -1,7 +1,7 @@
+import { actors } from "src/util/assistants/Configs"
 import { ActorConfig, TextMessage } from "src/util/Models";
-import { actors } from "src/util/ActorsConfig";
 import { allExcept, getAvailable, humanName, toKeys } from "stores/compStore";
-import { getPromptAssistantRules, getPromptAssistantsInfo, getPromptChatHistory } from "src/util/AIPromptUtil";
+import { getPromptAssistantRules, getPromptAssistantsInfo, getPromptChatHistory } from "src/util/AiPrompts";
 
 function coordinatorPromptStart(actor: ActorConfig): string {
 	let res = "### COORDINATOR ###\n";

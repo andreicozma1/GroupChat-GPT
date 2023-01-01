@@ -1,52 +1,52 @@
 <template>
   <div class="full-width">
-    <ChatThread :hideCoordinator="hideCoordinator" :my-name="myName" :scroll-area-style="scrollAreaStyle" />
+    <ChatThread :hideCoordinator="hideCoordinator" :my-name="myName" :scroll-area-style="scrollAreaStyle"/>
     <q-card ref="controlsCard" class="fixed-bottom">
       <q-card-section class="q-px-sm q-pt-sm q-pb-none">
         <q-input
-          ref="userMsgEl"
-          v-model="userMsgStr"
-          autofocus
-          autogrow
-          clearable
-          label="Message"
-          maxlength="2000"
-          outlined
-          type="textarea"
+            ref="userMsgEl"
+            v-model="userMsgStr"
+            autofocus
+            autogrow
+            clearable
+            label="Message"
+            maxlength="2000"
+            outlined
+            type="textarea"
         />
       </q-card-section>
       <q-card-actions>
         <q-btn
-          :disable="!userMsgValid"
-          color="primary"
-          icon="send"
-          label="Send"
-          padding="5px 20px"
-          rounded
-          @click="sendMessage"
+            :disable="!userMsgValid"
+            color="primary"
+            icon="send"
+            label="Send"
+            padding="5px 20px"
+            rounded
+            @click="sendMessage"
         />
-        <q-space />
-        <q-checkbox v-model="orderedResponses" label="Ordered Responses" left-label />
-        <q-checkbox v-model="hideCoordinator" label="Hide Coordinator" left-label />
+        <q-space/>
+        <q-checkbox v-model="orderedResponses" label="Ordered Responses" left-label/>
+        <q-checkbox v-model="hideCoordinator" label="Hide Coordinator" left-label/>
         <q-btn
-          color="orange"
-          dense
-          icon-right="clear"
-          label="Clear Thread"
-          no-caps
-          outline
-          rounded
-          @click="comp.clearThread"
+            color="orange"
+            dense
+            icon-right="clear"
+            label="Clear Thread"
+            no-caps
+            outline
+            rounded
+            @click="comp.clearThread"
         />
         <q-btn
-          color="red"
-          dense
-          icon-right="delete_forever"
-          label="Clear Cache"
-          no-caps
-          outline
-          rounded
-          @click="comp.clearCache"
+            color="red"
+            dense
+            icon-right="delete_forever"
+            label="Clear Cache"
+            no-caps
+            outline
+            rounded
+            @click="comp.clearCache"
         />
       </q-card-actions>
     </q-card>
@@ -55,13 +55,13 @@
 
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue";
-import { QCard, QInput } from "quasar";
-import { getRoboHashAvatarUrl } from "src/util/Utils";
-import { GenerationResult, useCompStore } from "stores/compStore";
-import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue";
-import { actors } from "src/util/assistant/Configs";
-import { ChatMessage } from "src/util/Chat";
-import { AssistantConfig } from "src/util/assistant/Util";
+import {QCard, QInput} from "quasar";
+import {getRoboHashAvatarUrl} from "src/util/Utils";
+import {GenerationResult, useCompStore} from "stores/compStore";
+import {computed, onBeforeUnmount, onMounted, Ref, ref, watch} from "vue";
+import {assistants} from "src/util/assistant/Configs";
+import {ChatMessage} from "src/util/Chat";
+import {AssistantConfig} from "src/util/assistant/Util";
 
 const comp = useCompStore();
 
@@ -102,7 +102,7 @@ const createAIMessage = (cfg: AssistantConfig): ChatMessage => {
 };
 
 const handleCoordinator = () => {
-  const ai: AssistantConfig = actors.coordinator;
+  const ai: AssistantConfig = assistants.coordinator;
   const msg: ChatMessage = createAIMessage(ai);
 
   comp.genCompletion(ai).then(async (res: GenerationResult) => {
@@ -123,10 +123,10 @@ const handleCoordinator = () => {
     msg.text = res.text ? [...res.text] : ["An error occurred"];
     comp.pushMessage(msg);
     const nextActors = res.text
-      .filter((t: string) => t.startsWith(actors.coordinator.vals.willRespond))[0]
-      .split(":")[1]
-      .split(",")
-      .map((a: string) => a.trim().toLowerCase());
+        .filter((t: string) => t.startsWith(assistants.coordinator.vals.willRespond))[0]
+        .split(":")[1]
+        .split(",")
+        .map((a: string) => a.trim().toLowerCase());
 
     // for each actor, call the appropriate handler
     console.log("Next Actors: ", nextActors);
@@ -145,7 +145,7 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
   // await sleep(Math.random() * 2500)
 
   actorKey = actorKey?.trim();
-  const cfgFollowup: AssistantConfig = actors[actorKey];
+  const cfgFollowup: AssistantConfig = assistants[actorKey];
   msg = msg || createAIMessage(cfgFollowup);
   if (!cfgFollowup) {
     msg.text.push(`[Error: Unknown actor type: ${actorKey}]`);
@@ -181,8 +181,8 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
   if (createGen) {
     // filter out texts that contain <prompt> tags
     let prompts = msg.text
-      .filter((t: string) => t.includes("<prompt>"))
-      .map((t: string) => t.split("<prompt>")[1].trim().split("</prompt>")[0].trim());
+        .filter((t: string) => t.includes("<prompt>"))
+        .map((t: string) => t.split("<prompt>")[1].trim().split("</prompt>")[0].trim());
 
     msg.text = msg.text.map((t: string) => {
       if (t.includes("<prompt>")) {
@@ -246,7 +246,7 @@ const updateIC = () => {
     const ic = controlsCard.value;
     let bottom = 0;
     if (ic) bottom = ic.$el.clientHeight;
-    const newStyle = { bottom: bottom + "px" };
+    const newStyle = {bottom: bottom + "px"};
     if (newStyle.bottom !== scrollAreaStyle.value.bottom) {
       scrollAreaStyle.value = newStyle;
     }
@@ -260,10 +260,10 @@ watch(userMsgStr, () => {
   isTyping.value = true;
   if (isTypingTimeout.value) clearTimeout(isTypingTimeout.value);
   isTypingTimeout.value = setTimeout(
-    () => {
-      isTyping.value = false;
-    },
-    userMsgValid.value ? 1000 : 250
+      () => {
+        isTyping.value = false;
+      },
+      userMsgValid.value ? 1000 : 250
   );
 });
 

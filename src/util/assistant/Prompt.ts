@@ -1,6 +1,6 @@
-import { actors } from "src/util/assistant/Configs";
+import { assistants } from "src/util/assistant/Configs";
 import { AssistantConfig, getAvailable } from "src/util/assistant/Util";
-import { getMessageHistory, ChatMessage } from "src/util/Chat";
+import { ChatMessage, getMessageHistory } from "src/util/Chat";
 
 export const basePersonalityTraits = ["enthusiastic", "clever", "very friendly"];
 export const baseStrengths = ["making conversation", "answering questions"];
@@ -77,7 +77,7 @@ export const getConversation = (
 	length?: number
 ): string => {
 	include = include || undefined;
-	exclude = exclude || [actors.coordinator];
+	exclude = exclude || [assistants.coordinator];
 	length = length || 10;
 	const start = "### CONVERSATION ###";
 	const hist = getMessageHistory({

@@ -1,24 +1,24 @@
 <template>
   <q-scroll-area ref="threadElem" :style="getScrollAreaStyle">
-    <q-chat-message :label="threadMessages.length.toString() + ' messages'" class="q-pt-md" />
+    <q-chat-message :label="threadMessages.length.toString() + ' messages'" class="q-pt-md"/>
     <div v-for="msg in threadMessages" :key="msg.date">
       <q-chat-message :bg-color="msg.sent ? null : getSeededQColor(msg.name, 1, 2)" size="6" v-bind="msg">
         <div v-for="text in msg.text" :key="text">
-          <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)" />
+          <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)"/>
           <q-tooltip v-if="msg.dateCreated" :delay="750">
             {{ createHoverHint(msg) }}
           </q-tooltip>
         </div>
 
         <template v-if="msg.loading">
-          <q-spinner-dots class="q-ml-md" color="primary" size="2em" />
+          <q-spinner-dots class="q-ml-md" color="primary" size="2em"/>
         </template>
 
         <template v-slot:stamp>
           <div class="row items-center">
             <span>
-              <q-icon :name="getObjectiveIcon(msg.objective)" class="q-mr-sm" />
-              <q-tooltip v-if="actors[msg.objective]?.apiConfig"> Objective: {{ msg.objective }} </q-tooltip>
+              <q-icon :name="getObjectiveIcon(msg.objective)" class="q-mr-sm"/>
+              <q-tooltip v-if="assistants[msg.objective]?.apiConfig"> Objective: {{ msg.objective }} </q-tooltip>
             </span>
             <span class="text-caption text-italic">
               {{ createStamp(msg) }}
@@ -26,9 +26,9 @@
                 {{ dateToStr(msg.date) }}
               </q-tooltip>
             </span>
-            <q-space />
+            <q-space/>
             <span v-if="msg.cached">
-              <q-icon class="q-ml-sm" name="cached" />
+              <q-icon class="q-ml-sm" name="cached"/>
               <q-tooltip v-if="msg.dateCreated">
                 Generated
                 {{ getTimeAgo(msg.dateCreated) }}
@@ -41,7 +41,7 @@
         <div v-if="msg.images.length > 0">
           <q-card v-for="image in msg.images" :key="image" :title="image" class="bg-grey-1" flat>
             <q-card-section class="q-pa-none">
-              <q-img :src="image" draggable fit="contain" style="max-height: 400px" />
+              <q-img :src="image" draggable fit="contain" style="max-height: 400px"/>
             </q-card-section>
           </q-card>
         </div>
@@ -51,13 +51,13 @@
 </template>
 
 <script lang="ts" setup>
-import { copyToClipboard } from "quasar";
-import { getSeededQColor } from "src/util/Colors";
-import { dateToStr, getTimeAgo, smartNotify } from "src/util/Utils";
-import { useCompStore } from "stores/compStore";
-import { computed, onMounted, Ref, ref, watch } from "vue";
-import { actors } from "src/util/assistant/Configs";
-import { ChatMessage } from "src/util/Chat";
+import {copyToClipboard} from "quasar";
+import {getSeededQColor} from "src/util/Colors";
+import {dateToStr, getTimeAgo, smartNotify} from "src/util/Utils";
+import {useCompStore} from "stores/compStore";
+import {computed, onMounted, Ref, ref, watch} from "vue";
+import {assistants} from "src/util/assistant/Configs";
+import {ChatMessage} from "src/util/Chat";
 
 const props = defineProps({
   myName: {
@@ -82,9 +82,9 @@ const threadElem: any = ref(null);
 const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 const getObjectiveIcon = (objective: string) => {
-  if (!actors[objective]) return "send";
-  if (!actors[objective].icon) return "help";
-  return actors[objective].icon;
+  if (!assistants[objective]) return "send";
+  if (!assistants[objective].icon) return "help";
+  return assistants[objective].icon;
 };
 
 const parseThreadMessages = (): ChatMessage[] => {
@@ -102,7 +102,7 @@ const parseThreadMessages = (): ChatMessage[] => {
   if (props.hideCoordinator) {
     thrd = thrd.filter((msg: ChatMessage) => {
       if (msg.text.some((line: string) => line.includes("[ERROR]") || line.includes("[WARN]"))) return true;
-      return msg.name !== actors.coordinator.name;
+      return msg.name !== assistants.coordinator.name;
     });
   }
   thrd.sort((a, b) => {
@@ -131,7 +131,7 @@ const createHoverHint = (msg: ChatMessage) => {
   const numTotal = numText + numImage;
   const who = isSentByMe(msg) ? "You" : msg.name;
   const what = `${numTotal} msg${numTotal > 1 ? "s" : ""} (${numText} text, ${numImage} image${
-    numImage > 1 ? "s" : ""
+      numImage > 1 ? "s" : ""
   })`;
   const when = dateToStr(msg.date);
   return `${who} sent ${what} on ${when}`;
@@ -195,10 +195,10 @@ const copyMessage = (text: string) => {
 };
 
 watch(
-  () => props.scrollAreaStyle,
-  () => {
-    scrollToBottom(1000);
-  }
+    () => props.scrollAreaStyle,
+    () => {
+      scrollToBottom(1000);
+    }
 );
 
 watch(comp.getThread, () => {
@@ -207,11 +207,11 @@ watch(comp.getThread, () => {
 });
 
 watch(
-  () => props.hideCoordinator,
-  () => {
-    threadMessages.value = parseThreadMessages();
-    scrollToBottom(1000);
-  }
+    () => props.hideCoordinator,
+    () => {
+      threadMessages.value = parseThreadMessages();
+      scrollToBottom(1000);
+    }
 );
 
 onMounted(() => {

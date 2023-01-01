@@ -18,7 +18,7 @@ const BaseAssistantApiConfig = {
 	presence_penalty: 0.6,
 	stop: ["###"],
 };
-export const actors: Record<string, AssistantConfig> = {
+export const assistants: Record<string, AssistantConfig> = {
 	davinci: {
 		key: "davinci",
 		name: "Davinci",

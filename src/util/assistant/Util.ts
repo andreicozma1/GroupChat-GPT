@@ -1,5 +1,5 @@
 import { CreateCompletionRequest, CreateImageRequest } from "openai/api";
-import { actors } from "src/util/assistant/Configs";
+import { assistants } from "src/util/assistant/Configs";
 
 export interface AssistantConfig {
 	key: string;
@@ -20,7 +20,7 @@ export interface AssistantConfig {
 }
 
 export const getAvailable = (): AssistantConfig[] => {
-	return Object.values(actors).filter((a) => {
+	return Object.values(assistants).filter((a) => {
 		if (a.available === undefined) return true;
 		return a.available;
 	});

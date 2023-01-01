@@ -1,8 +1,8 @@
-import { actors } from "src/util/assistant/Configs";
+import { assistants } from "src/util/assistant/Configs";
+import { getAssistantRules, getAssistantsInfo, getConversation } from "src/util/assistant/Prompt";
 import { actorsToKeys, AssistantConfig, getAllExcept, getAvailable } from "src/util/assistant/Util";
 import { ChatMessage } from "src/util/Chat";
 import { humanName } from "stores/compStore";
-import { getAssistantRules, getAssistantsInfo, getConversation } from "src/util/assistant/Prompt";
 
 const coordinatorPromptStart =
 	"### COORDINATOR ###\n" +
@@ -18,7 +18,7 @@ export const createPromptCoordinator = (actor: AssistantConfig, messages: ChatMe
 	const rules = getAssistantRules();
 	const info = getAssistantsInfo(true);
 	const examples = coordinatorPromptExamples(actor);
-	const conv = getConversation(messages, [], [actors.coordinator], 5);
+	const conv = getConversation(messages, [], [assistants.coordinator], 5);
 	const end = `### ${actor.name}:\n`;
 	return (start + info + rules + examples + conv + end).trim();
 };
@@ -26,12 +26,12 @@ export const createPromptCoordinator = (actor: AssistantConfig, messages: ChatMe
 const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 	let res = "### EXAMPLES ###\n";
 	res += `### ${humanName}:\n`;
-	res += `Hello, what's up ${actors.davinci.name}?\n`;
+	res += `Hello, what's up ${assistants.davinci.name}?\n`;
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${actors.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(actors.davinci)).join(", ")}\n`;
-	res += `${actors.coordinator.vals.willRespond}: ${actors.davinci.key}\n`;
+	res += `${assistants.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(assistants.davinci)).join(", ")}\n`;
+	res += `${assistants.coordinator.vals.willRespond}: ${assistants.davinci.key}\n`;
 	res += "\n";
 
 	res += `### ${humanName}:\n`;
@@ -39,8 +39,8 @@ const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${actors.coordinator.vals.willIgnore}: None\n`;
-	res += `${actors.coordinator.vals.willRespond}: ${actorsToKeys(getAvailable()).join(", ")}\n`;
+	res += `${assistants.coordinator.vals.willIgnore}: None\n`;
+	res += `${assistants.coordinator.vals.willRespond}: ${actorsToKeys(getAvailable()).join(", ")}\n`;
 	res += "\n";
 
 	res += `### ${humanName}:\n`;
@@ -48,17 +48,17 @@ const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${actors.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(actors.dalle)).join(", ")}\n`;
-	res += `${actors.coordinator.vals.willRespond}: ${actors.dalle.key}\n`;
+	res += `${assistants.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(assistants.dalle)).join(", ")}\n`;
+	res += `${assistants.coordinator.vals.willRespond}: ${assistants.dalle.key}\n`;
 	res += "\n";
 
 	res += `### ${humanName}:\n`;
-	res += `Hey ${actors.codex.name}, could you write some code something for me?\n`;
+	res += `Hey ${assistants.codex.name}, could you write some code something for me?\n`;
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${actors.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(actors.codex)).join(", ")}\n`;
-	res += `${actors.coordinator.vals.willRespond}: ${actors.codex.key}\n`;
+	res += `${assistants.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(assistants.codex)).join(", ")}\n`;
+	res += `${assistants.coordinator.vals.willRespond}: ${assistants.codex.key}\n`;
 	res += "\n";
 	return res;
 };

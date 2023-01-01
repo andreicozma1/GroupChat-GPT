@@ -106,7 +106,7 @@ yarn format
 You may use this software and/or modify its functionality as you wish, but I ask you to keep the in-app credits intact and include a link to this repository in any derivative work.
 
 
-## Demo Screenshots:
+## Demo Screenshots
 
 ![image](https://user-images.githubusercontent.com/14914491/209245190-6734d6a2-7935-41fc-9d4e-b7b57e2f6a53.png)
 ![image](https://user-images.githubusercontent.com/14914491/209996928-906cb9dc-74d4-4c92-adcd-be9ecb507570.png)

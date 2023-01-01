@@ -8,7 +8,7 @@ Well, this application is a step towards that world.
 <!-- START doctoc -->
 <!-- END doctoc -->
 
-### Features: 
+## Features: 
 - Specialized Chat-bot Assistants:
   - Powered by GPT-3
   - Current members are: Davinci, DALL-E, and Codex.

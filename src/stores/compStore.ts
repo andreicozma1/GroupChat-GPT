@@ -1,10 +1,10 @@
-import { defineStore } from "pinia"
-import { LocalStorage } from "quasar"
-import { actors } from "src/util/ActorsConfig"
-import { ActorConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models"
-import { openai, options } from "src/util/OpenAIUtil"
-import { v4 as uuidv4 } from "uuid"
-import { Ref, ref } from "vue"
+import { defineStore } from "pinia";
+import { LocalStorage } from "quasar";
+import { actors } from "src/util/ActorsConfig";
+import { ActorConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models";
+import { openai, options } from "src/util/OpenAIUtil";
+import { v4 as uuidv4 } from "uuid";
+import { Ref, ref } from "vue";
 
 export const humanName = "Human";
 
@@ -26,8 +26,6 @@ export const toKeys = (actors: ActorConfig[]): string[] => {
 const toNames = (actors: ActorConfig[]): string[] => {
 	return actors.map((a) => a.name);
 };
-
-
 
 export const useCompStore = defineStore("counter", {
 	state: () => ({

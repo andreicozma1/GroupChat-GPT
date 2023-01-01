@@ -18,16 +18,15 @@ export interface GenerationResult {
 }
 
 export const useCompStore = defineStore("counter", {
-	state: () => ({
-		completions: LocalStorage.getItem("completions") || {},
-		threads: ref({
+	state  : () => ({
+		completions  : LocalStorage.getItem("completions") || {},
+		threads      : ref({
 			main: {
 				messages: [],
-			},
-			...(LocalStorage.getItem("threads") || {}),
+			}, ...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,
 		currentThread: "main",
-		userName: humanName,
+		userName     : humanName,
 	}),
 	getters: {
 		getAllCompletions(state) {
@@ -61,9 +60,9 @@ export const useCompStore = defineStore("counter", {
 			if (cachedResponse === null || cachedResponse === undefined) {
 				return {
 					errorMsg: "Cached response was null/undefined",
-					result: null,
-					cached: undefined,
-					hash: hash,
+					result  : null,
+					cached  : undefined,
+					hash    : hash,
 				};
 			}
 
@@ -71,6 +70,9 @@ export const useCompStore = defineStore("counter", {
 			const text = choices
 				?.flatMap((c: any) => {
 					c = c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>");
+					c = c.trim();
+					// if starts with ``` and ends with ``` then it's a code block
+					if (c.startsWith("```") && c.endsWith("```")) return c;
 					c = c.split("\n\n");
 					return c;
 				})
@@ -89,8 +91,8 @@ export const useCompStore = defineStore("counter", {
 
 			return {
 				cached: undefined,
-				hash: hash,
-				text: text,
+				hash  : hash,
+				text  : text,
 				images: images,
 				result: cachedResponse,
 			};
@@ -125,9 +127,9 @@ export const useCompStore = defineStore("counter", {
 				}
 				return {
 					errorMsg: errorMsg,
-					result: null,
-					cached: false,
-					hash: hash,
+					result  : null,
+					cached  : false,
+					hash    : hash,
 				};
 			}
 			this.completions[hash] = completion.data;
@@ -146,8 +148,7 @@ export const useCompStore = defineStore("counter", {
 				const existingIdx = this.getThread.messages.findIndex((m) => m.id === message.id);
 				if (existingIdx !== -1) {
 					this.threads[this.currentThread].messages[existingIdx] = {
-						...this.threads[this.currentThread].messages[existingIdx],
-						...message,
+						...this.threads[this.currentThread].messages[existingIdx], ...message,
 					};
 					// console.log("Updated message: ", { ...message });
 					this.updateCache();

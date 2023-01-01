@@ -1,6 +1,8 @@
-import { basePersonalityTraits, baseStrengths, createPromptDalleGen, generationInstructions } from "src/util/Prompt"
 import { createAssistantPrompt } from "src/util/assistant/BaseAssistant"
 import { createPromptCoordinator } from "src/util/assistant/BaseCoordinator"
+import {
+	basePersonalityTraits, baseStrengths, createPromptDalleGen, generationInstructions
+} from "src/util/assistant/Prompt"
 import { ActorConfig } from "src/util/Models"
 import { openai } from "src/util/OpenAi"
 

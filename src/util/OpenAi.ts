@@ -18,7 +18,7 @@ export type ApiOptsValidTypes = CreateCompletionRequest | CreateImageRequest;
 
 export const ApiReqMap: { [key: string]: { func: any; defaultOpts: ApiOptsValidTypes } } = {
 	createCompletion: {
-		func: openaiApi.createCompletion,
+		func: (opts) => openaiApi.createCompletion(opts),
 		defaultOpts: {
 			model: "text-davinci-003",
 			max_tokens: 250,
@@ -30,7 +30,7 @@ export const ApiReqMap: { [key: string]: { func: any; defaultOpts: ApiOptsValidT
 		},
 	},
 	createImage: {
-		func: openaiApi.createImage,
+		func: (opts) => openaiApi.createImage(opts),
 		defaultOpts: {
 			n: 1,
 			size: "256x256",
@@ -50,7 +50,7 @@ export const makeApiRequest = async (actor: AssistantConfig, prompt: string) => 
 		opts = { ...opts, ...ApiReqConfigs.custom[apiReqOpts] };
 	}
 	// then make the request
-	const res = await openaiApi.createCompletion({
+	const res = await func({
 		...opts,
 		prompt,
 	});

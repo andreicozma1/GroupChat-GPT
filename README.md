@@ -85,7 +85,8 @@ yarn format
 
 ## License & Credit
 
-You may use this software and modify its functionality as you wish given that you provide proper credit to the original author (Andrei Cozma - https://www.andreicozma.com) and include the link to the original software repository.
+You may use this software and/or modify its functionality as you wish, but I ask you to keep the in-app credits intact and include a link to this repository in any derivative work.
+
 
 ## Demo Screenshots:
 

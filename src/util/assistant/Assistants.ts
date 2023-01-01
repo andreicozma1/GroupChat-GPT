@@ -164,7 +164,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			],
 		},
 		examples: [
-			"<gen>A Python program that multiplies two numbers together.\nThe numbers to multiply will be 5 and 6.</gen>",
+			"<prompt>A Python program that multiplies two numbers together.\nThe numbers to multiply will be 5 and 6.</prompt>",
 			"```\ndef multiply(a, b):\n\treturn a * b\n\nprint(multiply(5, 6))\n```",
 		],
 		available: false,

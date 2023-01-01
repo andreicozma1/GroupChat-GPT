@@ -215,7 +215,7 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
           continue;
         }
         // nextMsg.text.push(`[${prompt}]`)
-        nextMsg.text.push(`<gen>${prompt}</gen>`);
+        nextMsg.text.push(`<prompt>${prompt}</prompt>`);
         await handleNext(nextActor, nextMsg);
       }
     }

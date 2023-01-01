@@ -1,5 +1,4 @@
-import { createAssistantPrompt } from "src/util/assistant/BaseAssistant";
-import { createPromptDalleGen } from "src/util/assistant/Prompt";
+import { createAssistantPrompt, createPromptDalleGen } from "src/util/assistant/Prompts";
 import { AssistantConfig } from "src/util/assistant/Util";
 
 export const ApiReqConfigs: { [key: string]: { [key: string]: any } } = {

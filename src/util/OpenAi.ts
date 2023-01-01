@@ -28,7 +28,7 @@ export const ApiReqMap: { [key: string]: { func: any; defaultOpts: ApiOptsValidT
 		defaultOpts: {
 			n: 1,
 			size: "256x256",
-			prompt: "A photo of a realistic cat",
+			prompt: "This prompt is a placeholder",
 		},
 	},
 };
@@ -36,19 +36,16 @@ export const ApiReqMap: { [key: string]: { func: any; defaultOpts: ApiOptsValidT
 export const makeApiRequest = async (actor: AssistantConfig, prompt: string) => {
 	const { apiReqType, apiReqOpts } = actor.apiConfig;
 	const { func, defaultOpts } = ApiReqMap[apiReqType];
-	// try to grab from custom or default configs
-	// then merge with default opts
 	let opts = { ...defaultOpts };
 	if (apiReqOpts) {
 		opts = { ...opts, ...ApiReqConfigs.defaults[apiReqOpts] };
 		opts = { ...opts, ...ApiReqConfigs.custom[apiReqOpts] };
 	}
-	console.warn("=> config:");
-	console.log(opts);
-	// then make the request
-	const res = await func({
+	opts = {
 		...opts,
 		prompt,
-	});
-	return res;
+	};
+	console.warn("=> config:");
+	console.log(opts);
+	return await func(opts);
 };

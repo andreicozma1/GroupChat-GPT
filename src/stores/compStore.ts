@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import { LocalStorage } from "quasar";
-import { AssistantConfig } from "src/util/assistant/Util";
-import { ChatThread, ChatMessage } from "src/util/Chat";
-import { openai, options } from "src/util/OpenAi";
+import { AssistantConfig } from "src/util/assistant/AssistantUtils";
+import { ChatMessage, ChatThread } from "src/util/Chat";
+import { makeApiRequest } from "src/util/OpenAi";
 import { v4 as uuidv4 } from "uuid";
 import { Ref, ref } from "vue";
 
@@ -18,16 +18,15 @@ export interface GenerationResult {
 }
 
 export const useCompStore = defineStore("counter", {
-	state: () => ({
-		completions: LocalStorage.getItem("completions") || {},
-		threads: ref({
+	state  : () => ({
+		completions  : LocalStorage.getItem("completions") || {},
+		threads      : ref({
 			main: {
 				messages: [],
-			},
-			...(LocalStorage.getItem("threads") || {}),
+			}, ...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,
 		currentThread: "main",
-		userName: humanName,
+		userName     : humanName,
 	}),
 	getters: {
 		getAllCompletions(state) {
@@ -43,11 +42,13 @@ export const useCompStore = defineStore("counter", {
 			LocalStorage.set("threads", this.threads);
 		},
 		clearCache() {
+			console.log("Clearing cache");
 			// clear whole local storage and reload
 			LocalStorage.clear();
 			location.reload();
 		},
 		clearThread() {
+			console.log("Clearing thread");
 			this.threads[this.currentThread].messages = [];
 			this.updateCache();
 		},
@@ -59,35 +60,51 @@ export const useCompStore = defineStore("counter", {
 			if (cachedResponse === null || cachedResponse === undefined) {
 				return {
 					errorMsg: "Cached response was null/undefined",
-					result: null,
-					cached: undefined,
-					hash: hash,
+					result  : null,
+					cached  : undefined,
+					hash    : hash,
 				};
 			}
 
 			const choices = cachedResponse.choices;
 			const text = choices
-				?.flatMap((c: any) =>
-					c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>").split("\n")
-				)
+				?.flatMap((c: any) => {
+					c = c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>");
+					c = c.trim();
+					// if starts with ``` and ends with ``` then it's a code block
+					if (c.startsWith("```") && c.endsWith("```")) return c;
+					c = c.split("\n\n");
+					return c;
+				})
 				.map((t: string) => t.trim())
 				.filter((t: string) => t.length > 0);
-			console.warn("=> text:", text);
+			if (text) {
+				console.warn("=> text:");
+				text?.forEach((t: string) => console.log(t));
+			}
 
 			const images = cachedResponse.data?.map((d: any) => d.url);
-			console.warn("=> images:", images);
+			if (images) {
+				console.warn("=> images:");
+				images?.forEach((i: string) => console.log(i));
+			}
+
 			return {
 				cached: undefined,
-				hash: hash,
-				text: text,
+				hash  : hash,
+				text  : text,
 				images: images,
 				result: cachedResponse,
 			};
 		},
-		async genCompletion(actor: AssistantConfig): Promise<GenerationResult> {
-			const prompt = actor.createPrompt(actor, this.getThread.messages);
+
+		async generate(actor: AssistantConfig): Promise<GenerationResult> {
+			console.warn("=======================================");
+			console.warn("=> generate:", actor);
+			const prompt = actor.promptStyle(actor, this.getThread.messages);
 			const hash = hashPrompt(prompt);
-			console.warn(prompt);
+			console.warn("=> prompt:");
+			console.log(prompt);
 			// if we already have a completion for this prompt, return it
 			if (!actor.ignoreCache && this.completions[hash]) {
 				return {
@@ -95,28 +112,9 @@ export const useCompStore = defineStore("counter", {
 					cached: true,
 				};
 			}
-
 			let completion;
 			try {
-				// otherwise, generate a new completion
-				if (actor.createComp) {
-					completion = await actor.createComp(
-						{
-							...actor.apiConfig,
-							prompt: prompt,
-						},
-						options
-					);
-				} else {
-					completion = await openai.createCompletion(
-						{
-							...actor.apiConfig,
-							prompt: prompt,
-						},
-						options
-					);
-				}
-
+				completion = await makeApiRequest(actor, prompt);
 				if (completion === null || completion === undefined) throw new Error("No response");
 			} catch (error: any) {
 				console.error(error);
@@ -129,9 +127,9 @@ export const useCompStore = defineStore("counter", {
 				}
 				return {
 					errorMsg: errorMsg,
-					result: null,
-					cached: false,
-					hash: hash,
+					result  : null,
+					cached  : false,
+					hash    : hash,
 				};
 			}
 			this.completions[hash] = completion.data;
@@ -143,16 +141,16 @@ export const useCompStore = defineStore("counter", {
 			};
 		},
 		pushMessage(message: ChatMessage): ChatMessage {
+			// console.log("-------------------------------");
 			if (message.id) {
 				// look back through the messages to see if we already have this message
 				// and update it if we do
 				const existingIdx = this.getThread.messages.findIndex((m) => m.id === message.id);
 				if (existingIdx !== -1) {
 					this.threads[this.currentThread].messages[existingIdx] = {
-						...this.threads[this.currentThread].messages[existingIdx],
-						...message,
+						...this.threads[this.currentThread].messages[existingIdx], ...message,
 					};
-					console.log("Updated message: ", { ...message });
+					// console.log("Updated message: ", { ...message });
 					this.updateCache();
 					return this.threads[this.currentThread].messages[existingIdx];
 				}
@@ -160,7 +158,7 @@ export const useCompStore = defineStore("counter", {
 			// otherwise, create uuid and push it
 			message.id = uuidv4();
 			this.getThread.messages.push(message);
-			console.log("Pushed message", { ...message });
+			// console.log("Pushed message", { ...message });
 			this.updateCache();
 			return message;
 		},

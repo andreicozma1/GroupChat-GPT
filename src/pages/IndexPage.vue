@@ -59,9 +59,9 @@ import {QCard, QInput} from "quasar";
 import {getRoboHashAvatarUrl} from "src/util/Utils";
 import {GenerationResult, useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, Ref, ref, watch} from "vue";
-import {assistants} from "src/util/assistant/Configs";
+import {AssistantConfigs} from "src/util/assistant/Assistants";
 import {ChatMessage} from "src/util/Chat";
-import {AssistantConfig} from "src/util/assistant/Util";
+import {AssistantConfig} from "src/util/assistant/AssistantUtils";
 
 const comp = useCompStore();
 
@@ -102,10 +102,10 @@ const createAIMessage = (cfg: AssistantConfig): ChatMessage => {
 };
 
 const handleCoordinator = () => {
-  const ai: AssistantConfig = assistants.coordinator;
+  const ai: AssistantConfig = AssistantConfigs.coordinator;
   const msg: ChatMessage = createAIMessage(ai);
 
-  comp.genCompletion(ai).then(async (res: GenerationResult) => {
+  comp.generate(ai).then(async (res: GenerationResult) => {
     console.log(res);
     msg.loading = false;
     msg.cached = res.cached;
@@ -123,9 +123,9 @@ const handleCoordinator = () => {
     msg.text = res.text ? [...res.text] : ["An error occurred"];
     comp.pushMessage(msg);
     const nextActors = res.text
-        .filter((t: string) => t.startsWith(assistants.coordinator.vals.willRespond))[0]
-        .split(":")[1]
-        .split(",")
+        .flatMap((t) => t.toLowerCase().split("\n"))
+        .filter((t: string) => t.includes("respond"))
+        .flatMap((t: string) => t.split(":")[1].split(","))
         .map((a: string) => a.trim().toLowerCase());
 
     // for each actor, call the appropriate handler
@@ -145,7 +145,7 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
   // await sleep(Math.random() * 2500)
 
   actorKey = actorKey?.trim();
-  const cfgFollowup: AssistantConfig = assistants[actorKey];
+  const cfgFollowup: AssistantConfig = AssistantConfigs[actorKey];
   msg = msg || createAIMessage(cfgFollowup);
   if (!cfgFollowup) {
     msg.text.push(`[Error: Unknown actor type: ${actorKey}]`);
@@ -154,7 +154,7 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
     return;
   }
 
-  const res = await comp.genCompletion(cfgFollowup);
+  const res = await comp.generate(cfgFollowup);
 
   console.log(res);
   msg.loading = false;
@@ -177,8 +177,13 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
 
   comp.pushMessage(msg);
 
-  const createGen = cfgFollowup?.createGen;
-  if (createGen) {
+  let createGen = cfgFollowup?.followUps;
+  // if null or undefined, exit
+  if (!createGen) return;
+  // if string, make it an array
+  if (typeof createGen === "string") createGen = [createGen];
+  // for each
+  for (const nextActor of createGen) {
     // filter out texts that contain <prompt> tags
     let prompts = msg.text
         .filter((t: string) => t.includes("<prompt>"))
@@ -190,8 +195,9 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
         const end = parts[1].split("</prompt>");
         return parts[0] + end[1];
       }
-      return t;
+      return t.trim();
     });
+    msg.text = msg.text.filter((t: string) => t.length > 0);
     // msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
     comp.pushMessage(msg);
 
@@ -209,7 +215,7 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
           continue;
         }
         // nextMsg.text.push(`[${prompt}]`)
-        nextMsg.text.push(`<gen>${prompt}</gen>`);
+        nextMsg.text.push(`<prompt>${prompt}</prompt>`);
         await handleNext(nextActor, nextMsg);
       }
     }
@@ -218,6 +224,8 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
 
 const sendMessage = () => {
   if (!userMsgValid.value) return;
+  console.warn("=======================================");
+  console.log("Sending message");
   if (userMsgObj.value === null) {
     userMsgObj.value = {
       text: [],
@@ -270,21 +278,18 @@ watch(userMsgStr, () => {
 const kbShortcuts = (e: KeyboardEvent) => {
   // ctrl+shift+x clears thread
   if (e.key === "X" && e.ctrlKey && e.shiftKey) {
-    console.log("Clearing thread");
     e.preventDefault();
     comp.clearThread();
     return;
   }
   // ctrl+shift+r clears cache
   if (e.key === "R" && e.ctrlKey && e.shiftKey) {
-    console.log("Clearing cache");
     e.preventDefault();
     comp.clearCache();
     return;
   }
   // enter sends userMsgStr
   if (e.key === "Enter" && !e.shiftKey) {
-    console.log("Sending message");
     e.preventDefault();
     sendMessage();
     return;

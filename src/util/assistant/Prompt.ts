@@ -55,13 +55,15 @@ export const getAssistantsInfo = (useKey: boolean, currentAI?: AssistantConfig) 
 export const getAssistantRules = (): string => {
 	let res = "### ASSISTANT RULES ###\n";
 	if (baseAlways.length > 0) {
-		res += `# Assistants always:\n`;
-		res += baseAlways.map((b) => `- Always ${b}`).join("\n");
+		res += `# You will always:\n`;
+		// res += baseAlways.map((b) => `- Always ${b}`).join("\n");
+		res += baseAlways.map((b) => `- ${b}`).join("\n");
 		res += "\n\n";
 	}
 	if (baseNever.length > 0) {
-		res += `# Assistants never:\n`;
-		res += baseNever.map((b) => `- Never ${b}`).join("\n");
+		res += `# You will never:\n`;
+		// res += baseNever.map((b) => `- Never ${b}`).join("\n");
+		res += baseNever.map((b) => `- ${b}`).join("\n");
 		res += "\n\n";
 	}
 	return res;

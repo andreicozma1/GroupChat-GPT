@@ -19,6 +19,7 @@ const options = {
 export const humanName = "Human";
 
 const basePersonalityTraits = ["enthusiastic", "clever", "very friendly"];
+const baseStrengths = ["making conversation", "answering questions"]
 
 const baseAlways: string[] = [
 	"follow the user's directions, requests, and answer their questions.",
@@ -255,7 +256,7 @@ export const actors: Record<string, ActorConfig> = {
 			...baseConversationalConfig,
 		},
 		personality: ["helpful", ...basePersonalityTraits],
-		strengths: ["making conversation", "answering questions", "providing general information"],
+		strengths: ["providing general information", ...baseStrengths],
 	},
 	dalle: {
 		key: "dalle",
@@ -267,7 +268,7 @@ export const actors: Record<string, ActorConfig> = {
 			...baseConversationalConfig,
 		},
 		personality: ["artistic", "creative", "visionary", ...basePersonalityTraits],
-		strengths: ["making art", "providing creative ideas"],
+		strengths: ["making art", "coming up with creative ideas", ...baseStrengths],
 		abilities: ["Generating images from text descriptions"],
 		instructions: [...generationInstructions],
 	},
@@ -281,7 +282,7 @@ export const actors: Record<string, ActorConfig> = {
 			...baseConversationalConfig,
 		},
 		personality: ["analytical", "logical", "rational", ...basePersonalityTraits],
-		strengths: ["programming", "math", "science", "logic"],
+		strengths: ["programming", "math", "science", "logic", ...baseStrengths],
 		abilities: ["Generating code from text descriptions"],
 		instructions: [...generationInstructions],
 	},

@@ -5,7 +5,7 @@ import { ChatMessage } from "src/util/Chat";
 import { humanName } from "stores/compStore";
 
 const coordinatorPromptStart =
-	"### COORDINATOR ###\n" +
+	"### AI GROUP CHAT ###\n" +
 	"Choose which assistant(s) would be the absolute best at responding to the user's message.\n" +
 	"Only respond with the exact names of the assistant(s).\n" +
 	"If multiple assistants are requested or fit to respond, separate each of their names by commas.\n" +
@@ -18,7 +18,7 @@ export const createPromptCoordinator = (actor: AssistantConfig, messages: ChatMe
 	const rules = getAssistantRules();
 	const info = getAssistantsInfo(true);
 	const examples = coordinatorPromptExamples(actor);
-	const conv = getConversation(messages, [], [ AssistantConfigs.coordinator ], 5);
+	const conv = getConversation(messages, [], [AssistantConfigs.coordinator], 5);
 	const end = `### ${actor.name}:\n`;
 	return (start + info + rules + examples + conv + end).trim();
 };
@@ -31,7 +31,8 @@ const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 
 	res += `### ${actor.name}:\n`;
 	res += `${AssistantConfigs.coordinator.extras.willIgnore}: ${actorsToKeys(
-		getAllExcept(AssistantConfigs.davinci)).join(", ")}\n`;
+		getAllExcept(AssistantConfigs.davinci)
+	).join(", ")}\n`;
 	res += `${AssistantConfigs.coordinator.extras.willRespond}: ${AssistantConfigs.davinci.key}\n`;
 	res += "\n";
 
@@ -50,7 +51,8 @@ const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 
 	res += `### ${actor.name}:\n`;
 	res += `${AssistantConfigs.coordinator.extras.willIgnore}: ${actorsToKeys(
-		getAllExcept(AssistantConfigs.dalle)).join(", ")}\n`;
+		getAllExcept(AssistantConfigs.dalle)
+	).join(", ")}\n`;
 	res += `${AssistantConfigs.coordinator.extras.willRespond}: ${AssistantConfigs.dalle.key}\n`;
 	res += "\n";
 
@@ -60,7 +62,8 @@ const coordinatorPromptExamples = (actor: AssistantConfig): string => {
 
 	res += `### ${actor.name}:\n`;
 	res += `${AssistantConfigs.coordinator.extras.willIgnore}: ${actorsToKeys(
-		getAllExcept(AssistantConfigs.codex)).join(", ")}\n`;
+		getAllExcept(AssistantConfigs.codex)
+	).join(", ")}\n`;
 	res += `${AssistantConfigs.coordinator.extras.willRespond}: ${AssistantConfigs.codex.key}\n`;
 	res += "\n";
 	return res;

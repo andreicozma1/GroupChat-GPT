@@ -223,6 +223,8 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
 
 const sendMessage = () => {
   if (!userMsgValid.value) return;
+  console.warn("=======================================");
+  console.log("Sending message");
   if (userMsgObj.value === null) {
     userMsgObj.value = {
       text: [],
@@ -275,21 +277,18 @@ watch(userMsgStr, () => {
 const kbShortcuts = (e: KeyboardEvent) => {
   // ctrl+shift+x clears thread
   if (e.key === "X" && e.ctrlKey && e.shiftKey) {
-    console.log("Clearing thread");
     e.preventDefault();
     comp.clearThread();
     return;
   }
   // ctrl+shift+r clears cache
   if (e.key === "R" && e.ctrlKey && e.shiftKey) {
-    console.log("Clearing cache");
     e.preventDefault();
     comp.clearCache();
     return;
   }
   // enter sends userMsgStr
   if (e.key === "Enter" && !e.shiftKey) {
-    console.log("Sending message");
     e.preventDefault();
     sendMessage();
     return;

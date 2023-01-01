@@ -43,11 +43,13 @@ export const useCompStore = defineStore("counter", {
 			LocalStorage.set("threads", this.threads);
 		},
 		clearCache() {
+			console.log("Clearing cache");
 			// clear whole local storage and reload
 			LocalStorage.clear();
 			location.reload();
 		},
 		clearThread() {
+			console.log("Clearing thread");
 			this.threads[this.currentThread].messages = [];
 			this.updateCache();
 		},
@@ -72,10 +74,17 @@ export const useCompStore = defineStore("counter", {
 				)
 				.map((t: string) => t.trim())
 				.filter((t: string) => t.length > 0);
-			console.warn("=> text:", text);
+			if (text) {
+				console.warn("=> text:");
+				text?.forEach((t: string) => console.log(t));
+			}
 
 			const images = cachedResponse.data?.map((d: any) => d.url);
-			console.warn("=> images:", images);
+			if (images) {
+				console.warn("=> images:");
+				images?.forEach((i: string) => console.log(i));
+			}
+
 			return {
 				cached: undefined,
 				hash: hash,
@@ -86,9 +95,12 @@ export const useCompStore = defineStore("counter", {
 		},
 
 		async generate(actor: AssistantConfig): Promise<GenerationResult> {
+			console.warn("=======================================");
+			console.warn("=> generate:", actor);
 			const prompt = actor.promptStyle(actor, this.getThread.messages);
 			const hash = hashPrompt(prompt);
-			console.warn(prompt);
+			console.warn("=> prompt:");
+			console.log(prompt);
 			// if we already have a completion for this prompt, return it
 			if (!actor.ignoreCache && this.completions[hash]) {
 				return {
@@ -96,7 +108,6 @@ export const useCompStore = defineStore("counter", {
 					cached: true,
 				};
 			}
-
 			let completion;
 			try {
 				completion = await makeApiRequest(actor, prompt);
@@ -126,6 +137,7 @@ export const useCompStore = defineStore("counter", {
 			};
 		},
 		pushMessage(message: ChatMessage): ChatMessage {
+			// console.log("-------------------------------");
 			if (message.id) {
 				// look back through the messages to see if we already have this message
 				// and update it if we do
@@ -135,7 +147,7 @@ export const useCompStore = defineStore("counter", {
 						...this.threads[this.currentThread].messages[existingIdx],
 						...message,
 					};
-					console.log("Updated message: ", { ...message });
+					// console.log("Updated message: ", { ...message });
 					this.updateCache();
 					return this.threads[this.currentThread].messages[existingIdx];
 				}
@@ -143,7 +155,7 @@ export const useCompStore = defineStore("counter", {
 			// otherwise, create uuid and push it
 			message.id = uuidv4();
 			this.getThread.messages.push(message);
-			console.log("Pushed message", { ...message });
+			// console.log("Pushed message", { ...message });
 			this.updateCache();
 			return message;
 		},

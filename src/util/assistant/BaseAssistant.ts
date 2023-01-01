@@ -10,9 +10,9 @@ export const createAssistantPrompt = (actor: AssistantConfig, messages: ChatMess
 	const rules = getAssistantRules();
 	const info = getAssistantsInfo(false, actor);
 	let instr = "";
-	if (actor.instructions) {
+	if (actor.rules) {
 		instr += `### Additional instructions for ${actor.name} (only you know this):\n`;
-		instr += actor.instructions.map((b) => `- ${b}`).join("\n");
+		instr += actor.rules.map((b) => `- ${b}`).join("\n");
 		instr += "\n\n";
 	}
 	const conv = getConversation(messages);

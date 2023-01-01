@@ -15,10 +15,15 @@ export interface AssistantConfig {
 		weaknesses?: string[];
 		abilities?: string[];
 	};
+	rules?: {
+		always?: string[];
+		never?: string[];
+	};
+	// Order: Human, AI, Human, AI, etc.
+	examples?: string[];
 	extras?: {
 		[key: string]: any;
 	};
-	instructions?: string[];
 	followUps?: string | string[];
 	available?: boolean;
 	ignoreCache?: boolean;

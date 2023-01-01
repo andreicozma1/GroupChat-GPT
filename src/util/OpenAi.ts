@@ -8,17 +8,11 @@ export const openAiConfig = {
 };
 export const openaiApi = new OpenAIApi(new Configuration(openAiConfig));
 
-export const axiosReqConfig = {
-	headers: {
-		Authorization: `Bearer ${openAiConfig.apiKey}`,
-	},
-};
-
 export type ApiOptsValidTypes = CreateCompletionRequest | CreateImageRequest;
 
 export const ApiReqMap: { [key: string]: { func: any; defaultOpts: ApiOptsValidTypes } } = {
 	createCompletion: {
-		func: (opts) => openaiApi.createCompletion(opts),
+		func: (opts: CreateCompletionRequest) => openaiApi.createCompletion(opts),
 		defaultOpts: {
 			model: "text-davinci-003",
 			max_tokens: 250,
@@ -30,7 +24,7 @@ export const ApiReqMap: { [key: string]: { func: any; defaultOpts: ApiOptsValidT
 		},
 	},
 	createImage: {
-		func: (opts) => openaiApi.createImage(opts),
+		func: (opts: CreateImageRequest) => openaiApi.createImage(opts),
 		defaultOpts: {
 			n: 1,
 			size: "256x256",
@@ -49,6 +43,8 @@ export const makeApiRequest = async (actor: AssistantConfig, prompt: string) => 
 		opts = { ...opts, ...ApiReqConfigs.defaults[apiReqOpts] };
 		opts = { ...opts, ...ApiReqConfigs.custom[apiReqOpts] };
 	}
+	console.warn("=> config:");
+	console.log(opts);
 	// then make the request
 	const res = await func({
 		...opts,

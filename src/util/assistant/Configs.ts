@@ -1,4 +1,4 @@
-import { createAssistantPrompt, createPromptDalleGen } from "src/util/assistant/Prompts";
+import { createAssistantPrompt, createPromptCodexGen, createPromptDalleGen } from "src/util/assistant/Prompts";
 import { AssistantConfig } from "src/util/assistant/Util";
 
 export const ApiReqConfigs: { [key: string]: { [key: string]: any } } = {
@@ -95,7 +95,13 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			strengths: ["programming", "coding"],
 			abilities: ["Generating code from text descriptions"],
 		},
-		examples: [],
+		examples: [
+			"Hey Codex, make a program that adds two numbers together.",
+			"Sure, I can do that. What language would you like to use and what should the two numbers be?",
+			"Use Python and make the numbers 5 and 6.",
+			"Here's your program:\n" +
+				"<prompt>A Python program that adds numbers together.\nThe numbers to add will be 5 and 6.</prompt>",
+		],
 	},
 	coordinator: {
 		key: "coordinator",
@@ -135,6 +141,17 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		promptStyle: createPromptDalleGen,
 		apiConfig: {
 			apiReqType: "createImage",
+			apiReqOpts: undefined,
+		},
+		available: false,
+	},
+	codex_gen: {
+		key: "codex_gen",
+		name: "Codex",
+		icon: "code",
+		promptStyle: createPromptCodexGen,
+		apiConfig: {
+			apiReqType: "createCompletion",
 			apiReqOpts: undefined,
 		},
 		available: false,

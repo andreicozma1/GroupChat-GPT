@@ -69,9 +69,11 @@ export const useCompStore = defineStore("counter", {
 
 			const choices = cachedResponse.choices;
 			const text = choices
-				?.flatMap((c: any) =>
-					c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>").split("\n")
-				)
+				?.flatMap((c: any) => {
+					c = c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>");
+					c = c.split("\n\n");
+					return c;
+				})
 				.map((t: string) => t.trim())
 				.filter((t: string) => t.length > 0);
 			if (text) {

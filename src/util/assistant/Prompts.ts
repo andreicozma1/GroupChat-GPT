@@ -22,3 +22,8 @@ export const createPromptDalleGen = (actor: AssistantConfig, messages: ChatMessa
 	const lastMessage = messages[messages.length - 1];
 	return lastMessage.text[lastMessage.text.length - 1];
 };
+
+export const createPromptCodexGen = (actor: AssistantConfig, messages: ChatMessage[]) => {
+	const lastMessage = messages[messages.length - 1];
+	return lastMessage.text[lastMessage.text.length - 1];
+};

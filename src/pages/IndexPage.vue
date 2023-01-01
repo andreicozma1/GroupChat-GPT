@@ -123,7 +123,7 @@ const handleCoordinator = () => {
     msg.text = res.text ? [...res.text] : ["An error occurred"];
     comp.pushMessage(msg);
     const nextActors = res.text
-        .map((t) => t.toLowerCase())
+        .flatMap((t) => t.toLowerCase().split("\n"))
         .filter((t: string) => t.includes("respond"))
         .flatMap((t: string) => t.split(":")[1].split(","))
         .map((a: string) => a.trim().toLowerCase());

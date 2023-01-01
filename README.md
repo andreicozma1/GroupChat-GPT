@@ -56,16 +56,18 @@ Install Node.JS (version ^18 required) and Yarn:
 nvm install 18
 # Optional: set this version as default:
 nvm alias default node
-# Install yarn
-npm install --global yarn
+```
+
+Install Yarn:
+    
+```bash
+npm install -g yarn
 ```
 
 Install the rest of the project dependencies
 
 ```bash
-yarn
-# or
-npm install
+yarn install
 ```
 
 **Important!!** - You will have to put your OpenAI API Key inside the `.env` file.

@@ -18,28 +18,28 @@ export const ApiReqConfigs: { [key: string]: { [key: string]: any } } = {
 	custom: {},
 };
 
-export const AssistantConfigs: Record<string, AssistantConfig> = {
-	base: {
-		key: "base",
-		name: "Generic AI",
-		icon: "chat",
-		promptStyle: createAssistantPrompt,
-		apiConfig: {
-			apiReqType: "createCompletion",
-			apiReqOpts: "chatting",
-		},
-		traits: {
-			personality: ["friendly", "polite", "helpful"],
-			strengths: ["making conversation", "answering questions"],
-		},
-		rules: {
-			always: ["follow the user's instructions, requests, and answer their questions if appropriate to do so."],
-			never: [
-				"respond to other assistant's questions, but may acknowledge their presence and offer insight into the conversation",
-			],
-		},
-		available: false,
+export const AssistantConfigShared: AssistantConfig = {
+	key: "generic",
+	name: "Generic AI",
+	icon: "chat",
+	promptStyle: createAssistantPrompt,
+	apiConfig: {
+		apiReqType: "createCompletion",
+		apiReqOpts: "chatting",
 	},
+	traits: {
+		personality: ["friendly", "polite", "helpful"],
+		strengths: ["making conversation", "answering questions"],
+	},
+	rules: {
+		always: ["follow the user's instructions, requests, and answer their questions if appropriate to do so."],
+		never: [
+			"respond to other assistant's questions, but may acknowledge their presence and offer insight into the conversation",
+		],
+	},
+};
+
+export const AssistantConfigs: Record<string, AssistantConfig> = {
 	davinci: {
 		key: "davinci",
 		name: "Davinci",
@@ -71,11 +71,13 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		}, // Examples order: Human, AI, Human, AI, Human, AI
 		examples: [
 			"Hey DALL-E, make a painting of a cat.",
-			"<prompt>A painting of a cat.</prompt>",
+			"I'll have a painting of a cat coming right to you!\n" + "<prompt>A painting of a cat.</prompt>",
 			"Make it have white fur and blue eyes.",
-			"<prompt>A painting of a cat with white fur and blue eyes.</prompt>",
-			"Also make it sit on an avocado chair.",
-			"<prompt>A painting of a cat with white fur and blue eyes sitting on an avocado chair.</prompt>",
+			"Sure, I can do that. Let me know if there's anything else you'd like to add.\n" +
+				"<prompt>A painting of a cat with white fur and blue eyes.</prompt>",
+			"Now give it an astronaut suit and make it float in deep space.",
+			"Do you have any specific styles in mind? I can make it look like a painting, a drawing, photograph, or even imitate a famous artist.\n" +
+				"<prompt>A painting of a cat with white fur and blue eyes sitting on an avocado chair.</prompt>",
 		],
 	},
 	codex: {

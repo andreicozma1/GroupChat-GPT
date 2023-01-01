@@ -195,8 +195,9 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
         const end = parts[1].split("</prompt>");
         return parts[0] + end[1];
       }
-      return t;
+      return t.trim();
     });
+    msg.text = msg.text.filter((t: string) => t.length > 0);
     // msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
     comp.pushMessage(msg);
 

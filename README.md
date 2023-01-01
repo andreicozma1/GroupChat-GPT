@@ -16,7 +16,7 @@ Well, this application is a step towards that world.
   - [Lint the files](#lint-the-files)
   - [Format the files](#format-the-files)
 - [License & Credit](#license--credit)
-- [Demo Screenshots:](#demo-screenshots)
+- [Demo Screenshots](#demo-screenshots)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

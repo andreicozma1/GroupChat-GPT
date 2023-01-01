@@ -58,8 +58,9 @@ import ChatThread from "components/ChatThread.vue"
 import { QCard, QInput } from "quasar"
 import { ActorConfig, GenerationResult, TextMessage } from "src/util/Models"
 import { getSeededAvatarURL } from "src/util/Util"
-import { actors, useCompStore } from "stores/compStore"
+import { useCompStore } from "stores/compStore"
 import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue"
+import {actors} from "src/util/ActorsConfig";
 
 const comp = useCompStore()
 

@@ -58,8 +58,9 @@ import { copyToClipboard } from "quasar"
 import { getSeededQColor } from "src/util/ColorUtils"
 import { TextMessage } from "src/util/Models"
 import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util"
-import { actors, useCompStore } from "stores/compStore"
+import { useCompStore } from "stores/compStore"
 import { computed, onMounted, Ref, ref, watch } from "vue"
+import {actors} from "src/util/ActorsConfig";
 
 const props = defineProps({
   myName         : {

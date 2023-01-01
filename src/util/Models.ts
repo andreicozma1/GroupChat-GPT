@@ -21,7 +21,7 @@ export interface ActorConfig {
 	key: string;
 	name: string;
 	createPrompt: any;
-	config: CreateCompletionRequest | CreateImageRequest;
+	apiConfig: CreateCompletionRequest | CreateImageRequest;
 	createComp?: any;
 	icon: string;
 	ignoreCache?: boolean;

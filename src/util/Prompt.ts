@@ -1,6 +1,7 @@
-import { actors } from "src/util/assistants/Configs"
+import { actors } from "src/util/assistant/Configs"
+import { getAvailable } from "src/util/assistant/Util"
 import { ActorConfig, MsgHistoryConfig, TextMessage } from "src/util/Models"
-import { getAvailable, humanName } from "stores/compStore"
+import { humanName } from "stores/compStore"
 
 export const basePersonalityTraits = [ "enthusiastic", "clever", "very friendly" ]
 export const baseStrengths = [ "making conversation", "answering questions" ]

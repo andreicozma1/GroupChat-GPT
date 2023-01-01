@@ -1,31 +1,11 @@
-import { defineStore } from "pinia";
-import { LocalStorage } from "quasar";
-import { actors } from "src/util/assistants/Configs"
-import { ActorConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models";
-import { openai, options } from "src/util/OpenAIUtil";
-import { v4 as uuidv4 } from "uuid";
-import { Ref, ref } from "vue";
+import { defineStore } from "pinia"
+import { LocalStorage } from "quasar"
+import { ActorConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models"
+import { openai, options } from "src/util/OpenAi"
+import { v4 as uuidv4 } from "uuid"
+import { Ref, ref } from "vue"
 
 export const humanName = "Human";
-
-export const getAvailable = (): ActorConfig[] => {
-	return Object.values(actors).filter((a) => {
-		if (a.available === undefined) return true;
-		return a.available;
-	});
-};
-
-export const allExcept = (actor: ActorConfig): ActorConfig[] => {
-	return getAvailable().filter((a) => a.key !== actor.key);
-};
-
-export const toKeys = (actors: ActorConfig[]): string[] => {
-	return actors.map((a) => a.key);
-};
-
-const toNames = (actors: ActorConfig[]): string[] => {
-	return actors.map((a) => a.name);
-};
 
 export const useCompStore = defineStore("counter", {
 	state: () => ({
@@ -112,7 +92,7 @@ export const useCompStore = defineStore("counter", {
 				if (actor.createComp) {
 					completion = await actor.createComp(
 						{
-							...actor.config,
+							...actor.apiConfig,
 							prompt: prompt,
 						},
 						options
@@ -120,7 +100,7 @@ export const useCompStore = defineStore("counter", {
 				} else {
 					completion = await openai.createCompletion(
 						{
-							...actor.config,
+							...actor.apiConfig,
 							prompt: prompt,
 						},
 						options

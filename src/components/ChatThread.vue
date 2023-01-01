@@ -18,7 +18,7 @@
           <div class="row items-center">
             <span>
               <q-icon :name="getObjectiveIcon(msg.objective)" class="q-mr-sm" />
-              <q-tooltip v-if="actors[msg.objective]?.config"> Objective: {{ msg.objective }} </q-tooltip>
+              <q-tooltip v-if="actors[msg.objective]?.apiConfig"> Objective: {{ msg.objective }} </q-tooltip>
             </span>
             <span class="text-caption text-italic">
               {{ createStamp(msg) }}
@@ -52,12 +52,12 @@
 
 <script lang="ts" setup>
 import { copyToClipboard } from "quasar";
-import { getSeededQColor } from "src/util/ColorUtils";
+import { getSeededQColor } from "src/util/Colors";
 import { TextMessage } from "src/util/Models";
-import { dateToStr, getTimeAgo, smartNotify } from "src/util/Util";
+import { dateToStr, getTimeAgo, smartNotify } from "src/util/Utils";
 import { useCompStore } from "stores/compStore";
 import { computed, onMounted, Ref, ref, watch } from "vue";
-import {actors} from "src/util/assistants/Configs";
+import {actors} from "src/util/assistant/Configs";
 
 const props = defineProps({
   myName: {

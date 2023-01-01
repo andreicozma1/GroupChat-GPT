@@ -1,4 +1,4 @@
-import { getRandomTextStr, getSeededAvatarURL, getSeededImageURL } from "src/util/Util";
+import { getRandomTextStr, getSeededAvatarURL, getSeededImageURL } from "src/util/Utils";
 import { TextMessage } from "./Models";
 
 interface RandomMsgConfig {

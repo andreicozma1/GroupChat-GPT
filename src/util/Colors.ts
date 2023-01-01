@@ -1,5 +1,5 @@
 import { ColorConfig } from "src/util/Models";
-import { randomMinMax } from "src/util/Util";
+import { randomMinMax } from "src/util/Utils";
 
 const baseQuasarColors = [
 	"red",

@@ -1,7 +1,8 @@
-import { actors } from "src/util/assistants/Configs"
+import { actors } from "src/util/assistant/Configs"
+import { actorsToKeys, getAllExcept, getAvailable } from "src/util/assistant/Util"
 import { ActorConfig, TextMessage } from "src/util/Models";
-import { allExcept, getAvailable, humanName, toKeys } from "stores/compStore";
-import { getPromptAssistantRules, getPromptAssistantsInfo, getPromptChatHistory } from "src/util/AiPrompts";
+import { humanName } from "stores/compStore";
+import { getPromptAssistantRules, getPromptAssistantsInfo, getPromptChatHistory } from "src/util/Prompt";
 
 function coordinatorPromptStart(actor: ActorConfig): string {
 	let res = "### COORDINATOR ###\n";
@@ -21,7 +22,7 @@ function coordinatorPromptStart(actor: ActorConfig): string {
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${actors.coordinator.vals.willIgnore}: ${toKeys(allExcept(actors.davinci)).join(", ")}\n`;
+	res += `${actors.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(actors.davinci)).join(", ")}\n`;
 	res += `${actors.coordinator.vals.willRespond}: ${actors.davinci.key}\n`;
 	res += "\n";
 
@@ -31,7 +32,7 @@ function coordinatorPromptStart(actor: ActorConfig): string {
 
 	res += `### ${actor.name}:\n`;
 	res += `${actors.coordinator.vals.willIgnore}: None\n`;
-	res += `${actors.coordinator.vals.willRespond}: ${toKeys(getAvailable()).join(", ")}\n`;
+	res += `${actors.coordinator.vals.willRespond}: ${actorsToKeys(getAvailable()).join(", ")}\n`;
 	res += "\n";
 
 	res += `### ${humanName}:\n`;
@@ -39,7 +40,7 @@ function coordinatorPromptStart(actor: ActorConfig): string {
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${actors.coordinator.vals.willIgnore}: ${toKeys(allExcept(actors.dalle)).join(", ")}\n`;
+	res += `${actors.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(actors.dalle)).join(", ")}\n`;
 	res += `${actors.coordinator.vals.willRespond}: ${actors.dalle.key}\n`;
 	res += "\n";
 
@@ -48,7 +49,7 @@ function coordinatorPromptStart(actor: ActorConfig): string {
 	res += "\n";
 
 	res += `### ${actor.name}:\n`;
-	res += `${actors.coordinator.vals.willIgnore}: ${toKeys(allExcept(actors.codex)).join(", ")}\n`;
+	res += `${actors.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(actors.codex)).join(", ")}\n`;
 	res += `${actors.coordinator.vals.willRespond}: ${actors.codex.key}\n`;
 	res += "\n";
 

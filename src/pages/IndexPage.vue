@@ -57,10 +57,10 @@
 import ChatThread from "components/ChatThread.vue";
 import { QCard, QInput } from "quasar";
 import { ActorConfig, GenerationResult, TextMessage } from "src/util/Models";
-import { getSeededAvatarURL } from "src/util/Util";
+import { getSeededAvatarURL } from "src/util/Utils";
 import { useCompStore } from "stores/compStore";
 import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue";
-import {actors} from "src/util/assistants/Configs";
+import {actors} from "src/util/assistant/Configs";
 
 const comp = useCompStore();
 

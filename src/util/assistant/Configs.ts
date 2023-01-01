@@ -1,8 +1,8 @@
-import { basePersonalityTraits, baseStrengths, createPromptDalleGen, generationInstructions } from "src/util/AiPrompts"
-import { createAssistantPrompt } from "src/util/assistants/BaseAssistant"
-import { createPromptCoordinator } from "src/util/assistants/BaseCoordinator"
+import { basePersonalityTraits, baseStrengths, createPromptDalleGen, generationInstructions } from "src/util/Prompt"
+import { createAssistantPrompt } from "src/util/assistant/BaseAssistant"
+import { createPromptCoordinator } from "src/util/assistant/BaseCoordinator"
 import { ActorConfig } from "src/util/Models"
-import { openai } from "src/util/OpenAIUtil"
+import { openai } from "src/util/OpenAi"
 
 const BaseAssistantApiConfig = {
 	model: "text-davinci-003",
@@ -19,7 +19,7 @@ export const actors: Record<string, ActorConfig> = {
 		name: "Davinci",
 		icon: "chat",
 		createPrompt: createAssistantPrompt,
-		config: {
+		apiConfig: {
 			...BaseAssistantApiConfig,
 		},
 		personality: ["helpful", ...basePersonalityTraits],
@@ -31,7 +31,7 @@ export const actors: Record<string, ActorConfig> = {
 		icon: "image",
 		createPrompt: createAssistantPrompt,
 		createGen: "dalle_gen",
-		config: {
+		apiConfig: {
 			...BaseAssistantApiConfig,
 		},
 		personality: ["artistic", "creative", "visionary", ...basePersonalityTraits],
@@ -45,7 +45,7 @@ export const actors: Record<string, ActorConfig> = {
 		icon: "code",
 		createPrompt: createAssistantPrompt,
 		createGen: "codex_gen",
-		config: {
+		apiConfig: {
 			...BaseAssistantApiConfig,
 		},
 		personality: ["analytical", "logical", "rational", ...basePersonalityTraits],
@@ -58,7 +58,7 @@ export const actors: Record<string, ActorConfig> = {
 		name: "Coordinator",
 		icon: "question_answer",
 		createPrompt: createPromptCoordinator,
-		config: {
+		apiConfig: {
 			model: "text-davinci-003",
 			temperature: 0.5,
 			max_tokens: 25,
@@ -79,7 +79,7 @@ export const actors: Record<string, ActorConfig> = {
 		icon: "image",
 		createPrompt: createPromptDalleGen,
 		createComp: openai.createImage,
-		config: {
+		apiConfig: {
 			n: 1,
 			size: "256x256",
 			prompt: "A cute puppy",

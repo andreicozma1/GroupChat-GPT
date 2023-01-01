@@ -2,30 +2,55 @@ import { AssistantConfigs } from "src/util/assistant/Configs";
 import { AssistantConfig, getAvailable } from "src/util/assistant/Util";
 import { ChatMessage, getMessageHistory } from "src/util/Chat";
 
-export const getAssistantsInfo = (useKey: boolean, currentAI?: AssistantConfig) => {
-	const available = getAvailable();
-	let res = "### ASSISTANTS ###\n";
-	res += available
-		.map((ai) => {
-			const id = useKey ? ai.key : ai.name;
-			let res = `# ${id}`;
-			if (currentAI && currentAI.key === ai.key) res += " (You)";
-			res += ":\n";
-			if (ai.traits) {
-				// if (ai.personality) res += `- Personality Traits: ${ai.personality.join(", ")}.\n`;
-				// if (ai.strengths) res += `- Strengths: ${ai.strengths.join(", ")}.\n`;
-				// if (ai.weaknesses) res += `- Weaknesses: ${ai.weaknesses.join(", ")}.\n`;
-				// if (ai.abilities) res += `- Abilities: ${ai.abilities.join(", ")}.\n`;
-				res += Object.entries(ai.traits)
-					.map(([k, v]) => `- ${k}: ${v.join(", ")}`)
-					.join("\n");
-			}
-			res += "\n";
-			return res;
-		})
-		.join("\n");
+function getAssistantInfo(ai: AssistantConfig, useKey: boolean, tag?: string): string {
+	const id = useKey ? ai.key : ai.name;
+	let res = `# ${id}`;
+	if (tag) res += ` (${tag})`;
+	res += ":\n";
+	if (ai.traits) {
+		res += Object.entries(ai.traits)
+			.map(([k, v]) => `- ${k}: ${v.join(", ")}`)
+			.join("\n");
+	}
 	res += "\n";
 	return res;
+}
+
+export const getAssistantsInfo = (useKey: boolean, currentAI?: AssistantConfig) => {
+	const start = "### ASSISTANTS ###";
+	const available = getAvailable();
+	let info = undefined;
+	if (available && available.length === 0) {
+		info = available
+			.map((ai) => {
+				let tag = undefined;
+				if (currentAI && currentAI.key === ai.key) tag = " (You)";
+				return getAssistantInfo(ai, useKey, tag);
+			})
+			.join("\n");
+	}
+	if (!info) info = "- No assistants available.";
+	return start + "\n" + info + "\n";
+};
+
+export const getExamples = (ai: AssistantConfig) => {
+	const start = "### EXAMPLES ###";
+	let examples = undefined;
+	if (ai.examples && ai.examples.length > 0) {
+		examples = ai.examples.map((e) => {
+			// Order: Human, AI, Human, AI, etc.
+			let res = "";
+			for (let i = 0; i < e.length; i++) {
+				const msg = e[i];
+				const isHuman = i % 2 === 0;
+				const name = isHuman ? "You" : ai.name;
+				res += `### ${name}:\n${msg}\n\n`;
+			}
+			return res;
+		});
+	}
+	if (!examples) examples = "- No examples available.";
+	return start + "\n" + examples + "\n";
 };
 
 export const getAssistantRules = (): string => {

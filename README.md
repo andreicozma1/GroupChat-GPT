@@ -70,7 +70,7 @@ Install the rest of the project dependencies
 yarn install
 ```
 
-**Important!!** - You will have to put your OpenAI API Key inside the `.env` file.
+**Important!!** - You will have to put your OpenAI API Key inside the `.env` file.  
 (If forking this repository, run `git update-index --assume-unchanged .env` to make sure you don't accidentally push your API key to the repo)
 
 ## Run & Build

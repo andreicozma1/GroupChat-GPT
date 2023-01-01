@@ -59,9 +59,9 @@ import {QCard, QInput} from "quasar";
 import {getRoboHashAvatarUrl} from "src/util/Utils";
 import {GenerationResult, useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, Ref, ref, watch} from "vue";
-import {AssistantConfigs} from "src/util/assistant/Configs";
+import {AssistantConfigs} from "src/util/assistant/Assistants";
 import {ChatMessage} from "src/util/Chat";
-import {AssistantConfig} from "src/util/assistant/Util";
+import {AssistantConfig} from "src/util/assistant/AssistantUtils";
 
 const comp = useCompStore();
 

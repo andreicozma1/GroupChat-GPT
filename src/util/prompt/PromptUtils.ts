@@ -1,5 +1,5 @@
-import { AssistantConfigs } from "src/util/assistant/Configs";
-import { AssistantConfig, getAvailable, processKV } from "src/util/assistant/Util";
+import { AssistantConfigs } from "src/util/assistant/Assistants";
+import { AssistantConfig, getAvailable, processKV } from "src/util/assistant/AssistantUtils";
 import { ChatMessage, getMessageHistory } from "src/util/Chat";
 import { humanName } from "stores/compStore";
 

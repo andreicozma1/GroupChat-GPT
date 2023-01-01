@@ -55,7 +55,7 @@ import {getSeededQColor} from "src/util/Colors";
 import {dateToStr, getTimeAgo, smartNotify} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import {AssistantConfigs} from "src/util/assistant/Configs";
+import {AssistantConfigs} from "src/util/assistant/Assistants";
 import {ChatMessage} from "src/util/Chat";
 
 const props = defineProps({

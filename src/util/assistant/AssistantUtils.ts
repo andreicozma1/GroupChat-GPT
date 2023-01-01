@@ -1,4 +1,4 @@
-import { AssistantConfigs } from "src/util/assistant/Configs";
+import { AssistantConfigs } from "src/util/assistant/Assistants";
 
 export interface AssistantRules {
 	always?: string | string[];

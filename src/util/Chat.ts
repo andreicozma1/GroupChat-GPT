@@ -1,4 +1,4 @@
-import { AssistantConfig } from "src/util/assistant/Util";
+import { AssistantConfig } from "src/util/assistant/AssistantUtils";
 import { humanName } from "stores/compStore";
 
 export interface ChatThread {

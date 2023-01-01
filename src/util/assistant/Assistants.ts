@@ -1,5 +1,5 @@
-import { createAssistantPrompt, createPromptCodexGen, createPromptDalleGen } from "src/util/assistant/Prompts";
-import { AssistantConfig } from "src/util/assistant/Util";
+import { AssistantConfig } from "src/util/assistant/AssistantUtils";
+import { createAssistantPrompt, createPromptCodexGen, createPromptDalleGen } from "src/util/prompt/Prompts";
 
 export const ApiReqConfigs: { [key: string]: { [key: string]: any } } = {
 	defaults: {
@@ -95,11 +95,14 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			strengths: ["programming", "coding"],
 			abilities: ["Generating code from text descriptions"],
 		},
+		rules: {
+			never: ["Write the code yourself. Just generate the prompt and let Codex do the rest."],
+		},
 		examples: [
 			"Hey Codex, make a program that adds two numbers together.",
 			"Sure, I can do that. What language would you like to use and what should the two numbers be?",
-			"Use Python and make the numbers 5 and 6.",
-			"Here's your program:\n" +
+			"Use Python. The numbers are 5 and 6.",
+			"Working on it!\n" +
 				"<prompt>A Python program that adds numbers together.\nThe numbers to add will be 5 and 6.</prompt>",
 		],
 	},
@@ -154,6 +157,16 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			apiReqType: "createCompletion",
 			apiReqOpts: undefined,
 		},
+		rules: {
+			always: [
+				"Wrap the code in a markdown code block and use the language name as the language identifier if possible.",
+				"Use the language identifier `text` if the language is not supported by markdown.",
+			],
+		},
+		examples: [
+			"<gen>A Python program that multiplies two numbers together.\nThe numbers to multiply will be 5 and 6.</gen>",
+			"```\ndef multiply(a, b):\n\treturn a * b\n\nprint(multiply(5, 6))\n```",
+		],
 		available: false,
 	},
 };

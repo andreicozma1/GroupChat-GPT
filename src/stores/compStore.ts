@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { LocalStorage } from "quasar";
-import { AssistantConfig } from "src/util/assistant/Util";
+import { AssistantConfig } from "src/util/assistant/AssistantUtils";
 import { ChatMessage, ChatThread } from "src/util/Chat";
 import { makeApiRequest } from "src/util/OpenAi";
 import { v4 as uuidv4 } from "uuid";

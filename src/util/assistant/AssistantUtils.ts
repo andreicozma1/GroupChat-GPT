@@ -30,6 +30,7 @@ export interface AssistantConfig {
 	};
 	followUps?: string | string[];
 	available?: boolean;
+	helper?: boolean;
 	ignoreCache?: boolean;
 }
 

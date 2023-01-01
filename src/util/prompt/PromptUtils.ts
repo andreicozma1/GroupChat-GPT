@@ -92,7 +92,7 @@ export const promptConversation = (
 	const conv = hist
 		.map((message) => {
 			const v = message.text.map((s) => s.trim());
-			const r = [`### ${message.name}:`, ...message.text];
+			const r = [`### ${message.name}:`, ...v];
 			return r.join("\n");
 		})
 		.join("\n\n");

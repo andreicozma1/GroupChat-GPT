@@ -142,6 +142,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		name: "DALL-E",
 		icon: "image",
 		promptStyle: createPromptDalleGen,
+		helper: true,
 		apiConfig: {
 			apiReqType: "createImage",
 			apiReqOpts: undefined,
@@ -153,6 +154,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		name: "Codex",
 		icon: "code",
 		promptStyle: createPromptCodexGen,
+		helper: true,
 		apiConfig: {
 			apiReqType: "createCompletion",
 			apiReqOpts: undefined,

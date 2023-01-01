@@ -1,3 +1,4 @@
+import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
 import { humanName } from "stores/compStore";
 
@@ -32,6 +33,11 @@ export const getMessageHistory = (config: ChatMessageHistConfig): ChatMessage[] 
 		if (m.name === humanName) {
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;
+		}
+		const actor_key = m.objective;
+		if (actor_key !== undefined) {
+			const actor = AssistantConfigs[actor_key];
+			if (actor && actor.helper === true) return false;
 		}
 		// handle actors to include and exclude
 		if (config.includeActors) {

@@ -176,8 +176,7 @@ const getSplitText = (text: string) => {
 const sanitizeLine = (line: string) => {
   // remove all html tags except for allowed tags
   const allowed = {
-    gen: "b",
-    prompt: "i",
+    prompt: "b",
   };
   // remove all opening and closing tags except for the keys in allowed
   const regex = /<\/?([a-z]+)[^>]*>/gi;

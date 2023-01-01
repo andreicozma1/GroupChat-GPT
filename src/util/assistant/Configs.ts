@@ -54,7 +54,7 @@ export const actors: Record<string, AssistantConfig> = {
 			...BaseAssistantApiConfig,
 		},
 		personality: ["analytical", "logical", "rational", ...basePersonalityTraits],
-		strengths: ["programming", "math", "science", "logic", ...baseStrengths],
+		strengths: ["programming", "coding", ...baseStrengths],
 		abilities: ["Generating code from text descriptions"],
 		instructions: [...generationInstructions],
 	},
@@ -87,7 +87,7 @@ export const actors: Record<string, AssistantConfig> = {
 		apiConfig: {
 			n: 1,
 			size: "256x256",
-			prompt: "A cute puppy",
+			prompt: "A cute puppy", // this is just a placeholder so that IDEs don't complain
 		},
 		available: false,
 	},

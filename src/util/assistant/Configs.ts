@@ -12,7 +12,7 @@ import { openai } from "src/util/OpenAi";
 const BaseAssistantApiConfig = {
 	model: "text-davinci-003",
 	max_tokens: 200,
-	temperature: 0.9,
+	temperature: 0.75,
 	top_p: 1,
 	frequency_penalty: 0.0,
 	presence_penalty: 0.6,
@@ -65,7 +65,7 @@ export const actors: Record<string, AssistantConfig> = {
 		createPrompt: createPromptCoordinator,
 		apiConfig: {
 			model: "text-davinci-003",
-			temperature: 0.5,
+			temperature: 0.75,
 			max_tokens: 25,
 			top_p: 1,
 			frequency_penalty: 0,

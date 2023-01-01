@@ -20,7 +20,7 @@ export const createPromptCoordinator = (actor: AssistantConfig, messages: ChatMe
 	const examples = coordinatorPromptExamples(actor);
 	const conv = getConversation(messages, [], [actors.coordinator], 5);
 	const end = `### ${actor.name}:\n`;
-	return (start + rules + info + examples + conv + end).trim();
+	return (start + info + rules + examples + conv + end).trim();
 };
 
 const coordinatorPromptExamples = (actor: AssistantConfig): string => {

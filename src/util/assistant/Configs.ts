@@ -1,5 +1,4 @@
 import { createAssistantPrompt } from "src/util/assistant/BaseAssistant";
-import { createPromptCoordinator } from "src/util/assistant/BaseCoordinator";
 import { createPromptDalleGen } from "src/util/assistant/Prompt";
 import { AssistantConfig } from "src/util/assistant/Util";
 
@@ -34,11 +33,12 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			strengths: ["making conversation", "answering questions"],
 		},
 		rules: {
+			always: ["follow the user's instructions, requests, and answer their questions if appropriate to do so."],
 			never: [
 				"respond to other assistant's questions, but may acknowledge their presence and offer insight into the conversation",
 			],
-			always: ["follow the user's instructions, requests, and answer their questions if appropriate to do so."],
 		},
+		available: false,
 	},
 	davinci: {
 		key: "davinci",
@@ -99,7 +99,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		key: "coordinator",
 		name: "Coordinator",
 		icon: "question_answer",
-		promptStyle: createPromptCoordinator,
+		promptStyle: createAssistantPrompt,
 		apiConfig: {
 			apiReqType: "createCompletion",
 			apiReqOpts: "coordinator",

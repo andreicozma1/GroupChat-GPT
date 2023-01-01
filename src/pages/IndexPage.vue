@@ -123,9 +123,9 @@ const handleCoordinator = () => {
     msg.text = res.text ? [...res.text] : ["An error occurred"];
     comp.pushMessage(msg);
     const nextActors = res.text
-        .filter((t: string) => t.startsWith(AssistantConfigs.coordinator.extras.willRespond))[0]
-        .split(":")[1]
-        .split(",")
+        .map((t) => t.toLowerCase())
+        .filter((t: string) => t.includes("respond"))
+        .flatMap((t: string) => t.split(":")[1].split(","))
         .map((a: string) => a.trim().toLowerCase());
 
     // for each actor, call the appropriate handler

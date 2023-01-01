@@ -1,24 +1,27 @@
 import { AssistantConfigs } from "src/util/assistant/Configs";
 
+export interface AssistantRules {
+	always?: string | string[];
+	never?: string | string[];
+}
+
+export interface AssistantTraits {
+	personality?: string | string[];
+	strengths?: string | string[];
+	weaknesses?: string | string[];
+	abilities?: string | string[];
+}
+
 export interface AssistantConfig {
 	key: string;
 	name: string;
 	icon: string;
 	promptStyle: any;
 	apiConfig: {
-		apiReqType: string;
-		apiReqOpts?: string;
+		apiReqType: string; apiReqOpts?: string;
 	};
-	traits?: {
-		personality?: string[];
-		strengths?: string[];
-		weaknesses?: string[];
-		abilities?: string[];
-	};
-	rules?: {
-		always?: string[];
-		never?: string[];
-	};
+	traits?: AssistantTraits;
+	rules?: AssistantRules;
 	// Order: Human, AI, Human, AI, etc.
 	examples?: string[];
 	extras?: {

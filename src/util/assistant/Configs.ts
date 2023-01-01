@@ -17,6 +17,7 @@ export const ApiReqConfigs: { [key: string]: { [key: string]: any } } = {
 	custom: {},
 };
 
+// TODO: Use this generic config in the prompt creation functions
 export const AssistantConfigShared: AssistantConfig = {
 	key: "generic",
 	name: "Generic AI",

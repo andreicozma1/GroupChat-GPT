@@ -3,6 +3,10 @@
 Imagine a world where multiple Large Language Models (LLMs) collaborate together to help us humans with various tasks.  
 Well, this application is a step towards that world.
 
+## Table of Contents:
+
+<!-- START doctoc -->
+<!-- END doctoc -->
 
 ### Features: 
 - Specialized Chat-bot Assistants:

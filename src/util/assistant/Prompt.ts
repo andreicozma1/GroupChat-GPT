@@ -1,4 +1,4 @@
-import { assistants } from "src/util/assistant/Configs";
+import { AssistantConfigs } from "src/util/assistant/Configs";
 import { AssistantConfig, getAvailable } from "src/util/assistant/Util";
 import { ChatMessage, getMessageHistory } from "src/util/Chat";
 
@@ -77,7 +77,7 @@ export const getConversation = (
 	length?: number
 ): string => {
 	include = include || undefined;
-	exclude = exclude || [assistants.coordinator];
+	exclude = exclude || [AssistantConfigs.coordinator];
 	length = length || 10;
 	const start = "### CONVERSATION ###";
 	const hist = getMessageHistory({

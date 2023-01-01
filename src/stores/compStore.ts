@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
 import { LocalStorage } from "quasar";
+import { ApiOptsValidTypes, getApiOpts } from "src/util/assistant/Configs";
 import { AssistantConfig } from "src/util/assistant/Util";
-import { ChatThread, ChatMessage } from "src/util/Chat";
+import { ChatMessage, ChatThread } from "src/util/Chat";
 import { openai, options } from "src/util/OpenAi";
 import { v4 as uuidv4 } from "uuid";
 import { Ref, ref } from "vue";
@@ -99,10 +100,11 @@ export const useCompStore = defineStore("counter", {
 			let completion;
 			try {
 				// otherwise, generate a new completion
-				if (actor.createComp) {
-					completion = await actor.createComp(
+				const apiConfig: ApiOptsValidTypes = getApiOpts(actor.config);
+				if (actor.genType) {
+					completion = await actor.genType(
 						{
-							...actor.apiConfig,
+							...apiConfig,
 							prompt: prompt,
 						},
 						options
@@ -110,7 +112,7 @@ export const useCompStore = defineStore("counter", {
 				} else {
 					completion = await openai.createCompletion(
 						{
-							...actor.apiConfig,
+							...apiConfig,
 							prompt: prompt,
 						},
 						options

@@ -59,7 +59,7 @@ import {QCard, QInput} from "quasar";
 import {getRoboHashAvatarUrl} from "src/util/Utils";
 import {GenerationResult, useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, Ref, ref, watch} from "vue";
-import {assistants} from "src/util/assistant/Configs";
+import {AssistantConfigs} from "src/util/assistant/Configs";
 import {ChatMessage} from "src/util/Chat";
 import {AssistantConfig} from "src/util/assistant/Util";
 
@@ -102,7 +102,7 @@ const createAIMessage = (cfg: AssistantConfig): ChatMessage => {
 };
 
 const handleCoordinator = () => {
-  const ai: AssistantConfig = assistants.coordinator;
+  const ai: AssistantConfig = AssistantConfigs.coordinator;
   const msg: ChatMessage = createAIMessage(ai);
 
   comp.genCompletion(ai).then(async (res: GenerationResult) => {
@@ -123,7 +123,7 @@ const handleCoordinator = () => {
     msg.text = res.text ? [...res.text] : ["An error occurred"];
     comp.pushMessage(msg);
     const nextActors = res.text
-        .filter((t: string) => t.startsWith(assistants.coordinator.vals.willRespond))[0]
+        .filter((t: string) => t.startsWith(AssistantConfigs.coordinator.vals.willRespond))[0]
         .split(":")[1]
         .split(",")
         .map((a: string) => a.trim().toLowerCase());
@@ -145,7 +145,7 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
   // await sleep(Math.random() * 2500)
 
   actorKey = actorKey?.trim();
-  const cfgFollowup: AssistantConfig = assistants[actorKey];
+  const cfgFollowup: AssistantConfig = AssistantConfigs[actorKey];
   msg = msg || createAIMessage(cfgFollowup);
   if (!cfgFollowup) {
     msg.text.push(`[Error: Unknown actor type: ${actorKey}]`);

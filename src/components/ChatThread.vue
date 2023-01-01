@@ -18,7 +18,6 @@
           <div class="row items-center">
             <span>
               <q-icon :name="getObjectiveIcon(msg.objective)" class="q-mr-sm"/>
-              <q-tooltip v-if="assistants[msg.objective]?.apiConfig"> Objective: {{ msg.objective }} </q-tooltip>
             </span>
             <span class="text-caption text-italic">
               {{ createStamp(msg) }}
@@ -56,7 +55,7 @@ import {getSeededQColor} from "src/util/Colors";
 import {dateToStr, getTimeAgo, smartNotify} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import {assistants} from "src/util/assistant/Configs";
+import {AssistantConfigs} from "src/util/assistant/Configs";
 import {ChatMessage} from "src/util/Chat";
 
 const props = defineProps({
@@ -82,9 +81,9 @@ const threadElem: any = ref(null);
 const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 const getObjectiveIcon = (objective: string) => {
-  if (!assistants[objective]) return "send";
-  if (!assistants[objective].icon) return "help";
-  return assistants[objective].icon;
+  if (!AssistantConfigs[objective]) return "send";
+  if (!AssistantConfigs[objective].icon) return "help";
+  return AssistantConfigs[objective].icon;
 };
 
 const parseThreadMessages = (): ChatMessage[] => {
@@ -102,7 +101,7 @@ const parseThreadMessages = (): ChatMessage[] => {
   if (props.hideCoordinator) {
     thrd = thrd.filter((msg: ChatMessage) => {
       if (msg.text.some((line: string) => line.includes("[ERROR]") || line.includes("[WARN]"))) return true;
-      return msg.name !== assistants.coordinator.name;
+      return msg.name !== AssistantConfigs.coordinator.name;
     });
   }
   thrd.sort((a, b) => {

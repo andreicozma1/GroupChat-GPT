@@ -1,12 +1,11 @@
-import { CreateCompletionRequest, CreateImageRequest } from "openai/api";
-import { assistants } from "src/util/assistant/Configs";
+import { AssistantConfigs } from "src/util/assistant/Configs";
 
 export interface AssistantConfig {
 	key: string;
 	name: string;
 	createPrompt: any;
-	apiConfig: CreateCompletionRequest | CreateImageRequest;
-	createComp?: any;
+	config: string;
+	genType?: any;
 	icon: string;
 	ignoreCache?: boolean;
 	available?: boolean;
@@ -20,7 +19,7 @@ export interface AssistantConfig {
 }
 
 export const getAvailable = (): AssistantConfig[] => {
-	return Object.values(assistants).filter((a) => {
+	return Object.values(AssistantConfigs).filter((a) => {
 		if (a.available === undefined) return true;
 		return a.available;
 	});

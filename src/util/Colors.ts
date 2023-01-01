@@ -1,33 +1,15 @@
-import { ColorConfig } from "src/util/Models";
-import { randomMinMax } from "src/util/Utils";
+import { getRandomMinMax } from "src/util/Utils";
 
-const baseQuasarColors = [
-	"red",
-	"pink",
-	"purple",
-	"deep-purple",
-	"indigo",
-	"blue",
-	"light-blue",
-	"cyan",
-	"teal",
-	"green",
-	"light-green",
-	"lime",
-	"yellow",
-	"amber",
-	"orange",
-	"deep-orange",
-	"brown",
-	"grey",
-	"blue-grey",
-];
-// for each number 1 through 14 inclusive
-const allQuasarColors = Array.from(Array(15).keys()).map((i) => {
-	// add the number to the baseQuasarColors array
-	if (i === 0) return baseQuasarColors;
-	return baseQuasarColors.map((c) => c + "-" + i);
-});
+export interface ColorConfig {
+	minLightness?: number;
+	maxLightness?: number;
+	minSaturation?: number;
+	maxSaturation?: number;
+	minHue?: number;
+	maxHue?: number;
+	minAlpha?: number;
+	maxAlpha?: number;
+}
 
 export const getSeededQColor = (seed: string | number, minNum?: number, maxNum?: number) => {
 	// based on the seed pick a color from the list of all quasar colors
@@ -53,10 +35,37 @@ export const getSeededQColor = (seed: string | number, minNum?: number, maxNum?:
 };
 
 const getSeededColorHex = (seed: string, config: ColorConfig) => {
-	const hue = randomMinMax(config.minHue ?? 0, config.maxHue ?? 360);
-	const saturation = randomMinMax(config.minSaturation ?? 0, config.maxSaturation ?? 100);
-	const lightness = randomMinMax(config.minLightness ?? 0, config.maxLightness ?? 100);
-	const alpha = randomMinMax(config.minAlpha ?? 0, config.maxAlpha ?? 1);
+	const hue = getRandomMinMax(config.minHue ?? 0, config.maxHue ?? 360);
+	const saturation = getRandomMinMax(config.minSaturation ?? 0, config.maxSaturation ?? 100);
+	const lightness = getRandomMinMax(config.minLightness ?? 0, config.maxLightness ?? 100);
+	const alpha = getRandomMinMax(config.minAlpha ?? 0, config.maxAlpha ?? 1);
 
 	return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
 };
+
+const baseQuasarColors = [
+	"red",
+	"pink",
+	"purple",
+	"deep-purple",
+	"indigo",
+	"blue",
+	"light-blue",
+	"cyan",
+	"teal",
+	"green",
+	"light-green",
+	"lime",
+	"yellow",
+	"amber",
+	"orange",
+	"deep-orange",
+	"brown",
+	"grey",
+	"blue-grey",
+];
+
+const allQuasarColors = Array.from(Array(15).keys()).map((i) => {
+	if (i === 0) return baseQuasarColors;
+	return baseQuasarColors.map((c) => c + "-" + i);
+});

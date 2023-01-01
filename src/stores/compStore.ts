@@ -1,11 +1,21 @@
-import { defineStore } from "pinia"
-import { LocalStorage } from "quasar"
-import { ActorConfig, GenerationResult, MessageThread, TextMessage } from "src/util/Models"
-import { openai, options } from "src/util/OpenAi"
-import { v4 as uuidv4 } from "uuid"
-import { Ref, ref } from "vue"
+import { defineStore } from "pinia";
+import { LocalStorage } from "quasar";
+import { AssistantConfig } from "src/util/assistant/Util";
+import { ChatThread, ChatMessage } from "src/util/Chat";
+import { openai, options } from "src/util/OpenAi";
+import { v4 as uuidv4 } from "uuid";
+import { Ref, ref } from "vue";
 
 export const humanName = "Human";
+
+export interface GenerationResult {
+	result: any;
+	text?: string[];
+	images?: string[];
+	hash: number;
+	cached?: boolean;
+	errorMsg?: string;
+}
 
 export const useCompStore = defineStore("counter", {
 	state: () => ({
@@ -15,7 +25,7 @@ export const useCompStore = defineStore("counter", {
 				messages: [],
 			},
 			...(LocalStorage.getItem("threads") || {}),
-		}) as Ref<Record<string, MessageThread>>,
+		}) as Ref<Record<string, ChatThread>>,
 		currentThread: "main",
 		userName: humanName,
 	}),
@@ -23,7 +33,7 @@ export const useCompStore = defineStore("counter", {
 		getAllCompletions(state) {
 			return state.completions;
 		},
-		getThread(state): MessageThread {
+		getThread(state): ChatThread {
 			return state.threads[state.currentThread];
 		},
 	},
@@ -74,7 +84,7 @@ export const useCompStore = defineStore("counter", {
 				result: cachedResponse,
 			};
 		},
-		async genCompletion(actor: ActorConfig): Promise<GenerationResult> {
+		async genCompletion(actor: AssistantConfig): Promise<GenerationResult> {
 			const prompt = actor.createPrompt(actor, this.getThread.messages);
 			const hash = hashPrompt(prompt);
 			console.warn(prompt);
@@ -132,7 +142,7 @@ export const useCompStore = defineStore("counter", {
 				cached: false,
 			};
 		},
-		pushMessage(message: TextMessage): TextMessage {
+		pushMessage(message: ChatMessage): ChatMessage {
 			if (message.id) {
 				// look back through the messages to see if we already have this message
 				// and update it if we do

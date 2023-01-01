@@ -1,17 +1,16 @@
-import { actors } from "src/util/assistant/Configs"
-import { getAvailable } from "src/util/assistant/Util"
-import { ActorConfig, MsgHistoryConfig, TextMessage } from "src/util/Models"
-import { humanName } from "stores/compStore"
+import { actors } from "src/util/assistant/Configs";
+import { AssistantConfig, getAvailable } from "src/util/assistant/Util";
+import { getMessageHistory, ChatMessage } from "src/util/Chat";
 
-export const basePersonalityTraits = [ "enthusiastic", "clever", "very friendly" ]
-export const baseStrengths = [ "making conversation", "answering questions" ]
+export const basePersonalityTraits = ["enthusiastic", "clever", "very friendly"];
+export const baseStrengths = ["making conversation", "answering questions"];
 export const baseAlways: string[] = [
 	"follow the user's directions, requests, and answer their questions.",
 	// "respond for yourself",
 	"add to information in the conversation only if appropriate or requested.",
 	"use bulleted lists when listing multiple things.",
-	"hold true your own character, including personality traits, interests, strengths, weaknesses, and abilities."
-]
+	"hold true your own character, including personality traits, interests, strengths, weaknesses, and abilities.",
+];
 export const baseNever: string[] = [
 	"interrupt user's conversation with other assistants.",
 	"respond on behalf of other assistants.",
@@ -20,20 +19,20 @@ export const baseNever: string[] = [
 	"repeat what you have already said recently.",
 	"repeat what other assistants have just said.",
 	"ask more than one question at a time.",
-	"make logical inconsistencies."
+	"make logical inconsistencies.",
 	// "ask the user to do something that is part of your job"
-]
+];
 export const generationInstructions: string[] = [
 	"When the user wants to generate something you're capable of, acquire information about what it should look like based on the user's preferences.",
 	"After enough information is acquired, for each request, you will create a detailed description of what the end result will look like in order to start generating.",
 	"You will always wrap prompts with <prompt> and </prompt> tags around the description in order to generate the final result.",
 	"Only the detailed description should be within the prompt tags, and nothing else.",
 	"Only create the prompt when the user specifically requests it.",
-	"Never talk about the tags specifically. Only you know about the tags."
+	"Never talk about the tags specifically. Only you know about the tags.",
 	// "Only show the final prompts to the user if the user has explicitly asked.",
-]
+];
 
-export const getPromptAssistantsInfo = (useKey: boolean, currentAI?: ActorConfig) => {
+export const getAssistantsInfo = (useKey: boolean, currentAI?: AssistantConfig) => {
 	const available = getAvailable();
 	let res = "### ASSISTANTS ###\n";
 	res += available
@@ -53,8 +52,7 @@ export const getPromptAssistantsInfo = (useKey: boolean, currentAI?: ActorConfig
 	return res;
 };
 
-
-export const getPromptAssistantRules = (): string => {
+export const getAssistantRules = (): string => {
 	let res = "### ASSISTANT RULES ###\n";
 	if (baseAlways.length > 0) {
 		res += `# Assistants always:\n`;
@@ -68,17 +66,17 @@ export const getPromptAssistantRules = (): string => {
 	}
 	return res;
 };
-export const getPromptChatHistory = (
-	messages: TextMessage[],
-	include?: ActorConfig[],
-	exclude?: ActorConfig[],
+export const getConversation = (
+	messages: ChatMessage[],
+	include?: AssistantConfig[],
+	exclude?: AssistantConfig[],
 	length?: number
 ): string => {
 	include = include || undefined;
 	exclude = exclude || [actors.coordinator];
 	length = length || 10;
 	const start = "### CONVERSATION ###";
-	const hist = getChatMessageHistory({
+	const hist = getMessageHistory({
 		messages,
 		includeSelf: true,
 		includeActors: include,
@@ -90,28 +88,7 @@ export const getPromptChatHistory = (
 	return start + "\n" + hist.join("\n") + "\n";
 };
 
-export const getChatMessageHistory = (config: MsgHistoryConfig): TextMessage[] => {
-	let hist = config.messages;
-	hist = hist.filter((m) => {
-		if (m.name === humanName) {
-			if (config.includeSelf === undefined) return true;
-			return config.includeSelf;
-		}
-		// handle actors to include and exclude
-		if (config.includeActors) {
-			return config.includeActors.some((actor) => actor.name === m.name);
-		}
-		if (config.excludeActors) {
-			return !config.excludeActors.some((actor) => actor.name === m.name);
-		}
-		return true;
-	});
-	hist = hist.filter((m) => m.text.length > 0);
-	if (config.maxLength !== undefined) hist = hist.slice(-config.maxLength);
-	return hist;
-};
-
-export const createPromptDalleGen = (actor: ActorConfig, messages: TextMessage[]) => {
+export const createPromptDalleGen = (actor: AssistantConfig, messages: ChatMessage[]) => {
 	const lastMessage = messages[messages.length - 1];
 	return lastMessage.text[lastMessage.text.length - 1];
 };

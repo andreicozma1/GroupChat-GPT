@@ -56,11 +56,12 @@
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue";
 import { QCard, QInput } from "quasar";
-import { ActorConfig, GenerationResult, TextMessage } from "src/util/Models";
-import { getSeededAvatarURL } from "src/util/Utils";
-import { useCompStore } from "stores/compStore";
+import { getRoboHashAvatarUrl } from "src/util/Utils";
+import { GenerationResult, useCompStore } from "stores/compStore";
 import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue";
-import {actors} from "src/util/assistant/Configs";
+import { actors } from "src/util/assistant/Configs";
+import { ChatMessage } from "src/util/Chat";
+import { AssistantConfig } from "src/util/assistant/Util";
 
 const comp = useCompStore();
 
@@ -83,13 +84,13 @@ const isTyping = ref(false);
 const isTypingTimeout: Ref<any> = ref(null);
 const responseTimeout: Ref<any> = ref(null);
 
-const createAIMessage = (cfg: ActorConfig): TextMessage => {
+const createAIMessage = (cfg: AssistantConfig): ChatMessage => {
   const name: string = cfg?.name || "Anonymous AI";
   const objective: string = cfg?.key || "unknown";
-  let msg: TextMessage = {
+  let msg: ChatMessage = {
     text: [],
     images: [],
-    avatar: getSeededAvatarURL(name),
+    avatar: getRoboHashAvatarUrl(name),
     name: name,
     date: new Date(),
     dateCreated: undefined,
@@ -101,8 +102,8 @@ const createAIMessage = (cfg: ActorConfig): TextMessage => {
 };
 
 const handleCoordinator = () => {
-  const ai: ActorConfig = actors.coordinator;
-  const msg: TextMessage = createAIMessage(ai);
+  const ai: AssistantConfig = actors.coordinator;
+  const msg: ChatMessage = createAIMessage(ai);
 
   comp.genCompletion(ai).then(async (res: GenerationResult) => {
     console.log(res);
@@ -140,11 +141,11 @@ const handleCoordinator = () => {
   });
 };
 
-const handleNext = async (actorKey: string, msg?: TextMessage) => {
+const handleNext = async (actorKey: string, msg?: ChatMessage) => {
   // await sleep(Math.random() * 2500)
 
   actorKey = actorKey?.trim();
-  const cfgFollowup: ActorConfig = actors[actorKey];
+  const cfgFollowup: AssistantConfig = actors[actorKey];
   msg = msg || createAIMessage(cfgFollowup);
   if (!cfgFollowup) {
     msg.text.push(`[Error: Unknown actor type: ${actorKey}]`);
@@ -221,7 +222,7 @@ const sendMessage = () => {
     userMsgObj.value = {
       text: [],
       images: [],
-      avatar: getSeededAvatarURL(myName.value),
+      avatar: getRoboHashAvatarUrl(myName.value),
       name: myName.value,
       date: new Date(),
     };

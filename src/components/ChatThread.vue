@@ -53,11 +53,11 @@
 <script lang="ts" setup>
 import { copyToClipboard } from "quasar";
 import { getSeededQColor } from "src/util/Colors";
-import { TextMessage } from "src/util/Models";
 import { dateToStr, getTimeAgo, smartNotify } from "src/util/Utils";
 import { useCompStore } from "stores/compStore";
 import { computed, onMounted, Ref, ref, watch } from "vue";
-import {actors} from "src/util/assistant/Configs";
+import { actors } from "src/util/assistant/Configs";
+import { ChatMessage } from "src/util/Chat";
 
 const props = defineProps({
   myName: {
@@ -79,7 +79,7 @@ const props = defineProps({
 const comp = useCompStore();
 
 const threadElem: any = ref(null);
-const threadMessages: Ref<TextMessage[]> = ref([]);
+const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 const getObjectiveIcon = (objective: string) => {
   if (!actors[objective]) return "send";
@@ -87,8 +87,8 @@ const getObjectiveIcon = (objective: string) => {
   return actors[objective].icon;
 };
 
-const parseThreadMessages = (): TextMessage[] => {
-  let thrd: TextMessage[] = comp.getThread.messages.map((msg: TextMessage) => {
+const parseThreadMessages = (): ChatMessage[] => {
+  let thrd: ChatMessage[] = comp.getThread.messages.map((msg: ChatMessage) => {
     const text = msg.text.length === 0 ? [] : [...msg.text];
     if (!msg.loading && text.length === 0) text.push("[No message]");
     return {
@@ -100,7 +100,7 @@ const parseThreadMessages = (): TextMessage[] => {
   });
   // filter out messages from Coordinator messages if hideCoordinator is true
   if (props.hideCoordinator) {
-    thrd = thrd.filter((msg: TextMessage) => {
+    thrd = thrd.filter((msg: ChatMessage) => {
       if (msg.text.some((line: string) => line.includes("[ERROR]") || line.includes("[WARN]"))) return true;
       return msg.name !== actors.coordinator.name;
     });
@@ -119,13 +119,13 @@ const parseThreadMessages = (): TextMessage[] => {
   return thrd;
 };
 
-const createStamp = (msg: TextMessage) => {
+const createStamp = (msg: ChatMessage) => {
   const timeAgo = getTimeAgo(msg.date);
   const sentByMe = isSentByMe(msg);
   return sentByMe ? `Sent ${timeAgo}` : `Received ${timeAgo}`;
 };
 
-const createHoverHint = (msg: TextMessage) => {
+const createHoverHint = (msg: ChatMessage) => {
   const numText = msg.text?.length ?? 0;
   const numImage = msg.images?.length ?? 0;
   const numTotal = numText + numImage;
@@ -137,7 +137,7 @@ const createHoverHint = (msg: TextMessage) => {
   return `${who} sent ${what} on ${when}`;
 };
 
-const isSentByMe = (msg: TextMessage) => {
+const isSentByMe = (msg: ChatMessage) => {
   return msg.name === props.myName;
 };
 

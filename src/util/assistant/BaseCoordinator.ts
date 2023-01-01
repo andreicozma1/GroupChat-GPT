@@ -1,22 +1,30 @@
-import { actors } from "src/util/assistant/Configs"
-import { actorsToKeys, getAllExcept, getAvailable } from "src/util/assistant/Util"
-import { ActorConfig, TextMessage } from "src/util/Models";
+import { actors } from "src/util/assistant/Configs";
+import { actorsToKeys, AssistantConfig, getAllExcept, getAvailable } from "src/util/assistant/Util";
+import { ChatMessage } from "src/util/Chat";
 import { humanName } from "stores/compStore";
-import { getPromptAssistantRules, getPromptAssistantsInfo, getPromptChatHistory } from "src/util/assistant/Prompt";
+import { getAssistantRules, getAssistantsInfo, getConversation } from "src/util/assistant/Prompt";
 
-function coordinatorPromptStart(actor: ActorConfig): string {
-	let res = "### COORDINATOR ###\n";
-	res += "Choose which assistant(s) would be the absolute best at responding to the user's message.\n";
-	res += "Only respond with the exact names of the assistant(s).\n";
-	res += "If multiple assistants are requested or fit to respond, separate each of their names by commas.\n";
-	res += "Take into consideration their personalities, strengths, weaknesses, and abilities.\n";
-	res += "Also keep the logical consistency of the conversation in mind.\n";
-	res += "\n";
+const coordinatorPromptStart =
+	"### COORDINATOR ###\n" +
+	"Choose which assistant(s) would be the absolute best at responding to the user's message.\n" +
+	"Only respond with the exact names of the assistant(s).\n" +
+	"If multiple assistants are requested or fit to respond, separate each of their names by commas.\n" +
+	"Take into consideration their personalities, strengths, weaknesses, and abilities.\n" +
+	"Also keep the logical consistency of the conversation in mind.\n" +
+	"\n";
 
-	res += getPromptAssistantRules();
-	res += getPromptAssistantsInfo(true);
+export const createPromptCoordinator = (actor: AssistantConfig, messages: ChatMessage[]) => {
+	const start = coordinatorPromptStart;
+	const rules = getAssistantRules();
+	const info = getAssistantsInfo(true);
+	const examples = coordinatorPromptExamples(actor);
+	const conv = getConversation(messages, [], [actors.coordinator], 5);
+	const end = `### ${actor.name}:\n`;
+	return (start + rules + info + examples + conv + end).trim();
+};
 
-	res += "### EXAMPLES ###\n";
+const coordinatorPromptExamples = (actor: AssistantConfig): string => {
+	let res = "### EXAMPLES ###\n";
 	res += `### ${humanName}:\n`;
 	res += `Hello, what's up ${actors.davinci.name}?\n`;
 	res += "\n";
@@ -52,14 +60,5 @@ function coordinatorPromptStart(actor: ActorConfig): string {
 	res += `${actors.coordinator.vals.willIgnore}: ${actorsToKeys(getAllExcept(actors.codex)).join(", ")}\n`;
 	res += `${actors.coordinator.vals.willRespond}: ${actors.codex.key}\n`;
 	res += "\n";
-
 	return res;
-}
-
-export const createPromptCoordinator = (actor: ActorConfig, messages: TextMessage[]) => {
-	const res = coordinatorPromptStart(actor);
-	const conv = getPromptChatHistory(messages, [], [actors.coordinator], 5);
-	const end = `### ${actor.name}:\n`;
-	const prompt = res + conv + end;
-	return prompt.trim();
 };

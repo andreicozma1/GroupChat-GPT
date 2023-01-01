@@ -5,18 +5,19 @@ Well, this application is a step towards that world.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
-- [Features:](#features)
-- [Setup Project & Dependencies](#setup-project--dependencies)
-- [Run & Build](#run--build)
-  - [Start the app in development mode](#start-the-app-in-development-mode)
-  - [Build the app for production](#build-the-app-for-production)
-- [Additional Commands](#additional-commands)
-  - [Lint the files](#lint-the-files)
-  - [Format the files](#format-the-files)
-- [License & Credit](#license--credit)
-- [Demo Screenshots](#demo-screenshots)
+-   [Features:](#features)
+-   [Setup Project & Dependencies](#setup-project--dependencies)
+-   [Run & Build](#run--build)
+    -   [Start the app in development mode](#start-the-app-in-development-mode)
+    -   [Build the app for production](#build-the-app-for-production)
+-   [Additional Commands](#additional-commands)
+    -   [Lint the files](#lint-the-files)
+    -   [Format the files](#format-the-files)
+-   [License & Credit](#license--credit)
+-   [Demo Screenshots](#demo-screenshots)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

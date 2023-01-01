@@ -1,10 +1,13 @@
-import { createAssistantPrompt } from "src/util/assistant/BaseAssistant"
-import { createPromptCoordinator } from "src/util/assistant/BaseCoordinator"
+import { createAssistantPrompt } from "src/util/assistant/BaseAssistant";
+import { createPromptCoordinator } from "src/util/assistant/BaseCoordinator";
 import {
-	basePersonalityTraits, baseStrengths, createPromptDalleGen, generationInstructions
-} from "src/util/assistant/Prompt"
-import { ActorConfig } from "src/util/Models"
-import { openai } from "src/util/OpenAi"
+	basePersonalityTraits,
+	baseStrengths,
+	createPromptDalleGen,
+	generationInstructions,
+} from "src/util/assistant/Prompt";
+import { AssistantConfig } from "src/util/assistant/Util";
+import { openai } from "src/util/OpenAi";
 
 const BaseAssistantApiConfig = {
 	model: "text-davinci-003",
@@ -15,7 +18,7 @@ const BaseAssistantApiConfig = {
 	presence_penalty: 0.6,
 	stop: ["###"],
 };
-export const actors: Record<string, ActorConfig> = {
+export const actors: Record<string, AssistantConfig> = {
 	davinci: {
 		key: "davinci",
 		name: "Davinci",

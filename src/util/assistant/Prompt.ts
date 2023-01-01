@@ -68,6 +68,7 @@ export const getAssistantRules = (): string => {
 	}
 	return res;
 };
+
 export const getConversation = (
 	messages: ChatMessage[],
 	include?: AssistantConfig[],

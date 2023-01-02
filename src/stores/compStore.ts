@@ -147,7 +147,10 @@ export const useCompStore = defineStore("counter", {
 				}
 				return {
 					errorMsg: errorMsg,
-					result: undefined,
+					result: {
+						messageIds: relevantMsgIds,
+						responseData: undefined,
+					},
 					cached: false,
 					hash: hash,
 				};

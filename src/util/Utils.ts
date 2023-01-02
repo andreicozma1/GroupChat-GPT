@@ -100,7 +100,7 @@ export const smartNotify = (message: string) => {
 	});
 };
 
-export const handleAssistant = async (msg: ChatMessage, comp: any) => {
+export const handleAssistant = async (msg: ChatMessage, comp: any, orderedResponses?: boolean) => {
 	const cfg = AssistantConfigs[msg.assistantKey];
 	const res = await comp.generate(cfg, msg.result?.messageIds);
 	console.log(res);
@@ -165,6 +165,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 			// }
 			msg.text.push(`<prompt>${prompt}</prompt>`);
 			// await handleAssistant(nextMsg, comp);
+			await handleCoordinator(comp, orderedResponses);
 		}
 	}
 };
@@ -211,9 +212,9 @@ export const handleCoordinator = async (comp: any, orderedResponses?: boolean) =
 			return;
 		}
 		if (orderedResponses) {
-			await handleAssistant(nextMsg, comp);
+			await handleAssistant(nextMsg, comp, orderedResponses);
 		} else {
-			handleAssistant(nextMsg, comp);
+			handleAssistant(nextMsg, comp, orderedResponses);
 		}
 	}
 };

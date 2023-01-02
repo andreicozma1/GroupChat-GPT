@@ -1,5 +1,5 @@
 import { AssistantConfig, getAvailable, processKV } from "src/util/assistant/AssistantUtils";
-import { ChatMessage } from "src/util/Chat";
+import { ChatMessage } from "src/util/ChatUtils";
 import { humanName } from "stores/compStore";
 
 const getAssistantTraits = (ai: AssistantConfig, useKey: boolean, tag?: string): string => {
@@ -58,9 +58,11 @@ export const promptRules = (ai: AssistantConfig): string => {
 	const start = "### RULES ###";
 
 	const rules = Object.entries(ai.rules)
-		.map(([ k, v ]) => processKV(k, v, {
-			keyStartChar: "*",
-		}))
+		.map(([k, v]) =>
+			processKV(k, v, {
+				keyStartChar: "*",
+			})
+		)
 		.join("\n");
 
 	return start + "\n" + rules;
@@ -72,7 +74,7 @@ export const promptConversation = (msgHist: ChatMessage[]): string => {
 	const conv = msgHist
 		.map((m) => {
 			const v = m.text.map((s) => s.trim());
-			const r = [ `### ${m.name}:`, ...v ];
+			const r = [`### ${m.name}:`, ...v];
 			return r.join("\n");
 		})
 		.join("\n\n");

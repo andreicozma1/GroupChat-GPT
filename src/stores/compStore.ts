@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { LocalStorage } from "quasar";
 import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { ChatMessage, ChatThread, getMessageHistory } from "src/util/Chat";
+import { ChatMessage, ChatThread, getMessageHistory } from "src/util/ChatUtils";
 import { makeApiRequest } from "src/util/OpenAi";
 import { v4 as uuidv4 } from "uuid";
 import { Ref, ref } from "vue";

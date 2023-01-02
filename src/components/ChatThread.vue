@@ -82,7 +82,7 @@ import {convertDate, dateToStr, getTimeAgo, handleAssistant, smartNotify} from "
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/Assistants";
-import {ChatMessage, getThreadMessages} from "src/util/Chat";
+import {ChatMessage, getThreadMessages} from "src/util/ChatUtils";
 
 const props = defineProps({
   myName: {
@@ -142,34 +142,21 @@ const parseThreadMessages = (): ChatMessage[] => {
   return thrd;
 };
 
-let lastTime = new Date()
-const shuffleStampTimeout = 2500;
 
 const createStamp = (msg: ChatMessage) => {
-  const timeAgoCreated = getTimeAgo(msg.dateCreated)
-  // get the current time
-  const currTime = new Date();
-  // only show every 5 seconds
-  if (msg.dateGenerated && currTime.getTime() - lastTime.getTime() > shuffleStampTimeout) {
-    setTimeout(() => {
-      lastTime = new Date();
-    }, shuffleStampTimeout);
-    const timeAgoUpdated = getTimeAgo(msg.dateGenerated);
-    return `Updated ${timeAgoUpdated}`;
-  }
-  const sentByMe = isSentByMe(msg);
-  return sentByMe ? `Sent ${timeAgoCreated}` : `Received ${timeAgoCreated}`;
+  const what = isSentByMe(msg) ? "Sent" : "Received";
+  const on = getTimeAgo(msg.dateCreated)
+  let res = `${what} ${on}`
+  if (msg.isRegen) res = `*${res}`;
+  return res;
 };
 
 
 const createContentHoverHint = (msg: ChatMessage) => {
-  const numText = msg.text?.length ?? 0;
-  const numImage = msg.images?.length ?? 0;
-  const numTotal = numText + numImage;
+  const numTexts = msg.text?.length ?? 0;
+  const numImages = msg.images?.length ?? 0;
   const who = isSentByMe(msg) ? "You" : msg.name;
-  const what = `${numTotal} msg${numTotal > 1 ? "s" : ""} (${numText} text, ${numImage} image${
-      numImage > 1 ? "s" : ""
-  })`;
+  const what = `${numTexts} text and ${numImages} image${numImages > 1 ? "s" : ""})`;
   const when = dateToStr(msg.dateCreated);
   return `${who} sent ${what} on ${when}`;
 };
@@ -180,7 +167,7 @@ const createStampHoverHint = (msg: ChatMessage) => {
   let res = `${what} on ${when}`;
   const dateGenerated = msg.result?.responseData?.created * 1000;
   if (dateGenerated) {
-    res += '\n\n' + ` ... Generated on ${dateToStr(dateGenerated)}`;
+    res += '\n\n' + ` [Generated on ${dateToStr(dateGenerated)}]`;
   }
   return res;
 };

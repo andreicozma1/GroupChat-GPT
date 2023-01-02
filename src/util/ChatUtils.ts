@@ -17,6 +17,7 @@ export interface ChatMessage extends GenerationResult {
 	images: string[];
 	dateCreated: string | number | Date;
 	loading?: boolean;
+	isRegen?: boolean;
 }
 
 export interface ChatMessageHistConfig {
@@ -68,7 +69,6 @@ export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMe
 		avatar: getRoboHashAvatarUrl(assistantName),
 		name: assistantName,
 		dateCreated: new Date(),
-		dateGenerated: undefined,
 		assistantKey: assistantKey,
 		loading: true,
 	};

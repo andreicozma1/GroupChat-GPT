@@ -1,5 +1,5 @@
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { ChatMessage } from "src/util/Chat";
+import { ChatMessage } from "src/util/ChatUtils";
 import { promptConversation, promptExamples, promptMembers, promptRules } from "src/util/prompt/PromptUtils";
 
 export const createAssistantPrompt = (ai: AssistantConfig, messages: ChatMessage[]): any => {

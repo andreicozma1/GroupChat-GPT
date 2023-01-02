@@ -1,7 +1,7 @@
 import { Notify } from "quasar";
 import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { ChatMessage, createMessageFromConfig } from "src/util/Chat";
+import { ChatMessage, createMessageFromConfig } from "src/util/ChatUtils";
 
 export const getRandomMinMax = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -109,6 +109,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	msg.cached = res.cached;
 	msg.result = res.result;
 	msg.loading = false;
+	msg.isRegen = msg.result?.messageIds ? msg.result.messageIds.length > 0 : false;
 	if (res.errorMsg) {
 		msg.text.push("[ERROR]\n" + res.errorMsg);
 		comp.pushMessage(msg);

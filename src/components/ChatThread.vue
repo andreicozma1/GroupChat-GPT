@@ -70,7 +70,7 @@ import {dateToStr, getTimeAgo, smartNotify} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/Assistants";
-import {ChatMessage} from "src/util/Chat";
+import {ChatMessage, getThreadMessages} from "src/util/Chat";
 
 const props = defineProps({
   myName: {
@@ -101,7 +101,7 @@ const getObjectiveIcon = (objective: string) => {
 };
 
 const parseThreadMessages = (): ChatMessage[] => {
-  let thrd: ChatMessage[] = comp.getThread.messages.map((msg: ChatMessage) => {
+  let thrd: ChatMessage[] = getThreadMessages(comp.getThread).map((msg: ChatMessage) => {
     const text = msg.text.length === 0 ? [] : [...msg.text];
     if (!msg.loading && text.length === 0) text.push("[No message]");
     return {

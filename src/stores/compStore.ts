@@ -18,15 +18,17 @@ export interface GenerationResult {
 }
 
 export const useCompStore = defineStore("counter", {
-	state  : () => ({
-		completions  : LocalStorage.getItem("completions") || {},
-		threads      : ref({
+	state: () => ({
+		completions: LocalStorage.getItem("completions") || {},
+		threads: ref({
 			main: {
-				messages: [],
-			}, ...(LocalStorage.getItem("threads") || {}),
+				orderedKeysList: [],
+				messageMap: {},
+			},
+			...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,
 		currentThread: "main",
-		userName     : humanName,
+		userName: humanName,
 	}),
 	getters: {
 		getAllCompletions(state) {
@@ -49,7 +51,7 @@ export const useCompStore = defineStore("counter", {
 		},
 		clearThread() {
 			console.log("Clearing thread");
-			this.threads[this.currentThread].messages = [];
+			this.threads[this.currentThread].orderedKeysList = [];
 			this.updateCache();
 		},
 		getCachedResponse(hash: number) {
@@ -60,9 +62,9 @@ export const useCompStore = defineStore("counter", {
 			if (cachedResponse === null || cachedResponse === undefined) {
 				return {
 					errorMsg: "Cached response was null/undefined",
-					result  : null,
-					cached  : undefined,
-					hash    : hash,
+					result: null,
+					cached: undefined,
+					hash: hash,
 				};
 			}
 
@@ -91,8 +93,8 @@ export const useCompStore = defineStore("counter", {
 
 			return {
 				cached: undefined,
-				hash  : hash,
-				text  : text,
+				hash: hash,
+				text: text,
 				images: images,
 				result: cachedResponse,
 			};
@@ -101,7 +103,7 @@ export const useCompStore = defineStore("counter", {
 		async generate(actor: AssistantConfig): Promise<GenerationResult> {
 			console.warn("=======================================");
 			console.warn("=> generate:", actor);
-			const prompt = actor.promptStyle(actor, this.getThread.messages);
+			const { prompt, msgIds } = actor.promptStyle(actor, this.getThread);
 			const hash = hashPrompt(prompt);
 			console.warn("=> prompt:");
 			console.log(prompt);
@@ -127,9 +129,9 @@ export const useCompStore = defineStore("counter", {
 				}
 				return {
 					errorMsg: errorMsg,
-					result  : null,
-					cached  : false,
-					hash    : hash,
+					result: null,
+					cached: false,
+					hash: hash,
 				};
 			}
 			this.completions[hash] = completion.data;
@@ -145,19 +147,31 @@ export const useCompStore = defineStore("counter", {
 			if (message.id) {
 				// look back through the messages to see if we already have this message
 				// and update it if we do
-				const existingIdx = this.getThread.messages.findIndex((m) => m.id === message.id);
-				if (existingIdx !== -1) {
-					this.threads[this.currentThread].messages[existingIdx] = {
-						...this.threads[this.currentThread].messages[existingIdx], ...message,
+				// const existingIdx = this.getThread.messages.findIndex((m) => m.id === message.id);
+				// if (existingIdx !== -1) {
+				// 	this.threads[this.currentThread].messages[existingIdx] = {
+				// 		...this.threads[this.currentThread].messages[existingIdx],
+				// 		...message,
+				// 	};
+				// 	// console.log("Updated message: ", { ...message });
+				// 	this.updateCache();
+				// 	return this.threads[this.currentThread].messages[existingIdx];
+				// }
+				const existingMsg = this.getThread.messageMap[message.id];
+				if (existingMsg) {
+					this.threads[this.currentThread].messageMap[message.id] = {
+						...existingMsg,
+						...message,
 					};
 					// console.log("Updated message: ", { ...message });
 					this.updateCache();
-					return this.threads[this.currentThread].messages[existingIdx];
+					return this.threads[this.currentThread].messageMap[message.id];
 				}
 			}
 			// otherwise, create uuid and push it
 			message.id = uuidv4();
-			this.getThread.messages.push(message);
+			this.getThread.messageMap[message.id] = message;
+			this.getThread.orderedKeysList.push(message.id);
 			// console.log("Pushed message", { ...message });
 			this.updateCache();
 			return message;

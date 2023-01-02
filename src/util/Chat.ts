@@ -3,11 +3,12 @@ import { AssistantConfig } from "src/util/assistant/AssistantUtils";
 import { humanName } from "stores/compStore";
 
 export interface ChatThread {
-	messages: ChatMessage[];
+	messageMap: { [key: string]: ChatMessage };
+	orderedKeysList: string[];
 }
 
 export interface ChatMessage {
-	id?: string | number;
+	id?: string;
 	text: string[];
 	images: string[];
 	avatar: string;
@@ -20,15 +21,23 @@ export interface ChatMessage {
 }
 
 export interface ChatMessageHistConfig {
-	messages: ChatMessage[];
+	thread: ChatThread;
 	includeSelf?: boolean;
 	includeActors?: AssistantConfig[];
 	excludeActors?: AssistantConfig[];
 	maxLength?: number;
 }
 
+export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
+	console.log(thread.orderedKeysList);
+	console.log(thread.messageMap);
+	return thread.orderedKeysList.map((key) => thread.messageMap[key]);
+};
+
 export const getMessageHistory = (config: ChatMessageHistConfig): ChatMessage[] => {
-	let hist = config.messages;
+	// const thread = config.thread;
+	// let hist = thread.messages.map((id) => thread.messageMap[id]);
+	let hist = getThreadMessages(config.thread);
 	hist = hist.filter((m) => {
 		if (m.name === humanName) {
 			if (config.includeSelf === undefined) return true;

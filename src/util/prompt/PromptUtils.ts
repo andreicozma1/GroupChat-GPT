@@ -1,6 +1,5 @@
-import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig, getAvailable, processKV } from "src/util/assistant/AssistantUtils";
-import { ChatMessage, getMessageHistory } from "src/util/Chat";
+import { ChatMessage } from "src/util/Chat";
 import { humanName } from "stores/compStore";
 
 const getAssistantTraits = (ai: AssistantConfig, useKey: boolean, tag?: string): string => {
@@ -59,40 +58,21 @@ export const promptRules = (ai: AssistantConfig): string => {
 	const start = "### RULES ###";
 
 	const rules = Object.entries(ai.rules)
-		.map(([k, v]) =>
-			processKV(k, v, {
-				keyStartChar: "*",
-			})
-		)
+		.map(([ k, v ]) => processKV(k, v, {
+			keyStartChar: "*",
+		}))
 		.join("\n");
 
 	return start + "\n" + rules;
 };
 
-export const promptConversation = (
-	messages: ChatMessage[],
-	include?: AssistantConfig[],
-	exclude?: AssistantConfig[],
-	length?: number
-): string => {
-	include = include || undefined;
-	exclude = exclude || [AssistantConfigs.coordinator];
-	length = length || 10;
-
+export const promptConversation = (msgHist: ChatMessage[]): string => {
 	const start = "### CONVERSATION ###";
 
-	const hist = getMessageHistory({
-		messages,
-		includeSelf: true,
-		includeActors: include,
-		excludeActors: exclude,
-		maxLength: length,
-	});
-
-	const conv = hist
-		.map((message) => {
-			const v = message.text.map((s) => s.trim());
-			const r = [`### ${message.name}:`, ...v];
+	const conv = msgHist
+		.map((m) => {
+			const v = m.text.map((s) => s.trim());
+			const r = [ `### ${m.name}:`, ...v ];
 			return r.join("\n");
 		})
 		.join("\n\n");

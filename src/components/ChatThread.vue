@@ -54,7 +54,8 @@
                    size="xs"
                    icon="refresh"
                    color="black"
-                   @click="regenerateMessage(msg)"/>
+                   v-if="canRegenMessage(msg)"
+                   @click="regenMessage(msg)"/>
           </div>
         </template>
 
@@ -213,17 +214,20 @@ const copyMessage = (text: string) => {
   });
 };
 
-
 const editMessage = (msg: ChatMessage) => {
   smartNotify(`Message editing is not yet implemented`);
   console.warn("=> edit:", {...msg});
   // comp.editMessage(msg);
 };
 
-const regenerateMessage = (msg: ChatMessage) => {
+const regenMessage = (msg: ChatMessage) => {
   smartNotify(`Message regeneration is not yet implemented`);
   console.warn("=> regenerate:", {...msg});
   console.warn("=> regenerate:", msg.result.messageIds);
+};
+
+const canRegenMessage = (msg: ChatMessage) => {
+  return msg.result?.messageIds?.length > 0;
 };
 
 const deleteMessage = (msg: ChatMessage) => {

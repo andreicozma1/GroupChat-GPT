@@ -156,7 +156,7 @@ const createContentHoverHint = (msg: ChatMessage) => {
   const numTexts = msg.text?.length ?? 0;
   const numImages = msg.images?.length ?? 0;
   const who = isSentByMe(msg) ? "You" : msg.name;
-  const what = `${numTexts} text and ${numImages} image${numImages > 1 ? "s" : ""})`;
+  const what = `${numTexts} text and ${numImages} image${numImages > 1 ? "s" : ""}`;
   const when = dateToStr(msg.dateCreated);
   return `${who} sent ${what} on ${when}`;
 };
@@ -214,6 +214,8 @@ const sanitizeLine = (line: string) => {
   // remove all html tags except for allowed tags
   const allowed = {
     prompt: "b",
+    image: "b",
+    code: "b",
   };
   // remove all opening and closing tags except for the keys in allowed
   const regex = /<\/?([a-z]+)[^>]*>/gi;

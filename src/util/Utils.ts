@@ -1,7 +1,7 @@
 import { Notify } from "quasar";
 import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { ChatMessage, createMessageFromConfig } from "src/util/ChatUtils";
+import { ChatMessage, createMessageFromAiKey, createMessageFromConfig } from "src/util/ChatUtils";
 
 export const getRandomMinMax = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -100,16 +100,21 @@ export const smartNotify = (message: string) => {
 	});
 };
 
-export const handleAssistant = async (msg: ChatMessage, comp: any, orderedResponses?: boolean) => {
+export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	const cfg = AssistantConfigs[msg.assistantKey];
+	msg.isRegen = msg.result?.messageIds ? msg.result.messageIds.length > 0 : false;
+	if (msg.isRegen) {
+		console.warn("=> Regen");
+		msg.text = [];
+		msg.images = [];
+	}
+
 	const res = await comp.generate(cfg, msg.result?.messageIds);
 	console.log(res);
-	msg.text = [];
-	msg.images = [];
 	msg.cached = res.cached;
 	msg.result = res.result;
 	msg.loading = false;
-	msg.isRegen = msg.result?.messageIds ? msg.result.messageIds.length > 0 : false;
+
 	if (res.errorMsg) {
 		msg.text.push("[ERROR]\n" + res.errorMsg);
 		comp.pushMessage(msg);
@@ -126,9 +131,12 @@ export const handleAssistant = async (msg: ChatMessage, comp: any, orderedRespon
 
 	comp.pushMessage(msg);
 
-	const requiredFollowUps = cfg?.followUps;
+	const requiredFollowUps = cfg?.followUps ? cfg.followUps : false;
 	// if null or undefined, exit
-	if (!requiredFollowUps) return;
+	if (!requiredFollowUps) {
+		console.warn("=> No follow-ups");
+		return;
+	}
 	// if string, make it an array
 	// for each
 	// filter out texts that contain <prompt> tags
@@ -153,19 +161,13 @@ export const handleAssistant = async (msg: ChatMessage, comp: any, orderedRespon
 		console.log("promptText", prompts);
 
 		// return true;
-		// const nextActor = `${comp.assistantKey}_gen`;
+		const nextKey = `${msg.assistantKey}_gen`;
 		for (let i = 0; i < prompts.length; i++) {
 			const prompt = prompts[i];
-			// const nextMsg = createMessageFromAiKey(nextActor, comp);
-			// if (!prompt) {
-			// 	nextMsg.text.push(`[Error: Prompt text is empty]`);
-			// 	nextMsg.loading = false;
-			// 	comp.pushMessage(nextMsg);
-			// 	continue;
-			// }
-			msg.text.push(`<prompt>${prompt}</prompt>`);
-			// await handleAssistant(nextMsg, comp);
-			await handleCoordinator(comp, orderedResponses);
+			const nextMsg: ChatMessage = createMessageFromAiKey(nextKey, comp);
+			nextMsg.text.push(`<prompt>${prompt}</prompt>`);
+			comp.pushMessage(nextMsg);
+			await handleAssistant(nextMsg, comp);
 		}
 	}
 };
@@ -201,16 +203,17 @@ export const handleCoordinator = async (comp: any, orderedResponses?: boolean) =
 
 	// for each actor, call the appropriate handler
 	console.log("Next Actors: ", nextActors);
-	for (let nextKey of nextActors) {
-		nextKey = nextKey.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
-		const nextCfg: AssistantConfig = AssistantConfigs[nextKey];
-		const nextMsg = createMessageFromConfig(nextCfg, comp);
-		if (!nextCfg) {
-			nextMsg.text.push(`[Error: Unknown assistant key: ${nextKey}]`);
-			nextMsg.loading = false;
-			comp.pushMessage(nextMsg);
-			return;
-		}
+	for (const nextKey of nextActors) {
+		// nextKey = nextKey.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
+		// const nextCfg: AssistantConfig = AssistantConfigs[nextKey];
+		// const nextMsg = createMessageFromConfig(nextCfg, comp);
+		// if (!nextCfg) {
+		// 	nextMsg.text.push(`[Error: Unknown assistant key: ${nextKey}]`);
+		// 	nextMsg.loading = false;
+		// 	comp.pushMessage(nextMsg);
+		// 	return;
+		// }
+		const nextMsg: ChatMessage = createMessageFromAiKey(nextKey, comp);
 		if (orderedResponses) {
 			await handleAssistant(nextMsg, comp, orderedResponses);
 		} else {

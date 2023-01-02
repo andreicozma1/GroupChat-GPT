@@ -60,7 +60,7 @@ export const getMessageHistory = (config: ChatMessageHistConfig): ChatMessage[] 
 	return hist;
 };
 export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMessage => {
-	const assistantName: string = cfg?.name || "Anonymous AI";
+	const assistantName: string = cfg?.name || "Unknown AI";
 	const assistantKey: string = cfg?.key || "unknown";
 	let msg: ChatMessage = {
 		id: undefined,
@@ -76,6 +76,13 @@ export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMe
 	return msg;
 };
 export const createMessageFromAiKey = (key: string, comp: any): ChatMessage => {
+	key = key.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
 	const cfg: AssistantConfig = AssistantConfigs[key];
-	return createMessageFromConfig(cfg, comp);
+	const msg = createMessageFromConfig(cfg, comp);
+	if (!cfg) {
+		msg.text.push(`[Error: Unknown assistant key: ${key}]`);
+		msg.loading = false;
+		comp.pushMessage(msg);
+	}
+	return msg;
 };

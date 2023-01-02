@@ -16,7 +16,6 @@ export interface ChatMessage extends GenerationResult {
 	text: string[];
 	images: string[];
 	dateCreated: string | number | Date;
-	dateUpdated?: string | number | Date;
 	loading?: boolean;
 }
 
@@ -69,7 +68,7 @@ export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMe
 		avatar: getRoboHashAvatarUrl(assistantName),
 		name: assistantName,
 		dateCreated: new Date(),
-		dateUpdated: undefined,
+		dateGenerated: undefined,
 		assistantKey: assistantKey,
 		loading: true,
 	};

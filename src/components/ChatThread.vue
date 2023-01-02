@@ -9,7 +9,7 @@
         <div v-for="text in msg.text" :key="text">
           <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)"/>
           <q-tooltip v-if="msg.dateCreated" :delay="750">
-            {{ createHoverHint(msg) }}
+            {{ createContentHoverHint(msg) }}
           </q-tooltip>
         </div>
 
@@ -28,16 +28,14 @@
             <span class="text-caption text-italic">
               {{ createStamp(msg) }}
               <q-tooltip>
-                Received: {{ dateToStr(msg.dateCreated) }}
+                {{ createStampHoverHint(msg) }}
               </q-tooltip>
             </span>
             <q-space/>
             <span v-if="msg.cached">
               <q-icon class="q-ml-sm" name="cached"/>
               <q-tooltip v-if="msg.dateCreated">
-                Generated
-                {{ getTimeAgo(msg.dateCreated) }}
-                ({{ dateToStr(msg.dateCreated) }})
+                This message was retrieved from cache.
               </q-tooltip>
             </span>
             <q-btn dense
@@ -152,18 +150,19 @@ const createStamp = (msg: ChatMessage) => {
   // get the current time
   const currTime = new Date();
   // only show every 5 seconds
-  if (msg.dateUpdated && currTime.getTime() - lastTime.getTime() > shuffleStampTimeout) {
+  if (msg.dateGenerated && currTime.getTime() - lastTime.getTime() > shuffleStampTimeout) {
     setTimeout(() => {
       lastTime = new Date();
     }, shuffleStampTimeout);
-    const timeAgoUpdated = getTimeAgo(msg.dateUpdated);
+    const timeAgoUpdated = getTimeAgo(msg.dateGenerated);
     return `Updated ${timeAgoUpdated}`;
   }
   const sentByMe = isSentByMe(msg);
   return sentByMe ? `Sent ${timeAgoCreated}` : `Received ${timeAgoCreated}`;
 };
 
-const createHoverHint = (msg: ChatMessage) => {
+
+const createContentHoverHint = (msg: ChatMessage) => {
   const numText = msg.text?.length ?? 0;
   const numImage = msg.images?.length ?? 0;
   const numTotal = numText + numImage;
@@ -174,6 +173,18 @@ const createHoverHint = (msg: ChatMessage) => {
   const when = dateToStr(msg.dateCreated);
   return `${who} sent ${what} on ${when}`;
 };
+
+const createStampHoverHint = (msg: ChatMessage) => {
+  const when = dateToStr(msg.dateCreated);
+  const what = isSentByMe(msg) ? "Sent" : "Received";
+  let res = `${what} on ${when}`;
+  const dateGenerated = msg.result?.responseData?.created * 1000;
+  if (dateGenerated) {
+    res += '\n\n' + ` ... Generated on ${dateToStr(dateGenerated)}`;
+  }
+  return res;
+};
+
 
 const isSentByMe = (msg: ChatMessage) => {
   return msg.name === props.myName;

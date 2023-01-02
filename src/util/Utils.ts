@@ -74,13 +74,12 @@ export const getTimeAgo = (date: string | number | Date) => {
 export const dateToStr = (date: string | number | Date) => {
 	date = convertDate(date);
 	const options = {
-		weekday: "short",
 		year: "numeric",
-		month: "short",
+		month: "numeric",
 		day: "numeric",
 		hour: "numeric",
 		minute: "numeric",
-		hour12: true,
+		second: "numeric",
 	};
 	return date.toLocaleDateString("en-US", options);
 };
@@ -103,7 +102,6 @@ export const smartNotify = (message: string) => {
 
 export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	const cfg = AssistantConfigs[msg.assistantKey];
-	const isRegen = !!msg.result?.messageIds;
 	const res = await comp.generate(cfg, msg.result?.messageIds);
 	console.log(res);
 	msg.text = [];
@@ -116,8 +114,6 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		comp.pushMessage(msg);
 		return;
 	}
-
-	msg.dateUpdated = res.result?.responseData.created * 1000;
 
 	if (res?.images) msg.images.push(...res.images);
 	if (res?.text) msg.text.push(...res.text);
@@ -182,6 +178,7 @@ export const handleCoordinator = async (comp: any, orderedResponses?: boolean) =
 	coordMsg.cached = res.cached;
 	coordMsg.result = res.result;
 	coordMsg.loading = false;
+
 	if (res.errorMsg) {
 		coordMsg.text.push("[ERROR]\n" + res.errorMsg);
 		comp.pushMessage(coordMsg);

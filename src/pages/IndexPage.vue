@@ -91,7 +91,7 @@ const sendMessage = () => {
       images: [],
       avatar: getRoboHashAvatarUrl(myName.value),
       name: myName.value,
-      date: new Date(),
+      dateCreated: new Date(),
     };
     comp.pushMessage(userMsgObj.value);
   }

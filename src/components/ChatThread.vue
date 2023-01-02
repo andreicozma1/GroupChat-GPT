@@ -2,7 +2,10 @@
   <q-scroll-area ref="threadElem" :style="getScrollAreaStyle">
     <q-chat-message :label="threadMessages.length.toString() + ' messages'" class="q-pt-md"/>
     <div v-for="msg in threadMessages" :key="msg.dateCreated">
-      <q-chat-message :bg-color="msg.sent ? null : getSeededQColor(msg.name, 1, 2)" size="6" v-bind="msg">
+      <q-chat-message size="6"
+                      :sent="isSentByMe(msg)"
+                      :bg-color="isSentByMe(msg) ? null : getSeededQColor(msg.name, 1, 2)"
+                      v-bind="msg">
         <div v-for="text in msg.text" :key="text">
           <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)"/>
           <q-tooltip v-if="msg.dateCreated" :delay="750">
@@ -118,8 +121,6 @@ const parseThreadMessages = (): ChatMessage[] => {
     return {
       ...msg,
       text: text,
-      stamp: createStamp(msg),
-      sent: isSentByMe(msg),
     };
   });
   // filter out messages from Coordinator messages if hideCoordinator is true
@@ -147,16 +148,16 @@ let lastTime = new Date()
 const shuffleStampTimeout = 2500;
 
 const createStamp = (msg: ChatMessage) => {
-  const timeAgoCreated = getTimeAgo(msg.dateCreated);
+  const timeAgoCreated = getTimeAgo(msg.dateCreated)
   // get the current time
   const currTime = new Date();
   // only show every 5 seconds
-  if (msg.dateGenerated && currTime.getTime() - lastTime.getTime() > shuffleStampTimeout) {
+  if (msg.dateUpdated && currTime.getTime() - lastTime.getTime() > shuffleStampTimeout) {
     setTimeout(() => {
       lastTime = new Date();
     }, shuffleStampTimeout);
-    const timeAgoUpdated = getTimeAgo(msg.dateGenerated);
-    return `Generated ${timeAgoUpdated}`;
+    const timeAgoUpdated = getTimeAgo(msg.dateUpdated);
+    return `Updated ${timeAgoUpdated}`;
   }
   const sentByMe = isSentByMe(msg);
   return sentByMe ? `Sent ${timeAgoCreated}` : `Received ${timeAgoCreated}`;
@@ -244,7 +245,9 @@ const regenMessage = (msg: ChatMessage) => {
 };
 
 const canRegenMessage = (msg: ChatMessage) => {
-  return msg.result?.messageIds?.length > 0;
+  const msgIds = msg.result?.messageIds
+  if (msgIds) return msgIds.length > 0
+  return false
 };
 
 const deleteMessage = (msg: ChatMessage) => {

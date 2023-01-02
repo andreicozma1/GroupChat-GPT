@@ -177,7 +177,7 @@ export const useCompStore = defineStore("counter", {
 				}
 			}
 			message.id = uuidv4();
-			message.dateCreated = new Date();
+			// message.dateCreated = new Date();
 			this.getThread.messageMap[message.id] = message;
 			this.getThread.orderedKeysList.push(message.id);
 			this.updateCache();

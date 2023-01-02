@@ -103,6 +103,7 @@ export const smartNotify = (message: string) => {
 
 export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	const cfg = AssistantConfigs[msg.assistantKey];
+	const isRegen = !!msg.result?.messageIds;
 	const res = await comp.generate(cfg, msg.result?.messageIds);
 	console.log(res);
 	msg.text = [];
@@ -116,7 +117,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		return;
 	}
 
-	msg.dateGenerated = res.result?.responseData.created * 1000;
+	msg.dateUpdated = res.result?.responseData.created * 1000;
 
 	if (res?.images) msg.images.push(...res.images);
 	if (res?.text) msg.text.push(...res.text);
@@ -194,7 +195,7 @@ export const handleCoordinator = async (comp: any, orderedResponses?: boolean) =
 	coordMsg.text = res.text ? [...res.text] : ["An error occurred"];
 	comp.pushMessage(coordMsg);
 	const nextActors = res.text
-		.flatMap((t) => t.toLowerCase().split("\n"))
+		.flatMap((t: string) => t.toLowerCase().split("\n"))
 		.filter((t: string) => t.includes("respond"))
 		.flatMap((t: string) => t.split(":")[1].split(","))
 		.map((a: string) => a.trim().toLowerCase());

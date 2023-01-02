@@ -11,12 +11,12 @@ export interface ChatThread {
 export interface ChatMessage extends GenerationResult {
 	id: string | undefined;
 	avatar: string;
+	assistantKey: string;
 	name: string;
 	text: string[];
 	images: string[];
-	assistantKey: string;
 	dateCreated: string | number | Date;
-	dateGenerated?: string | number | Date;
+	dateUpdated?: string | number | Date;
 	loading?: boolean;
 }
 
@@ -69,7 +69,7 @@ export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMe
 		avatar: getRoboHashAvatarUrl(assistantName),
 		name: assistantName,
 		dateCreated: new Date(),
-		dateGenerated: undefined,
+		dateUpdated: undefined,
 		assistantKey: assistantKey,
 		loading: true,
 	};

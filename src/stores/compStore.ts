@@ -58,8 +58,8 @@ export const useCompStore = defineStore("counter", {
 			return this.completions[hash];
 		},
 		getCompletion(hash: number): GenerationResult {
-			const cachedResponse = this.getCachedResponse(hash);
-			if (cachedResponse === null || cachedResponse === undefined) {
+			const cache = this.getCachedResponse(hash);
+			if (cache === null || cache === undefined) {
 				return {
 					errorMsg: "Cached response was null/undefined",
 					result: null,
@@ -67,8 +67,8 @@ export const useCompStore = defineStore("counter", {
 					hash: hash,
 				};
 			}
-
-			const choices = cachedResponse.choices;
+			const responseData = cache.responseData;
+			const choices = responseData.choices;
 			const text = choices
 				?.flatMap((c: any) => {
 					c = c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>");
@@ -85,7 +85,7 @@ export const useCompStore = defineStore("counter", {
 				text?.forEach((t: string) => console.log(t));
 			}
 
-			const images = cachedResponse.data?.map((d: any) => d.url);
+			const images = responseData.data?.map((d: any) => d.url);
 			if (images) {
 				console.warn("=> images:");
 				images?.forEach((i: string) => console.log(i));
@@ -96,14 +96,14 @@ export const useCompStore = defineStore("counter", {
 				hash: hash,
 				text: text,
 				images: images,
-				result: cachedResponse,
+				result: cache,
 			};
 		},
-
 		async generate(actor: AssistantConfig): Promise<GenerationResult> {
 			console.warn("=======================================");
 			console.warn("=> generate:", actor);
 			const { prompt, msgIds } = actor.promptStyle(actor, this.getThread);
+			// TODO: Change hash prompt to be based on msgIds
 			const hash = hashPrompt(prompt);
 			console.warn("=> prompt:");
 			console.log(prompt);
@@ -134,7 +134,10 @@ export const useCompStore = defineStore("counter", {
 					hash: hash,
 				};
 			}
-			this.completions[hash] = completion.data;
+			this.completions[hash] = {
+				messageIds: msgIds,
+				responseData: completion.data,
+			};
 			this.updateCache();
 
 			return {
@@ -145,34 +148,19 @@ export const useCompStore = defineStore("counter", {
 		pushMessage(message: ChatMessage): ChatMessage {
 			// console.log("-------------------------------");
 			if (message.id) {
-				// look back through the messages to see if we already have this message
-				// and update it if we do
-				// const existingIdx = this.getThread.messages.findIndex((m) => m.id === message.id);
-				// if (existingIdx !== -1) {
-				// 	this.threads[this.currentThread].messages[existingIdx] = {
-				// 		...this.threads[this.currentThread].messages[existingIdx],
-				// 		...message,
-				// 	};
-				// 	// console.log("Updated message: ", { ...message });
-				// 	this.updateCache();
-				// 	return this.threads[this.currentThread].messages[existingIdx];
-				// }
 				const existingMsg = this.getThread.messageMap[message.id];
 				if (existingMsg) {
 					this.threads[this.currentThread].messageMap[message.id] = {
 						...existingMsg,
 						...message,
 					};
-					// console.log("Updated message: ", { ...message });
 					this.updateCache();
 					return this.threads[this.currentThread].messageMap[message.id];
 				}
 			}
-			// otherwise, create uuid and push it
 			message.id = uuidv4();
 			this.getThread.messageMap[message.id] = message;
 			this.getThread.orderedKeysList.push(message.id);
-			// console.log("Pushed message", { ...message });
 			this.updateCache();
 			return message;
 		},

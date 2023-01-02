@@ -119,7 +119,7 @@ const handleCoordinator = () => {
       comp.pushMessage(msg);
       return;
     }
-    msg.dateCreated = res.result.created * 1000;
+    msg.dateCreated = res.result.responseData.created * 1000;
     msg.text = res.text ? [...res.text] : ["An error occurred"];
     comp.pushMessage(msg);
     const nextActors = res.text
@@ -166,7 +166,7 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
     return;
   }
 
-  msg.dateCreated = res?.result?.created * 1000;
+  msg.dateCreated = res?.result?.responseData.created * 1000;
   if (res?.images) msg.images.push(...res.images);
   if (res?.text) msg.text.push(...res.text);
 

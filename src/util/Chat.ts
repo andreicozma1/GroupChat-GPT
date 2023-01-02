@@ -1,22 +1,19 @@
 import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { humanName } from "stores/compStore";
+import { GenerationResult, humanName } from "stores/compStore";
 
 export interface ChatThread {
 	messageMap: { [key: string]: ChatMessage };
 	orderedKeysList: string[];
 }
 
-export interface ChatMessage {
+export interface ChatMessage extends GenerationResult {
 	id?: string;
-	text: string[];
-	images: string[];
 	avatar: string;
 	name: string;
 	date: string | number | Date;
 	objective?: string;
 	dateCreated?: string | number | Date;
-	cached?: boolean;
 	loading?: boolean;
 }
 
@@ -29,8 +26,6 @@ export interface ChatMessageHistConfig {
 }
 
 export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
-	console.log(thread.orderedKeysList);
-	console.log(thread.messageMap);
 	return thread.orderedKeysList.map((key) => thread.messageMap[key]);
 };
 

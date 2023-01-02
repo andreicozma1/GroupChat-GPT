@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
 import { LocalStorage } from "quasar";
+import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { ChatMessage, ChatThread } from "src/util/Chat";
+import { ChatMessage, ChatThread, getMessageHistory } from "src/util/Chat";
 import { makeApiRequest } from "src/util/OpenAi";
 import { v4 as uuidv4 } from "uuid";
 import { Ref, ref } from "vue";
@@ -9,7 +10,10 @@ import { Ref, ref } from "vue";
 export const humanName = "Human";
 
 export interface GenerationResult {
-	result?: any;
+	result?: {
+		messageIds: string[];
+		responseData: any;
+	};
 	text?: string[];
 	images?: string[];
 	hash?: number;
@@ -62,7 +66,7 @@ export const useCompStore = defineStore("counter", {
 			if (cache === null || cache === undefined) {
 				return {
 					errorMsg: "Cached response was null/undefined",
-					result: null,
+					result: undefined,
 					cached: undefined,
 					hash: hash,
 				};
@@ -99,16 +103,30 @@ export const useCompStore = defineStore("counter", {
 				result: cache,
 			};
 		},
-		async generate(actor: AssistantConfig): Promise<GenerationResult> {
+		async generate(actor: AssistantConfig, updateFromMsgIds?: string[]): Promise<GenerationResult> {
 			console.warn("=======================================");
 			console.warn("=> generate:", actor);
-			const { prompt, msgIds } = actor.promptStyle(actor, this.getThread);
-			// TODO: Change hash prompt to be based on msgIds
+			let ignoreCache = actor.ignoreCache;
+			let messageHist;
+			if (!updateFromMsgIds) {
+				messageHist = getMessageHistory({
+					thread: this.getThread,
+					includeSelf: true,
+					includeActors: undefined,
+					excludeActors: [AssistantConfigs.coordinator],
+					maxLength: 10,
+				});
+			} else {
+				messageHist = updateFromMsgIds.map((id) => this.getThread.messageMap[id]);
+				ignoreCache = true;
+			}
+			const { prompt, relevantMsgIds } = actor.promptStyle(actor, messageHist);
+			// TODO: Change hash prompt to be based on msgIds?
 			const hash = hashPrompt(prompt);
 			console.warn("=> prompt:");
 			console.log(prompt);
 			// if we already have a completion for this prompt, return it
-			if (!actor.ignoreCache && this.completions[hash]) {
+			if (!ignoreCache && this.completions[hash]) {
 				return {
 					...this.getCompletion(hash),
 					cached: true,
@@ -129,13 +147,13 @@ export const useCompStore = defineStore("counter", {
 				}
 				return {
 					errorMsg: errorMsg,
-					result: null,
+					result: undefined,
 					cached: false,
 					hash: hash,
 				};
 			}
 			this.completions[hash] = {
-				messageIds: msgIds,
+				messageIds: relevantMsgIds,
 				responseData: completion.data,
 			};
 			this.updateCache();
@@ -153,12 +171,14 @@ export const useCompStore = defineStore("counter", {
 					this.threads[this.currentThread].messageMap[message.id] = {
 						...existingMsg,
 						...message,
+						dateUpdated: new Date(),
 					};
 					this.updateCache();
 					return this.threads[this.currentThread].messageMap[message.id];
 				}
 			}
 			message.id = uuidv4();
+			message.dateCreated = new Date();
 			this.getThread.messageMap[message.id] = message;
 			this.getThread.orderedKeysList.push(message.id);
 			this.updateCache();

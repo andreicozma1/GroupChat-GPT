@@ -28,7 +28,7 @@ export interface AssistantConfig {
 	extras?: {
 		[key: string]: any;
 	};
-	followUps?: string | string[];
+	followUps?: boolean;
 	available?: boolean;
 	helper?: boolean;
 	ignoreCache?: boolean;

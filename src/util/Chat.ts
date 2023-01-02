@@ -1,5 +1,6 @@
 import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
+import { getRoboHashAvatarUrl } from "src/util/Utils";
 import { GenerationResult, humanName } from "stores/compStore";
 
 export interface ChatThread {
@@ -8,14 +9,14 @@ export interface ChatThread {
 }
 
 export interface ChatMessage extends GenerationResult {
-	id?: string;
+	id: string | undefined;
 	avatar: string;
 	name: string;
 	text: string[];
 	images: string[];
-	date: string | number | Date;
-	objective?: string;
-	dateCreated?: string | number | Date;
+	assistantKey: string;
+	dateCreated: string | number | Date;
+	dateUpdated?: string | number | Date;
 	loading?: boolean;
 }
 
@@ -40,7 +41,7 @@ export const getMessageHistory = (config: ChatMessageHistConfig): ChatMessage[] 
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;
 		}
-		const actor_key = m.objective;
+		const actor_key = m.assistantKey;
 		if (actor_key !== undefined) {
 			const actor = AssistantConfigs[actor_key];
 			if (actor && actor.helper === true) return false;
@@ -57,4 +58,25 @@ export const getMessageHistory = (config: ChatMessageHistConfig): ChatMessage[] 
 	hist = hist.filter((m) => m.text.length > 0);
 	if (config.maxLength !== undefined) hist = hist.slice(-config.maxLength);
 	return hist;
+};
+export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMessage => {
+	const assistantName: string = cfg?.name || "Anonymous AI";
+	const assistantKey: string = cfg?.key || "unknown";
+	let msg: ChatMessage = {
+		id: undefined,
+		text: [],
+		images: [],
+		avatar: getRoboHashAvatarUrl(assistantName),
+		name: assistantName,
+		dateCreated: new Date(),
+		dateUpdated: undefined,
+		assistantKey: assistantKey,
+		loading: true,
+	};
+	msg = comp.pushMessage(msg);
+	return msg;
+};
+export const createMessageFromAiKey = (key: string, comp: any): ChatMessage => {
+	const cfg: AssistantConfig = AssistantConfigs[key];
+	return createMessageFromConfig(cfg, comp);
 };

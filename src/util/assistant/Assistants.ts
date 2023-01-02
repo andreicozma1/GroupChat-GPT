@@ -59,7 +59,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		name: "DALL-E",
 		icon: "image",
 		promptStyle: createAssistantPrompt,
-		followUps: "dalle_gen",
+		followUps: true,
 		apiConfig: {
 			apiReqType: "createCompletion",
 			apiReqOpts: "chatting",
@@ -70,14 +70,15 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			abilities: ["Generating images from text descriptions"],
 		}, // Examples order: Human, AI, Human, AI, Human, AI
 		examples: [
-			"Hey DALL-E, make a painting of a cat.",
-			"I'll have a painting of a cat coming right to you!\n" + "<prompt>A painting of a cat.</prompt>",
-			"Make it have white fur and blue eyes.",
-			"Sure, I can do that. Let me know if there's anything else you'd like to add.\n" +
-				"<prompt>A painting of a cat with white fur and blue eyes.</prompt>",
-			"Now give it an astronaut suit and make it float in deep space.",
-			"Do you have any specific styles in mind? I can make it look like a painting, a drawing, photograph, or even imitate a famous artist.\n" +
-				"<prompt>A painting of a cat with white fur and blue eyes sitting on an avocado chair.</prompt>",
+			"Hey DALL-E, I want to see a cat.",
+			"I can help with that! Do you want to see a specific color or breed? Like a black cat or a tabby? " +
+				"Also, should the cat be sitting, standing, or perhaps playing with a ball of yarn?",
+			"It should have white fur and blue eyes.",
+			"Sure, I can do that.\n" +
+				"<prompt>A cat with white fur and blue eyes.</prompt>\n" +
+				"Do you have any specific artistic styles in mind? Like a cartoon, oil painting, or realistic style? I can also try to imitate a specific artist.",
+			"Surprise me! Also, give it an astronaut suit and make it float in deep space.",
+			"Coming right ahead!\n<prompt>A cat with white fur and blue eyes, wearing an astronaut suit, floating in deep space, cyberpunk style.</prompt>",
 		],
 	},
 	codex: {
@@ -85,7 +86,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		name: "Codex",
 		icon: "code",
 		promptStyle: createAssistantPrompt,
-		followUps: "codex_gen",
+		followUps: true,
 		apiConfig: {
 			apiReqType: "createCompletion",
 			apiReqOpts: "chatting",
@@ -126,7 +127,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		examples: [
 			"Hey Davinci",
 			"Respond: Davinci\nIgnore: DALL-E, Codex",
-			"Hey DALL-E, make a painting of a cat.",
+			"Hey DALL-E, I want to see a cat.",
 			"Respond: DALL-E\nIgnore: Davinci, Codex",
 			"Hey Codex, make a program that adds two numbers.",
 			"Respond: Codex\nIgnore: Davinci, DALL-E",

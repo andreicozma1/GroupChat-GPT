@@ -56,11 +56,11 @@
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue";
 import {QCard, QInput} from "quasar";
-import {getRoboHashAvatarUrl} from "src/util/Utils";
-import {GenerationResult, useCompStore} from "stores/compStore";
+import {getRoboHashAvatarUrl, handleAssistant} from "src/util/Utils";
+import {useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/Assistants";
-import {ChatMessage} from "src/util/Chat";
+import {ChatMessage, createMessageFromConfig} from "src/util/Chat";
 import {AssistantConfig} from "src/util/assistant/AssistantUtils";
 
 const comp = useCompStore();
@@ -84,141 +84,50 @@ const isTyping = ref(false);
 const isTypingTimeout: Ref<any> = ref(null);
 const responseTimeout: Ref<any> = ref(null);
 
-const createAIMessage = (cfg: AssistantConfig): ChatMessage => {
-  const name: string = cfg?.name || "Anonymous AI";
-  const objective: string = cfg?.key || "unknown";
-  let msg: ChatMessage = {
-    text: [],
-    images: [],
-    avatar: getRoboHashAvatarUrl(name),
-    name: name,
-    date: new Date(),
-    dateCreated: undefined,
-    objective: objective,
-    loading: true,
-  };
-  msg = comp.pushMessage(msg);
-  return msg;
-};
+const handleCoordinator = async () => {
+  const coordConf: AssistantConfig = AssistantConfigs.coordinator;
+  const coordMsg: ChatMessage = createMessageFromConfig(coordConf, comp);
 
-const handleCoordinator = () => {
-  const ai: AssistantConfig = AssistantConfigs.coordinator;
-  const msg: ChatMessage = createAIMessage(ai);
+  const res = await comp.generate(coordConf);
 
-  comp.generate(ai).then(async (res: GenerationResult) => {
-    console.log(res);
-    msg.cached = res.cached;
-    msg.result = res.result;
-    msg.loading = false;
-    if (res.errorMsg) {
-      msg.text.push("[ERROR]\n" + res.errorMsg);
-      comp.pushMessage(msg);
-      return;
-    }
-    if (!res.text) {
-      msg.text.push("Error: No text in result]");
-      comp.pushMessage(msg);
-      return;
-    }
-    msg.dateCreated = res.result.responseData.created * 1000;
-    msg.text = res.text ? [...res.text] : ["An error occurred"];
-    comp.pushMessage(msg);
-    const nextActors = res.text
-        .flatMap((t) => t.toLowerCase().split("\n"))
-        .filter((t: string) => t.includes("respond"))
-        .flatMap((t: string) => t.split(":")[1].split(","))
-        .map((a: string) => a.trim().toLowerCase());
-
-    // for each actor, call the appropriate handler
-    console.log("Next Actors: ", nextActors);
-    for (let actor of nextActors) {
-      actor = actor.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
-      if (orderedResponses.value) {
-        await handleNext(actor);
-      } else {
-        handleNext(actor);
-      }
-    }
-  });
-};
-
-const handleNext = async (actorKey: string, msg?: ChatMessage) => {
-  // await sleep(Math.random() * 2500)
-
-  actorKey = actorKey?.trim();
-  const cfgFollowup: AssistantConfig = AssistantConfigs[actorKey];
-  msg = msg || createAIMessage(cfgFollowup);
-  if (!cfgFollowup) {
-    msg.text.push(`[Error: Unknown actor type: ${actorKey}]`);
-    msg.loading = false;
-    comp.pushMessage(msg);
-    return;
-  }
-
-  const res = await comp.generate(cfgFollowup);
   console.log(res);
-  msg.cached = res.cached;
-  msg.result = res.result;
-  msg.loading = false;
-  msg.date = new Date();
+  coordMsg.cached = res.cached;
+  coordMsg.result = res.result;
+  coordMsg.loading = false;
   if (res.errorMsg) {
-    msg.text.push("[ERROR]\n" + res.errorMsg);
-    comp.pushMessage(msg);
+    coordMsg.text.push("[ERROR]\n" + res.errorMsg);
+    comp.pushMessage(coordMsg);
     return;
   }
+  if (!res.text) {
+    coordMsg.text.push("Error: No text in result]");
+    comp.pushMessage(coordMsg);
+    return;
+  }
+  coordMsg.text = res.text ? [...res.text] : ["An error occurred"];
+  comp.pushMessage(coordMsg);
+  const nextActors = res.text
+      .flatMap((t) => t.toLowerCase().split("\n"))
+      .filter((t: string) => t.includes("respond"))
+      .flatMap((t: string) => t.split(":")[1].split(","))
+      .map((a: string) => a.trim().toLowerCase());
 
-  msg.dateCreated = res?.result?.responseData.created * 1000;
-  if (res?.images) msg.images.push(...res.images);
-  if (res?.text) msg.text.push(...res.text);
-
-  // const totalLength = msg.text.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
-  // const sleepTime = totalLength * 25
-  // console.log(`sleepTime: ${sleepTime}`)
-  // await sleep(sleepTime)
-
-  comp.pushMessage(msg);
-
-  let createGen = cfgFollowup?.followUps;
-  // if null or undefined, exit
-  if (!createGen) return;
-  // if string, make it an array
-  if (typeof createGen === "string") createGen = [createGen];
-  // for each
-  for (const nextActor of createGen) {
-    // filter out texts that contain <prompt> tags
-    let prompts = msg.text
-        .filter((t: string) => t.includes("<prompt>"))
-        .map((t: string) => t.split("<prompt>")[1].trim().split("</prompt>")[0].trim());
-
-    msg.text = msg.text.map((t: string) => {
-      if (t.includes("<prompt>")) {
-        const parts = t.split("<prompt>");
-        const end = parts[1].split("</prompt>");
-        return parts[0] + end[1];
-      }
-      return t.trim();
-    });
-    msg.text = msg.text.filter((t: string) => t.length > 0);
-    // msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
-    comp.pushMessage(msg);
-
-    prompts = prompts.filter((t: string) => t.split(" ").length > 3);
-    if (prompts.length > 0) {
-      console.log("promptText", prompts);
-      const nextActor = `${actorKey}_gen`;
-      for (let i = 0; i < prompts.length; i++) {
-        const prompt = prompts[i];
-        const nextMsg = createAIMessage(cfgFollowup);
-        if (!prompt) {
-          nextMsg.text.push(`[Error: Prompt text is empty]`);
-          nextMsg.loading = false;
-          comp.pushMessage(nextMsg);
-          continue;
-        }
-        // nextMsg.text.push(`[${prompt}]`)
-        nextMsg.text.push(`<prompt>${prompt}</prompt>`);
-        await handleNext(nextActor, nextMsg);
-      }
+  // for each actor, call the appropriate handler
+  console.log("Next Actors: ", nextActors);
+  for (let nextKey of nextActors) {
+    nextKey = nextKey.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
+    const nextCfg: AssistantConfig = AssistantConfigs[nextKey];
+    const nextMsg = createMessageFromConfig(nextCfg, comp);
+    if (!nextCfg) {
+      nextMsg.text.push(`[Error: Unknown assistant key: ${nextKey}]`);
+      nextMsg.loading = false;
+      comp.pushMessage(nextMsg);
+      return;
+    }
+    if (orderedResponses.value) {
+      await handleAssistant(nextMsg, comp);
+    } else {
+      handleAssistant(nextMsg, comp);
     }
   }
 };

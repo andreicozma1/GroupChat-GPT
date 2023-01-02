@@ -1,5 +1,5 @@
 import { ChatMessage } from "src/util/Chat";
-import { getRoboHashAvatarUrl, getPicsumImgUrl } from "src/util/Utils";
+import { getPicsumImgUrl, getRoboHashAvatarUrl } from "src/util/Utils";
 
 interface RandomMsgConfig {
 	numMsgMin: number;
@@ -56,7 +56,7 @@ const generateMessage = (seed: string, config?: RandomMsgConfig): ChatMessage =>
 		images: images,
 		avatar: avatar,
 		name: seed,
-		date: stamp,
+		dateCreated: stamp,
 	};
 };
 

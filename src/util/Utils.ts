@@ -1,4 +1,6 @@
 import { Notify } from "quasar";
+import { AssistantConfigs } from "src/util/assistant/Assistants";
+import { ChatMessage } from "src/util/Chat";
 
 export const getRandomMinMax = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -19,9 +21,7 @@ export const getPicsumImgUrl = (seed: string, options?: ImageOptions) => {
 };
 
 export const getTimeAgo = (date: string | number | Date) => {
-	if (typeof date === "string" || typeof date === "number") {
-		date = new Date(date);
-	}
+	date = convertDate(date);
 	const now = new Date();
 	const diff = now.getTime() - date.getTime();
 	const diffSeconds = Math.floor(diff / 1000);
@@ -71,9 +71,7 @@ export const getTimeAgo = (date: string | number | Date) => {
 };
 
 export const dateToStr = (date: string | number | Date) => {
-	if (typeof date === "string" || typeof date === "number") {
-		date = new Date(date);
-	}
+	date = convertDate(date);
 	const options = {
 		weekday: "short",
 		year: "numeric",
@@ -86,6 +84,15 @@ export const dateToStr = (date: string | number | Date) => {
 	return date.toLocaleDateString("en-US", options);
 };
 
+export const convertDate = (date: string | number | Date): Date => {
+	if (typeof date === "string" || typeof date === "number") {
+		date = new Date(date);
+	}
+	return date;
+};
+
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export const smartNotify = (message: string) => {
 	Notify.create({
 		message: message,
@@ -93,4 +100,70 @@ export const smartNotify = (message: string) => {
 	});
 };
 
-export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+export const handleAssistant = async (msg: ChatMessage, comp: any) => {
+	const cfg = AssistantConfigs[msg.assistantKey];
+	const res = await comp.generate(cfg, msg.result?.messageIds);
+	console.log(res);
+	msg.text = [];
+	msg.images = [];
+	msg.cached = res.cached;
+	msg.result = res.result;
+	msg.loading = false;
+	if (res.errorMsg) {
+		msg.text.push("[ERROR]\n" + res.errorMsg);
+		comp.pushMessage(msg);
+		return;
+	}
+
+	if (res?.images) msg.images.push(...res.images);
+	if (res?.text) msg.text.push(...res.text);
+
+	// const totalLength = msg.text.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
+	// const sleepTime = totalLength * 25
+	// console.log(`sleepTime: ${sleepTime}`)
+	// await sleep(sleepTime)
+
+	comp.pushMessage(msg);
+
+	const requiredFollowUps = cfg?.followUps;
+	// if null or undefined, exit
+	if (!requiredFollowUps) return;
+	// if string, make it an array
+	// for each
+	// filter out texts that contain <prompt> tags
+	let prompts = msg.text
+		.filter((t: string) => t.includes("<prompt>"))
+		.map((t: string) => t.split("<prompt>")[1].trim().split("</prompt>")[0].trim());
+
+	msg.text = msg.text.map((t: string) => {
+		if (t.includes("<prompt>")) {
+			const parts = t.split("<prompt>");
+			const end = parts[1].split("</prompt>");
+			return parts[0] + end[1];
+		}
+		return t.trim();
+	});
+	msg.text = msg.text.filter((t: string) => t.length > 0);
+	// msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
+	comp.pushMessage(msg);
+
+	prompts = prompts.filter((t: string) => t.split(" ").length > 3);
+	if (prompts.length > 0) {
+		console.log("promptText", prompts);
+
+		// return true;
+		// const nextActor = `${comp.assistantKey}_gen`;
+		for (let i = 0; i < prompts.length; i++) {
+			const prompt = prompts[i];
+			// const nextMsg = createMessageFromAiKey(nextActor, comp);
+			// if (!prompt) {
+			// 	nextMsg.text.push(`[Error: Prompt text is empty]`);
+			// 	nextMsg.loading = false;
+			// 	comp.pushMessage(nextMsg);
+			// 	continue;
+			// }
+			msg.text.push(`<prompt>${prompt}</prompt>`);
+			// await handleAssistant(nextMsg, comp);
+		}
+	}
+};

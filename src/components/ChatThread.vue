@@ -1,7 +1,7 @@
 <template>
   <q-scroll-area ref="threadElem" :style="getScrollAreaStyle">
     <q-chat-message :label="threadMessages.length.toString() + ' messages'" class="q-pt-md"/>
-    <div v-for="msg in threadMessages" :key="msg.date">
+    <div v-for="msg in threadMessages" :key="msg.dateCreated">
       <q-chat-message :bg-color="msg.sent ? null : getSeededQColor(msg.name, 1, 2)" size="6" v-bind="msg">
         <div v-for="text in msg.text" :key="text">
           <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)"/>
@@ -17,12 +17,15 @@
         <template v-slot:stamp>
           <div class="row items-center">
             <span>
-              <q-icon :name="getObjectiveIcon(msg.objective)" class="q-mr-sm"/>
+              <q-icon :name="getAssistantIcon(msg.assistantKey)" class="q-mr-sm"/>
+                <q-tooltip>
+                {{ msg.assistantKey }}
+              </q-tooltip>
             </span>
             <span class="text-caption text-italic">
               {{ createStamp(msg) }}
               <q-tooltip>
-                {{ dateToStr(msg.date) }}
+                {{ dateToStr(msg.dateCreated) }}
               </q-tooltip>
             </span>
             <q-space/>
@@ -74,7 +77,7 @@
 <script lang="ts" setup>
 import {copyToClipboard} from "quasar";
 import {getSeededQColor} from "src/util/Colors";
-import {dateToStr, getTimeAgo, smartNotify} from "src/util/Utils";
+import {convertDate, dateToStr, getTimeAgo, handleAssistant, smartNotify} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/Assistants";
@@ -102,10 +105,10 @@ const comp = useCompStore();
 const threadElem: any = ref(null);
 const threadMessages: Ref<ChatMessage[]> = ref([]);
 
-const getObjectiveIcon = (objective: string) => {
-  if (!AssistantConfigs[objective]) return "send";
-  if (!AssistantConfigs[objective].icon) return "help";
-  return AssistantConfigs[objective].icon;
+const getAssistantIcon = (assistantKey: string) => {
+  if (!AssistantConfigs[assistantKey]) return "send";
+  if (!AssistantConfigs[assistantKey].icon) return "help";
+  return AssistantConfigs[assistantKey].icon;
 };
 
 const parseThreadMessages = (): ChatMessage[] => {
@@ -127,8 +130,8 @@ const parseThreadMessages = (): ChatMessage[] => {
     });
   }
   thrd.sort((a, b) => {
-    const ad = new Date(a.date);
-    const bd = new Date(b.date);
+    const ad = convertDate(a.dateCreated);
+    const bd = convertDate(b.dateCreated);
     return ad.getTime() - bd.getTime();
   });
   // keep loading last
@@ -141,7 +144,7 @@ const parseThreadMessages = (): ChatMessage[] => {
 };
 
 const createStamp = (msg: ChatMessage) => {
-  const timeAgo = getTimeAgo(msg.date);
+  const timeAgo = getTimeAgo(msg.dateCreated);
   const sentByMe = isSentByMe(msg);
   return sentByMe ? `Sent ${timeAgo}` : `Received ${timeAgo}`;
 };
@@ -154,7 +157,7 @@ const createHoverHint = (msg: ChatMessage) => {
   const what = `${numTotal} msg${numTotal > 1 ? "s" : ""} (${numText} text, ${numImage} image${
       numImage > 1 ? "s" : ""
   })`;
-  const when = dateToStr(msg.date);
+  const when = dateToStr(msg.dateCreated);
   return `${who} sent ${what} on ${when}`;
 };
 
@@ -221,9 +224,10 @@ const editMessage = (msg: ChatMessage) => {
 };
 
 const regenMessage = (msg: ChatMessage) => {
-  smartNotify(`Message regeneration is not yet implemented`);
+  smartNotify('Re-generating message');
   console.warn("=> regenerate:", {...msg});
   console.warn("=> regenerate:", msg.result.messageIds);
+  handleAssistant(msg, comp);
 };
 
 const canRegenMessage = (msg: ChatMessage) => {

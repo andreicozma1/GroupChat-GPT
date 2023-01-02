@@ -45,6 +45,13 @@
                    round
                    flat
                    size="xs"
+                   icon="edit"
+                   color="black"
+                   @click="editMessage(msg)"/>
+            <q-btn dense
+                   round
+                   flat
+                   size="xs"
                    icon="refresh"
                    color="black"
                    @click="regenerateMessage(msg)"/>
@@ -206,16 +213,23 @@ const copyMessage = (text: string) => {
   });
 };
 
-const deleteMessage = (msg: ChatMessage) => {
-  smartNotify(`Deleting message`);
-  console.warn("=> delete:", {...msg});
-  // comp.deleteMessage(msg);
+
+const editMessage = (msg: ChatMessage) => {
+  smartNotify(`Message editing is not yet implemented`);
+  console.warn("=> edit:", {...msg});
+  // comp.editMessage(msg);
 };
 
 const regenerateMessage = (msg: ChatMessage) => {
-  smartNotify(`Regenerating message`);
+  smartNotify(`Message regeneration is not yet implemented`);
   console.warn("=> regenerate:", {...msg});
-  // comp.regenerateMessage(msg);
+  console.warn("=> regenerate:", msg.result.messageIds);
+};
+
+const deleteMessage = (msg: ChatMessage) => {
+  smartNotify(`Message deletion is not yet implemented`);
+  console.warn("=> delete:", {...msg});
+  // comp.deleteMessage(msg);
 };
 
 watch(

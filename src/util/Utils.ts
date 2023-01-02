@@ -159,12 +159,11 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	prompts = prompts.filter((t: string) => t.split(" ").length > 3);
 	if (prompts.length > 0) {
 		console.log("promptText", prompts);
-
-		// return true;
 		const nextKey = `${msg.assistantKey}_gen`;
 		for (let i = 0; i < prompts.length; i++) {
 			const prompt = prompts[i];
 			const nextMsg: ChatMessage = createMessageFromAiKey(nextKey, comp);
+			if (!nextMsg) return;
 			nextMsg.text.push(`<prompt>${prompt}</prompt>`);
 			comp.pushMessage(nextMsg);
 			await handleAssistant(nextMsg, comp);
@@ -214,10 +213,11 @@ export const handleCoordinator = async (comp: any, orderedResponses?: boolean) =
 		// 	return;
 		// }
 		const nextMsg: ChatMessage = createMessageFromAiKey(nextKey, comp);
+		if (!nextMsg) return;
 		if (orderedResponses) {
-			await handleAssistant(nextMsg, comp, orderedResponses);
+			await handleAssistant(nextMsg, comp);
 		} else {
-			handleAssistant(nextMsg, comp, orderedResponses);
+			handleAssistant(nextMsg, comp);
 		}
 	}
 };

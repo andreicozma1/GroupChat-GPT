@@ -83,6 +83,7 @@ export const createMessageFromAiKey = (key: string, comp: any): ChatMessage => {
 		msg.text.push(`[Error: Unknown assistant key: ${key}]`);
 		msg.loading = false;
 		comp.pushMessage(msg);
+		return undefined;
 	}
 	return msg;
 };

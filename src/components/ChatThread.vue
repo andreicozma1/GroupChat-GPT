@@ -34,6 +34,20 @@
                 ({{ dateToStr(msg.dateCreated) }})
               </q-tooltip>
             </span>
+            <q-btn dense
+                   round
+                   flat
+                   size="xs"
+                   icon="delete_forever"
+                   color="black"
+                   @click="deleteMessage(msg)"/>
+            <q-btn dense
+                   round
+                   flat
+                   size="xs"
+                   icon="refresh"
+                   color="black"
+                   @click="regenerateMessage(msg)"/>
           </div>
         </template>
 
@@ -190,6 +204,18 @@ const copyMessage = (text: string) => {
   copyToClipboard(text).then(() => {
     smartNotify(`Copied message to clipboard`);
   });
+};
+
+const deleteMessage = (msg: ChatMessage) => {
+  smartNotify(`Deleting message`);
+  console.warn("=> delete:", msg);
+  // comp.deleteMessage(msg);
+};
+
+const regenerateMessage = (msg: ChatMessage) => {
+  smartNotify(`Regenerating message`);
+  console.warn("=> regenerate:", msg);
+  // comp.regenerateMessage(msg);
 };
 
 watch(

@@ -208,13 +208,13 @@ const copyMessage = (text: string) => {
 
 const deleteMessage = (msg: ChatMessage) => {
   smartNotify(`Deleting message`);
-  console.warn("=> delete:", msg);
+  console.warn("=> delete:", {...msg});
   // comp.deleteMessage(msg);
 };
 
 const regenerateMessage = (msg: ChatMessage) => {
   smartNotify(`Regenerating message`);
-  console.warn("=> regenerate:", msg);
+  console.warn("=> regenerate:", {...msg});
   // comp.regenerateMessage(msg);
 };
 

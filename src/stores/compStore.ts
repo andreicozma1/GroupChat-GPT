@@ -9,10 +9,10 @@ import { Ref, ref } from "vue";
 export const humanName = "Human";
 
 export interface GenerationResult {
-	result: any;
+	result?: any;
 	text?: string[];
 	images?: string[];
-	hash: number;
+	hash?: number;
 	cached?: boolean;
 	errorMsg?: string;
 }

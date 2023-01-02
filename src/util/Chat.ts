@@ -11,6 +11,8 @@ export interface ChatMessage extends GenerationResult {
 	id?: string;
 	avatar: string;
 	name: string;
+	text: string[];
+	images: string[];
 	date: string | number | Date;
 	objective?: string;
 	dateCreated?: string | number | Date;

@@ -107,8 +107,9 @@ const handleCoordinator = () => {
 
   comp.generate(ai).then(async (res: GenerationResult) => {
     console.log(res);
-    msg.loading = false;
     msg.cached = res.cached;
+    msg.result = res.result;
+    msg.loading = false;
     if (res.errorMsg) {
       msg.text.push("[ERROR]\n" + res.errorMsg);
       comp.pushMessage(msg);
@@ -155,10 +156,10 @@ const handleNext = async (actorKey: string, msg?: ChatMessage) => {
   }
 
   const res = await comp.generate(cfgFollowup);
-
   console.log(res);
+  msg.cached = res.cached;
+  msg.result = res.result;
   msg.loading = false;
-  msg.cached = res?.cached;
   msg.date = new Date();
   if (res.errorMsg) {
     msg.text.push("[ERROR]\n" + res.errorMsg);

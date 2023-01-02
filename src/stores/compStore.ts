@@ -171,7 +171,6 @@ export const useCompStore = defineStore("counter", {
 					this.threads[this.currentThread].messageMap[message.id] = {
 						...existingMsg,
 						...message,
-						dateUpdated: new Date(),
 					};
 					this.updateCache();
 					return this.threads[this.currentThread].messageMap[message.id];

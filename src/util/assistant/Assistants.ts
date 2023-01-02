@@ -148,6 +148,9 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			apiReqType: "createImage",
 			apiReqOpts: undefined,
 		},
+		rules: {
+			always: ["Only responds to DALL-E's prompts."],
+		},
 		available: false,
 	},
 	codex_gen: {
@@ -162,6 +165,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		},
 		rules: {
 			always: [
+				"Only responds to Codex's prompts.",
 				"Wrap the code in a markdown code block and use the language name as the language identifier if possible.",
 				"Use the language identifier `text` if the language is not supported by markdown.",
 			],

@@ -25,7 +25,7 @@
             <span class="text-caption text-italic">
               {{ createStamp(msg) }}
               <q-tooltip>
-                {{ dateToStr(msg.dateCreated) }}
+                Received: {{ dateToStr(msg.dateCreated) }}
               </q-tooltip>
             </span>
             <q-space/>
@@ -143,10 +143,23 @@ const parseThreadMessages = (): ChatMessage[] => {
   return thrd;
 };
 
+let lastTime = new Date()
+const shuffleStampTimeout = 2500;
+
 const createStamp = (msg: ChatMessage) => {
-  const timeAgo = getTimeAgo(msg.dateCreated);
+  const timeAgoCreated = getTimeAgo(msg.dateCreated);
+  // get the current time
+  const currTime = new Date();
+  // only show every 5 seconds
+  if (msg.dateGenerated && currTime.getTime() - lastTime.getTime() > shuffleStampTimeout) {
+    setTimeout(() => {
+      lastTime = new Date();
+    }, shuffleStampTimeout);
+    const timeAgoUpdated = getTimeAgo(msg.dateGenerated);
+    return `Generated ${timeAgoUpdated}`;
+  }
   const sentByMe = isSentByMe(msg);
-  return sentByMe ? `Sent ${timeAgo}` : `Received ${timeAgo}`;
+  return sentByMe ? `Sent ${timeAgoCreated}` : `Received ${timeAgoCreated}`;
 };
 
 const createHoverHint = (msg: ChatMessage) => {

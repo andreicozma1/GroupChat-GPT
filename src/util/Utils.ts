@@ -1,6 +1,7 @@
 import { Notify } from "quasar";
 import { AssistantConfigs } from "src/util/assistant/Assistants";
-import { ChatMessage } from "src/util/Chat";
+import { AssistantConfig } from "src/util/assistant/AssistantUtils";
+import { ChatMessage, createMessageFromConfig } from "src/util/Chat";
 
 export const getRandomMinMax = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -115,6 +116,8 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		return;
 	}
 
+	msg.dateGenerated = res.result?.responseData.created * 1000;
+
 	if (res?.images) msg.images.push(...res.images);
 	if (res?.text) msg.text.push(...res.text);
 
@@ -164,6 +167,54 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 			// }
 			msg.text.push(`<prompt>${prompt}</prompt>`);
 			// await handleAssistant(nextMsg, comp);
+		}
+	}
+};
+export const handleCoordinator = async (comp: any, orderedResponses?: boolean) => {
+	orderedResponses = orderedResponses === undefined ? true : orderedResponses;
+	const coordConf: AssistantConfig = AssistantConfigs.coordinator;
+	const coordMsg: ChatMessage = createMessageFromConfig(coordConf, comp);
+
+	const res = await comp.generate(coordConf);
+
+	console.log(res);
+	coordMsg.cached = res.cached;
+	coordMsg.result = res.result;
+	coordMsg.loading = false;
+	if (res.errorMsg) {
+		coordMsg.text.push("[ERROR]\n" + res.errorMsg);
+		comp.pushMessage(coordMsg);
+		return;
+	}
+	if (!res.text) {
+		coordMsg.text.push("Error: No text in result]");
+		comp.pushMessage(coordMsg);
+		return;
+	}
+	coordMsg.text = res.text ? [...res.text] : ["An error occurred"];
+	comp.pushMessage(coordMsg);
+	const nextActors = res.text
+		.flatMap((t) => t.toLowerCase().split("\n"))
+		.filter((t: string) => t.includes("respond"))
+		.flatMap((t: string) => t.split(":")[1].split(","))
+		.map((a: string) => a.trim().toLowerCase());
+
+	// for each actor, call the appropriate handler
+	console.log("Next Actors: ", nextActors);
+	for (let nextKey of nextActors) {
+		nextKey = nextKey.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
+		const nextCfg: AssistantConfig = AssistantConfigs[nextKey];
+		const nextMsg = createMessageFromConfig(nextCfg, comp);
+		if (!nextCfg) {
+			nextMsg.text.push(`[Error: Unknown assistant key: ${nextKey}]`);
+			nextMsg.loading = false;
+			comp.pushMessage(nextMsg);
+			return;
+		}
+		if (orderedResponses) {
+			await handleAssistant(nextMsg, comp);
+		} else {
+			handleAssistant(nextMsg, comp);
 		}
 	}
 };

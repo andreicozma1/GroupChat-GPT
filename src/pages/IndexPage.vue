@@ -56,12 +56,9 @@
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue";
 import {QCard, QInput} from "quasar";
-import {getRoboHashAvatarUrl, handleAssistant} from "src/util/Utils";
+import {getRoboHashAvatarUrl, handleCoordinator} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, Ref, ref, watch} from "vue";
-import {AssistantConfigs} from "src/util/assistant/Assistants";
-import {ChatMessage, createMessageFromConfig} from "src/util/Chat";
-import {AssistantConfig} from "src/util/assistant/AssistantUtils";
 
 const comp = useCompStore();
 
@@ -84,54 +81,6 @@ const isTyping = ref(false);
 const isTypingTimeout: Ref<any> = ref(null);
 const responseTimeout: Ref<any> = ref(null);
 
-const handleCoordinator = async () => {
-  const coordConf: AssistantConfig = AssistantConfigs.coordinator;
-  const coordMsg: ChatMessage = createMessageFromConfig(coordConf, comp);
-
-  const res = await comp.generate(coordConf);
-
-  console.log(res);
-  coordMsg.cached = res.cached;
-  coordMsg.result = res.result;
-  coordMsg.loading = false;
-  if (res.errorMsg) {
-    coordMsg.text.push("[ERROR]\n" + res.errorMsg);
-    comp.pushMessage(coordMsg);
-    return;
-  }
-  if (!res.text) {
-    coordMsg.text.push("Error: No text in result]");
-    comp.pushMessage(coordMsg);
-    return;
-  }
-  coordMsg.text = res.text ? [...res.text] : ["An error occurred"];
-  comp.pushMessage(coordMsg);
-  const nextActors = res.text
-      .flatMap((t) => t.toLowerCase().split("\n"))
-      .filter((t: string) => t.includes("respond"))
-      .flatMap((t: string) => t.split(":")[1].split(","))
-      .map((a: string) => a.trim().toLowerCase());
-
-  // for each actor, call the appropriate handler
-  console.log("Next Actors: ", nextActors);
-  for (let nextKey of nextActors) {
-    nextKey = nextKey.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
-    const nextCfg: AssistantConfig = AssistantConfigs[nextKey];
-    const nextMsg = createMessageFromConfig(nextCfg, comp);
-    if (!nextCfg) {
-      nextMsg.text.push(`[Error: Unknown assistant key: ${nextKey}]`);
-      nextMsg.loading = false;
-      comp.pushMessage(nextMsg);
-      return;
-    }
-    if (orderedResponses.value) {
-      await handleAssistant(nextMsg, comp);
-    } else {
-      handleAssistant(nextMsg, comp);
-    }
-  }
-};
-
 const sendMessage = () => {
   if (!userMsgValid.value) return;
   console.warn("=======================================");
@@ -153,7 +102,7 @@ const sendMessage = () => {
   responseTimeout.value = setInterval(() => {
     if (!isTyping.value) {
       userMsgObj.value = null;
-      handleCoordinator();
+      handleCoordinator(comp, orderedResponses.value);
       clearInterval(responseTimeout.value);
     }
   }, 500);

@@ -77,7 +77,9 @@ export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMe
 	msg = comp.pushMessage(msg);
 	return msg;
 };
-export const createMessageFromAiKey = (key: string, comp: any): ChatMessage => {
+
+// TODO: better handling for undefined case
+export const createMessageFromAiKey = (key: string, comp: any): ChatMessage | undefined => {
 	key = key.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
 	const cfg: AssistantConfig = AssistantConfigs[key];
 	const msg = createMessageFromConfig(cfg, comp);

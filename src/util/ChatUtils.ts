@@ -16,7 +16,7 @@ export interface ChatMessage extends GenerationResult {
 	avatar: string;
 	userId: string;
 	name: string;
-	text: string[];
+	textSnippets: string[];
 	images: string[];
 	dateCreated: string | number | Date;
 	loading?: boolean;
@@ -58,10 +58,10 @@ export const getMessageHistory = (
 		}
 		return true;
 	});
-	const hist_zero_len = hist.filter((m) => m.text.length === 0);
+	const hist_zero_len = hist.filter((m) => m.textSnippets.length === 0);
 	if (hist_zero_len.length > 0) {
 		smartNotify(`Warning: ${hist_zero_len.length} messages have 0 text snippets`);
-		hist = hist.filter((m) => m.text.length > 0);
+		hist = hist.filter((m) => m.textSnippets.length > 0);
 		// TODO: Also remove and warn about messages that have any snippet with 0 length
 	}
 	if (config.maxLength !== undefined) hist = hist.slice(-config.maxLength);
@@ -75,7 +75,7 @@ export const createMessageFromConfig = (
 	const assistantKey: string = cfg?.key || "unknown";
 	let msg: ChatMessage = {
 		id: undefined,
-		text: [],
+		textSnippets: [],
 		images: [],
 		avatar: getRoboHashAvatarUrl(assistantName),
 		name: assistantName,
@@ -96,7 +96,7 @@ export const createMessageFromAiKey = (
 	const cfg: AiAssistant = AiAssistantConfigs[key];
 	const msg = createMessageFromConfig(cfg, comp);
 	if (!cfg) {
-		msg.text.push(`[Error: Unknown assistant key: ${key}]`);
+		msg.textSnippets.push(`[Error: Unknown assistant key: ${key}]`);
 		msg.loading = false;
 		comp.pushMessage(msg);
 		return undefined;

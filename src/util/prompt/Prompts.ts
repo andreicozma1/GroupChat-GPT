@@ -28,7 +28,7 @@ export const createPromptDalleGen = (
 ) => {
 	const usedMessage: ChatMessage = messages[messages.length - 1];
 	// last text
-	let prompt: string = usedMessage.text[usedMessage.text.length - 1];
+	let prompt: string = usedMessage.textSnippets[usedMessage.textSnippets.length - 1];
 	prompt = prompt.replace(/(<([^>]+)>)/gi, "");
 	return {
 		prompt: prompt,
@@ -48,7 +48,7 @@ export const createPromptCodexGen = (
 	const usedMessage: ChatMessage = messages[messages.length - 1];
 	// last text
 	let prompt = "### PROMPT:\n";
-	prompt += usedMessage.text[usedMessage.text.length - 1].replace(
+	prompt += usedMessage.textSnippets[usedMessage.textSnippets.length - 1].replace(
 		/(<([^>]+)>)/gi,
 		""
 	);

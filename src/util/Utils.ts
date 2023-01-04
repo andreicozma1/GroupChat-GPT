@@ -24,7 +24,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		: false;
 	if (msg.isRegen) {
 		console.warn("=> Regen");
-		msg.text = [];
+		msg.textSnippets = [];
 		msg.images = [];
 	}
 
@@ -35,13 +35,13 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	msg.loading = false;
 
 	if (res.errorMsg) {
-		msg.text.push("[ERROR]\n" + res.errorMsg);
+		msg.textSnippets.push("[ERROR]\n" + res.errorMsg);
 		comp.pushMessage(msg);
 		return;
 	}
 
 	if (res?.images) msg.images.push(...res.images);
-	if (res?.text) msg.text.push(...res.text);
+	if (res?.text) msg.textSnippets.push(...res.text);
 
 	// const totalLength = msg.text.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
 	// const sleepTime = totalLength * 25
@@ -59,13 +59,13 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	// if string, make it an array
 	// for each
 	// filter out texts that contain <prompt> tags
-	let prompts = msg.text
+	let prompts = msg.textSnippets
 		.filter((t: string) => t.includes("<prompt>"))
 		.map((t: string) =>
 			t.split("<prompt>")[1].trim().split("</prompt>")[0].trim()
 		);
 
-	msg.text = msg.text.map((t: string) => {
+	msg.textSnippets = msg.textSnippets.map((t: string) => {
 		if (t.includes("<prompt>")) {
 			const parts = t.split("<prompt>");
 			const end = parts[1].split("</prompt>");
@@ -74,7 +74,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 
 		return t.trim();
 	});
-	msg.text = msg.text.filter((t: string) => t.length > 0);
+	msg.textSnippets = msg.textSnippets.filter((t: string) => t.length > 0);
 	// msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
 	comp.pushMessage(msg);
 
@@ -89,7 +89,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 				comp
 			);
 			if (!nextMsg) return;
-			nextMsg.text.push(`<prompt>${prompt}</prompt>`);
+			nextMsg.textSnippets.push(`<prompt>${prompt}</prompt>`);
 			comp.pushMessage(nextMsg);
 			await handleAssistant(nextMsg, comp);
 		}
@@ -111,16 +111,16 @@ export const handleCoordinator = async (
 	coordMsg.loading = false;
 
 	if (res.errorMsg) {
-		coordMsg.text.push("[ERROR]\n" + res.errorMsg);
+		coordMsg.textSnippets.push("[ERROR]\n" + res.errorMsg);
 		comp.pushMessage(coordMsg);
 		return;
 	}
 	if (!res.text) {
-		coordMsg.text.push("Error: No text in result]");
+		coordMsg.textSnippets.push("Error: No text in result]");
 		comp.pushMessage(coordMsg);
 		return;
 	}
-	coordMsg.text = res.text ? [...res.text] : ["An error occurred"];
+	coordMsg.textSnippets = res.text ? [...res.text] : ["An error occurred"];
 	comp.pushMessage(coordMsg);
 	const nextActors = res.text
 		.flatMap((t: string) => t.toLowerCase().split("\n"))

@@ -6,7 +6,7 @@
                       :sent="isSentByMe(msg)"
                       :bg-color="isSentByMe(msg) ? null : getSeededQColor(msg.name, 1, 2)"
                       v-bind="msg">
-        <div v-for="text in msg.text" :key="text">
+        <div v-for="text in msg.textSnippets" :key="text">
           <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)"/>
           <q-tooltip v-if="msg.dateCreated" :delay="750">
             {{ createContentHoverHint(msg) }}
@@ -118,10 +118,10 @@ const parseThreadMessages = (): ChatMessage[] => {
   messages = messages.filter((msg: ChatMessage) => {
     // always keep messages with certain keywords
     const keepKeywords = ["[ERROR]", "[WARNING]", "[INFO]"];
-    if (msg.text.some((line: string) => keepKeywords.some((keyword: string) => line.includes(keyword)))) return true;
+    if (msg.textSnippets.some((line: string) => keepKeywords.some((keyword: string) => line.includes(keyword)))) return true;
     // always remove messages with certain keywords
     const removeKeywords = ["[DEBUG]"];
-    if (msg.text.some((line: string) => removeKeywords.some((keyword: string) => line.includes(keyword)))) return false;
+    if (msg.textSnippets.some((line: string) => removeKeywords.some((keyword: string) => line.includes(keyword)))) return false;
     // remove messages from users that are hidden in thread settings
     if (thread.hiddenUserIds?.includes(msg.userId)) return false;
     return true;
@@ -130,11 +130,11 @@ const parseThreadMessages = (): ChatMessage[] => {
    ** MAPPING
    ************************************************************************/
   messages = messages.map((msg: ChatMessage) => {
-    const text = msg.text.length === 0 ? [] : [...msg.text];
+    const text = msg.textSnippets.length === 0 ? [] : [...msg.textSnippets];
     if (!msg.loading && text.length === 0) text.push("[No message]");
     return {
       ...msg,
-      text: text,
+      textSnippets: text,
     };
   });
   /************************************************************************
@@ -166,7 +166,7 @@ const createStamp = (msg: ChatMessage) => {
 
 
 const createContentHoverHint = (msg: ChatMessage) => {
-  const numTexts = msg.text?.length ?? 0;
+  const numTexts = msg.textSnippets?.length ?? 0;
   const numImages = msg.images?.length ?? 0;
   const who = isSentByMe(msg) ? "You" : msg.name;
   const what = `${numTexts} text and ${numImages} image${numImages === 1 ? "" : "s"}`;

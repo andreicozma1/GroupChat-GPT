@@ -1,4 +1,4 @@
-import { getRandomMinMax } from "src/util/Utils";
+import {getRandomMinMax} from "src/util/Utils";
 
 interface ImageOptions {
 	width?: number;

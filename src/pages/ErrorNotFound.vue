@@ -5,7 +5,7 @@
 
       <div class="text-h2" style="opacity: 0.4">Oops. Nothing here...</div>
 
-      <q-btn class="q-mt-xl" color="white" label="Go Home" no-caps text-color="blue" to="/" unelevated />
+      <q-btn class="q-mt-xl" color="white" label="Go Home" no-caps text-color="blue" to="/" unelevated/>
     </div>
   </div>
 </template>

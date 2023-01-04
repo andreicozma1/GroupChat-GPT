@@ -1,8 +1,12 @@
-import { AssistantConfig, getAvailable, processKV } from "src/util/assistant/AssistantUtils";
-import { ChatMessage } from "src/util/ChatUtils";
-import { humanName } from "stores/compStore";
+import {AssistantConfig, getAvailable, processKV,} from "src/util/assistant/AssistantUtils";
+import {ChatMessage} from "src/util/ChatUtils";
+import {humanName} from "stores/compStore";
 
-const getAssistantTraits = (ai: AssistantConfig, useKey: boolean, tag?: string): string => {
+const getAssistantTraits = (
+	ai: AssistantConfig,
+	useKey: boolean,
+	tag?: string
+): string => {
 	const id = useKey ? ai.key : ai.name;
 	let res = `* ${id}`;
 	if (tag) res += ` (${tag})`;
@@ -19,7 +23,10 @@ const getAssistantTraits = (ai: AssistantConfig, useKey: boolean, tag?: string):
 	return res;
 };
 
-export const promptMembers = (useKey: boolean, currentAI?: AssistantConfig): string => {
+export const promptMembers = (
+	useKey: boolean,
+	currentAI?: AssistantConfig
+): string => {
 	const available = getAvailable();
 	if (!available || available.length === 0) return "";
 

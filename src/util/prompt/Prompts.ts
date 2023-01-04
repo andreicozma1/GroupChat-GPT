@@ -1,10 +1,14 @@
-import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { ChatMessage } from "src/util/ChatUtils";
-import { promptConversation, promptExamples, promptMembers, promptRules } from "src/util/prompt/PromptUtils";
+import {AssistantConfig} from "src/util/assistant/AssistantUtils";
+import {ChatMessage} from "src/util/ChatUtils";
+import {promptConversation, promptExamples, promptMembers, promptRules,} from "src/util/prompt/PromptUtils";
 
-export const createAssistantPrompt = (ai: AssistantConfig, messages: ChatMessage[]): any => {
+export const createAssistantPrompt = (
+	ai: AssistantConfig,
+	messages: ChatMessage[]
+): any => {
 	let start = "### AI GROUP CHAT ###\n";
-	start += "The following is a group-chat conversation between a human and several AI assistants.\n";
+	start +=
+		"The following is a group-chat conversation between a human and several AI assistants.\n";
 
 	const members = promptMembers(false, ai);
 	const rules = promptRules(ai);
@@ -18,7 +22,10 @@ export const createAssistantPrompt = (ai: AssistantConfig, messages: ChatMessage
 	};
 };
 
-export const createPromptDalleGen = (ai: AssistantConfig, messages: ChatMessage[]) => {
+export const createPromptDalleGen = (
+	ai: AssistantConfig,
+	messages: ChatMessage[]
+) => {
 	const usedMessage: ChatMessage = messages[messages.length - 1];
 	// last text
 	let prompt: string = usedMessage.text[usedMessage.text.length - 1];
@@ -29,7 +36,10 @@ export const createPromptDalleGen = (ai: AssistantConfig, messages: ChatMessage[
 	};
 };
 
-export const createPromptCodexGen = (ai: AssistantConfig, messages: ChatMessage[]) => {
+export const createPromptCodexGen = (
+	ai: AssistantConfig,
+	messages: ChatMessage[]
+) => {
 	const start = "### CODE GENERATION ###\n";
 
 	const rules = promptRules(ai);
@@ -38,7 +48,10 @@ export const createPromptCodexGen = (ai: AssistantConfig, messages: ChatMessage[
 	const usedMessage: ChatMessage = messages[messages.length - 1];
 	// last text
 	let prompt = "### PROMPT:\n";
-	prompt += usedMessage.text[usedMessage.text.length - 1].replace(/(<([^>]+)>)/gi, "");
+	prompt += usedMessage.text[usedMessage.text.length - 1].replace(
+		/(<([^>]+)>)/gi,
+		""
+	);
 
 	const end = `### CODE:\n`;
 

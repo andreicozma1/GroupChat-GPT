@@ -1,4 +1,4 @@
-import { AssistantConfigs } from "src/util/assistant/Assistants";
+import {AssistantConfigs} from "src/util/assistant/Assistants";
 
 export interface AssistantRules {
 	always?: string | string[];
@@ -56,13 +56,20 @@ interface ProcessKVConfig {
 	inline?: boolean;
 }
 
-export const processKV = (key: string, val: string | string[], config?: ProcessKVConfig): string => {
+export const processKV = (
+	key: string,
+	val: string | string[],
+	config?: ProcessKVConfig
+): string => {
 	const keyStartChar: string = config?.keyStartChar || "#";
 	let valJoinStr: string = config?.valJoinStr || ", ";
 	let inline: boolean = config?.inline || true;
 
 	key = key.replace(/_/g, " ");
-	key = key.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+	key = key.replace(
+		/\w\S*/g,
+		(txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+	);
 	val = Array.isArray(val) ? val : [val];
 	val = val.map((s: string) => s.trim());
 	if (val.every((s: string) => s.length > 50)) {

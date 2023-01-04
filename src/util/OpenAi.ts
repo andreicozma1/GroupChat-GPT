@@ -1,7 +1,7 @@
-import { Configuration, OpenAIApi } from "openai";
-import { CreateCompletionRequest, CreateImageRequest } from "openai/api";
-import { ApiReqConfigs } from "src/util/assistant/Assistants";
-import { AssistantConfig } from "src/util/assistant/AssistantUtils";
+import {Configuration, OpenAIApi} from "openai";
+import {CreateCompletionRequest, CreateImageRequest} from "openai/api";
+import {ApiReqConfigs} from "src/util/assistant/Assistants";
+import {AssistantConfig} from "src/util/assistant/AssistantUtils";
 
 export const openAiConfig = {
 	apiKey: process.env.OPENAI_API_KEY,
@@ -10,7 +10,9 @@ export const openaiApi = new OpenAIApi(new Configuration(openAiConfig));
 
 export type ApiOptsValidTypes = CreateCompletionRequest | CreateImageRequest;
 
-export const ApiReqMap: { [key: string]: { func: any; defaultOpts: ApiOptsValidTypes } } = {
+export const ApiReqMap: {
+	[key: string]: { func: any; defaultOpts: ApiOptsValidTypes };
+} = {
 	createCompletion: {
 		func: (opts: CreateCompletionRequest) => openaiApi.createCompletion(opts),
 		defaultOpts: {
@@ -34,12 +36,12 @@ export const ApiReqMap: { [key: string]: { func: any; defaultOpts: ApiOptsValidT
 };
 
 export const makeApiRequest = async (ai: AssistantConfig, prompt: string) => {
-	const { apiReqType, apiReqOpts } = ai.apiConfig;
-	const { func, defaultOpts } = ApiReqMap[apiReqType];
-	let opts = { ...defaultOpts };
+	const {apiReqType, apiReqOpts} = ai.apiConfig;
+	const {func, defaultOpts} = ApiReqMap[apiReqType];
+	let opts = {...defaultOpts};
 	if (apiReqOpts) {
-		opts = { ...opts, ...ApiReqConfigs.defaults[apiReqOpts] };
-		opts = { ...opts, ...ApiReqConfigs.custom[apiReqOpts] };
+		opts = {...opts, ...ApiReqConfigs.defaults[apiReqOpts]};
+		opts = {...opts, ...ApiReqConfigs.custom[apiReqOpts]};
 	}
 	opts = {
 		...opts,

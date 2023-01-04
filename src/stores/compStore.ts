@@ -1,12 +1,12 @@
-import { defineStore } from "pinia";
-import { LocalStorage } from "quasar";
-import { AssistantConfigs } from "src/util/assistant/Assistants";
-import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { ChatMessage, ChatThread, getMessageHistory } from "src/util/ChatUtils";
-import { makeApiRequest } from "src/util/OpenAi";
-import { getAppVersion } from "src/util/Utils";
-import { v4 as uuidv4 } from "uuid";
-import { Ref, ref } from "vue";
+import {defineStore} from "pinia";
+import {LocalStorage} from "quasar";
+import {AssistantConfigs} from "src/util/assistant/Assistants";
+import {AssistantConfig} from "src/util/assistant/AssistantUtils";
+import {ChatMessage, ChatThread, getMessageHistory} from "src/util/ChatUtils";
+import {makeApiRequest} from "src/util/OpenAi";
+import {getAppVersion} from "src/util/Utils";
+import {v4 as uuidv4} from "uuid";
+import {Ref, ref} from "vue";
 
 export const humanName = "Human";
 
@@ -80,7 +80,9 @@ export const useCompStore = defineStore("counter", {
 			const choices = responseData.choices;
 			const text = choices
 				?.flatMap((c: any) => {
-					c = c.text.replace("<prompt>\n", "<prompt>").replace("\n</prompt>", "</prompt>");
+					c = c.text
+						.replace("<prompt>\n", "<prompt>")
+						.replace("\n</prompt>", "</prompt>");
 					c = c.trim();
 					// if starts with ``` and ends with ``` then it's a code block
 					if (c.startsWith("```") && c.endsWith("```")) return c;
@@ -108,7 +110,10 @@ export const useCompStore = defineStore("counter", {
 				result: cache,
 			};
 		},
-		async generate(actor: AssistantConfig, updateFromMsgIds?: string[]): Promise<GenerationResult> {
+		async generate(
+			actor: AssistantConfig,
+			updateFromMsgIds?: string[]
+		): Promise<GenerationResult> {
 			console.warn("=======================================");
 			console.warn("=> generate:", actor);
 			let ignoreCache = actor.ignoreCache;
@@ -122,10 +127,12 @@ export const useCompStore = defineStore("counter", {
 					maxLength: 10,
 				});
 			} else {
-				messageHist = updateFromMsgIds.map((id) => this.getThread.messageMap[id]);
+				messageHist = updateFromMsgIds.map(
+					(id) => this.getThread.messageMap[id]
+				);
 				ignoreCache = true;
 			}
-			const { prompt, relevantMsgIds } = actor.promptStyle(actor, messageHist);
+			const {prompt, relevantMsgIds} = actor.promptStyle(actor, messageHist);
 			// TODO: Change hash prompt to be based on msgIds?
 			const hash = hashPrompt(prompt);
 			console.warn("=> prompt:");
@@ -140,7 +147,8 @@ export const useCompStore = defineStore("counter", {
 			let completion;
 			try {
 				completion = await makeApiRequest(actor, prompt);
-				if (completion === null || completion === undefined) throw new Error("No response");
+				if (completion === null || completion === undefined)
+					throw new Error("No response");
 			} catch (error: any) {
 				console.error(error);
 				if (error.stack) console.error(error.stack);
@@ -148,7 +156,8 @@ export const useCompStore = defineStore("counter", {
 				if (error.message) errorMsg += error.message;
 				if (error.response) {
 					errorMsg += "\n" + "Status: " + error.response.status;
-					errorMsg += "\n" + "Data: " + JSON.stringify(error.response.data, null, 4);
+					errorMsg +=
+						"\n" + "Data: " + JSON.stringify(error.response.data, null, 4);
 				}
 				return {
 					errorMsg: errorMsg,

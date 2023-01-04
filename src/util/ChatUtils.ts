@@ -1,7 +1,7 @@
-import { AssistantConfigs } from "src/util/assistant/Assistants";
-import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { getRoboHashAvatarUrl } from "src/util/ImageUtils";
-import { GenerationResult, humanName } from "stores/compStore";
+import {AssistantConfigs} from "src/util/assistant/Assistants";
+import {AssistantConfig} from "src/util/assistant/AssistantUtils";
+import {getRoboHashAvatarUrl} from "src/util/ImageUtils";
+import {GenerationResult, humanName} from "stores/compStore";
 
 export interface ChatThread {
 	messageMap: { [key: string]: ChatMessage };
@@ -34,7 +34,9 @@ export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
 	return thread.orderedKeysList.map((key) => thread.messageMap[key]);
 };
 
-export const getMessageHistory = (config: ChatMessageHistConfig): ChatMessage[] => {
+export const getMessageHistory = (
+	config: ChatMessageHistConfig
+): ChatMessage[] => {
 	// const thread = config.thread;
 	// let hist = thread.messages.map((id) => thread.messageMap[id]);
 	let hist = getThreadMessages(config.thread);
@@ -61,7 +63,10 @@ export const getMessageHistory = (config: ChatMessageHistConfig): ChatMessage[] 
 	if (config.maxLength !== undefined) hist = hist.slice(-config.maxLength);
 	return hist;
 };
-export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMessage => {
+export const createMessageFromConfig = (
+	cfg: AssistantConfig,
+	comp: any
+): ChatMessage => {
 	const assistantName: string = cfg?.name || "Unknown AI";
 	const assistantKey: string = cfg?.key || "unknown";
 	let msg: ChatMessage = {
@@ -79,7 +84,10 @@ export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMe
 };
 
 // TODO: better handling for undefined case
-export const createMessageFromAiKey = (key: string, comp: any): ChatMessage | undefined => {
+export const createMessageFromAiKey = (
+	key: string,
+	comp: any
+): ChatMessage | undefined => {
 	key = key.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
 	const cfg: AssistantConfig = AssistantConfigs[key];
 	const msg = createMessageFromConfig(cfg, comp);

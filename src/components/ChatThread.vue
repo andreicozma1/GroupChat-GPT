@@ -78,11 +78,13 @@
 <script lang="ts" setup>
 import {copyToClipboard} from "quasar";
 import {getSeededQColor} from "src/util/Colors";
-import {convertDate, dateToStr, getAppVersion, getTimeAgo, handleAssistant, smartNotify} from "src/util/Utils";
+import {getAppVersion, handleAssistant} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/Assistants";
 import {ChatMessage, ChatThread, getThreadMessages} from "src/util/ChatUtils";
+import {smartNotify} from "src/util/SmartNotify";
+import {dateToLocaleStr, dateToTimeAgo, parseDate} from "src/util/DateUtils";
 
 const props = defineProps({
   myName: {
@@ -140,8 +142,8 @@ const parseThreadMessages = (): ChatMessage[] => {
    ************************************************************************/
   // sort by dateCreated
   messages.sort((a, b) => {
-    const ad = convertDate(a.dateCreated);
-    const bd = convertDate(b.dateCreated);
+    const ad = parseDate(a.dateCreated);
+    const bd = parseDate(b.dateCreated);
     return ad.getTime() - bd.getTime();
   });
   // sort to keep loading messages at the bottom
@@ -156,7 +158,7 @@ const parseThreadMessages = (): ChatMessage[] => {
 
 const createStamp = (msg: ChatMessage) => {
   const what = isSentByMe(msg) ? "Sent" : "Received";
-  const on = getTimeAgo(msg.dateCreated)
+  const on = dateToTimeAgo(msg.dateCreated)
   let res = `${what} ${on}`
   if (msg.isRegen) res = `*${res}`;
   return res;
@@ -168,17 +170,17 @@ const createContentHoverHint = (msg: ChatMessage) => {
   const numImages = msg.images?.length ?? 0;
   const who = isSentByMe(msg) ? "You" : msg.name;
   const what = `${numTexts} text and ${numImages} image${numImages === 1 ? "" : "s"}`;
-  const when = dateToStr(msg.dateCreated);
+  const when = dateToLocaleStr(msg.dateCreated);
   return `${who} sent ${what} on ${when}`;
 };
 
 const createStampHoverHint = (msg: ChatMessage) => {
-  const when = dateToStr(msg.dateCreated);
+  const when = dateToLocaleStr(msg.dateCreated);
   const what = isSentByMe(msg) ? "Sent" : "Received";
   let res = `${what} on ${when}`;
   const dateGenerated = msg.result?.responseData?.created * 1000;
   if (dateGenerated) {
-    res += '\n\n' + ` [Generated on ${dateToStr(dateGenerated)}]`;
+    res += '\n\n' + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
   }
   return res;
 };

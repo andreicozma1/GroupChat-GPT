@@ -11,22 +11,6 @@ export const getAppVersion = () => {
 };
 export const getRandomMinMax = (min: number, max: number) => Math.random() * (max - min) + min;
 
-export const getRoboHashAvatarUrl = (seed: string) => {
-	return `https://robohash.org/${seed}`;
-};
-
-interface ImageOptions {
-	width?: number;
-	height?: number;
-}
-
-export const getPicsumImgUrl = (seed: string, options?: ImageOptions) => {
-	const w = options?.width || Math.round(getRandomMinMax(100, 800));
-	const h = options?.height || Math.round(getRandomMinMax(100, 800));
-	seed = seed.replace(/ /g, "_");
-	return `https://picsum.photos/seed/${seed}/${w}/${h}`;
-};
-
 export const parseNounCount = (singularStr: string, count: number) => {
 	return count === 1 ? singularStr : `${singularStr}s`;
 };
@@ -46,11 +30,11 @@ export const getTimeAgo = (dateThen: string | number | Date) => {
 	const dYear = Math.floor(dDay / 365);
 
 	const timeAgo = {
-		year  : dYear,
-		month : dMonth,
-		week  : dWeek,
-		day   : dDay,
-		hour  : dHour,
+		year: dYear,
+		month: dMonth,
+		week: dWeek,
+		day: dDay,
+		hour: dHour,
 		minute: dMin,
 		second: dSec,
 	};
@@ -62,7 +46,7 @@ export const getTimeAgo = (dateThen: string | number | Date) => {
 	};
 
 	// Get the first unit that is greater than 0
-	for (const [ key, value ] of Object.entries(timeAgo)) {
+	for (const [key, value] of Object.entries(timeAgo)) {
 		if (value > 0) return parseTimeAgoStr(key, value);
 	}
 	// If we get here, it's been less than a second
@@ -72,10 +56,10 @@ export const getTimeAgo = (dateThen: string | number | Date) => {
 export const dateToStr = (date: string | number | Date) => {
 	date = convertDate(date);
 	const options: Intl.DateTimeFormatOptions = {
-		year  : "numeric",
-		month : "numeric",
-		day   : "numeric",
-		hour  : "numeric",
+		year: "numeric",
+		month: "numeric",
+		day: "numeric",
+		hour: "numeric",
 		minute: "numeric",
 		second: "numeric",
 	};
@@ -97,21 +81,21 @@ export const smartNotify = (message: string, caption?: string) => {
 	msgTimeout += msgLen * 35;
 
 	const typeMap = {
-		error  : {
-			type    : "negative",
-			keywords: [ "error", "fail", "not found", "not compatible", "not supported" ],
+		error: {
+			type: "negative",
+			keywords: ["error", "fail", "not found", "not compatible", "not supported"],
 		},
 		warning: {
-			type    : "warning",
-			keywords: [ "warn" ],
+			type: "warning",
+			keywords: ["warn"],
 		},
-		info   : {
-			type    : "info",
-			keywords: [ "info" ],
+		info: {
+			type: "info",
+			keywords: ["info"],
 		},
 		success: {
-			type    : "positive",
-			keywords: [ "success", "done" ],
+			type: "positive",
+			keywords: ["success", "done"],
 		},
 	};
 
@@ -129,10 +113,10 @@ export const smartNotify = (message: string, caption?: string) => {
 	}
 
 	Notify.create({
-		type    : type,
-		message : message,
-		caption : caption || "",
-		timeout : msgTimeout,
+		type: type,
+		message: message,
+		caption: caption || "",
+		timeout: msgTimeout,
 		progress: true,
 		closeBtn: "x",
 	});
@@ -230,7 +214,7 @@ export const handleCoordinator = async (comp: any, orderedResponses?: boolean) =
 		comp.pushMessage(coordMsg);
 		return;
 	}
-	coordMsg.text = res.text ? [ ...res.text ] : [ "An error occurred" ];
+	coordMsg.text = res.text ? [...res.text] : ["An error occurred"];
 	comp.pushMessage(coordMsg);
 	const nextActors = res.text
 		.flatMap((t: string) => t.toLowerCase().split("\n"))

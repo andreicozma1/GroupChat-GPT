@@ -1,6 +1,6 @@
 import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
-import { getRoboHashAvatarUrl } from "src/util/Utils";
+import { getRoboHashAvatarUrl } from "src/util/ImageUtils";
 import { GenerationResult, humanName } from "stores/compStore";
 
 export interface ChatThread {

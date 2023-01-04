@@ -55,7 +55,8 @@
 import {useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
-import {getRoboHashAvatarUrl, handleCoordinator} from "src/util/Utils";
+import {handleCoordinator} from "src/util/Utils";
+import {getRoboHashAvatarUrl} from "src/util/ImageUtils";
 
 const comp = useCompStore();
 

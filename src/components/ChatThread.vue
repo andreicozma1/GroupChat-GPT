@@ -256,6 +256,16 @@ const deleteMessage = (msg: ChatMessage) => {
   // comp.deleteMessage(msg);
 };
 
+const loadThread = () => {
+  try {
+    threadMessages.value = parseThreadMessages();
+    scrollToBottom(1000);
+  } catch (err) {
+    console.error("Error loading chat thread", err);
+    smartNotify(`Error loading thread: ${err.message}`);
+  }
+}
+
 watch(
     () => props.scrollAreaStyle,
     () => {
@@ -263,21 +273,14 @@ watch(
     }
 );
 
-watch(comp.getThread, () => {
-  threadMessages.value = parseThreadMessages();
-  scrollToBottom(1000);
-});
+watch(comp.getThread, () => loadThread());
 
 watch(
     () => props.hideCoordinator,
-    () => {
-      threadMessages.value = parseThreadMessages();
-      scrollToBottom(1000);
-    }
+    () => loadThread()
 );
 
 onMounted(() => {
-  scrollToBottom(1000);
-  threadMessages.value = parseThreadMessages();
+  loadThread();
 });
 </script>

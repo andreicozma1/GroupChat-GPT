@@ -31,10 +31,12 @@ export const parseNounCount = (singularStr: string, count: number) => {
 	return count === 1 ? singularStr : `${singularStr}s`;
 };
 
-export const getTimeAgo = (date: string | number | Date) => {
-	date = convertDate(date);
-	const now = new Date();
-	const diff = now.getTime() - date.getTime();
+export const getTimeAgo = (dateThen: string | number | Date) => {
+	dateThen = convertDate(dateThen);
+	const dateNow = new Date();
+	const diff = dateNow.getTime() - dateThen.getTime();
+
+	// Calculate the differences for each time unit
 	const dSec = Math.floor(diff / 1000);
 	const dMin = Math.floor(dSec / 60);
 	const dHour = Math.floor(dMin / 60);
@@ -44,48 +46,36 @@ export const getTimeAgo = (date: string | number | Date) => {
 	const dYear = Math.floor(dDay / 365);
 
 	const timeAgo = {
-		seconds: dSec,
-		minutes: dMin,
-		hours: dHour,
-		days: dDay,
-		weeks: dWeek,
-		months: dMonth,
-		years: dYear,
+		year  : dYear,
+		month : dMonth,
+		week  : dWeek,
+		day   : dDay,
+		hour  : dHour,
+		minute: dMin,
+		second: dSec,
 	};
 
-	// get time ago
+	// Helper for the final string
 	const parseTimeAgoStr = (unit: string, value: number) => {
 		const noun = parseNounCount(unit, value);
 		return `${value} ${noun} ago`;
 	};
 
-	// get time ago
-	if (timeAgo.years > 0) {
-		return parseTimeAgoStr("year", timeAgo.years);
-	} else if (timeAgo.months > 0) {
-		return parseTimeAgoStr("month", timeAgo.months);
-	} else if (timeAgo.weeks > 0) {
-		return parseTimeAgoStr("week", timeAgo.weeks);
-	} else if (timeAgo.days > 0) {
-		return parseTimeAgoStr("day", timeAgo.days);
-	} else if (timeAgo.hours > 0) {
-		return parseTimeAgoStr("hour", timeAgo.hours);
-	} else if (timeAgo.minutes > 0) {
-		return parseTimeAgoStr("minute", timeAgo.minutes);
-	} else if (timeAgo.seconds > 0) {
-		return parseTimeAgoStr("second", timeAgo.seconds);
-	} else {
-		return "just now";
+	// Get the first unit that is greater than 0
+	for (const [ key, value ] of Object.entries(timeAgo)) {
+		if (value > 0) return parseTimeAgoStr(key, value);
 	}
+	// If we get here, it's been less than a second
+	return "just now";
 };
 
 export const dateToStr = (date: string | number | Date) => {
 	date = convertDate(date);
 	const options: Intl.DateTimeFormatOptions = {
-		year: "numeric",
-		month: "numeric",
-		day: "numeric",
-		hour: "numeric",
+		year  : "numeric",
+		month : "numeric",
+		day   : "numeric",
+		hour  : "numeric",
 		minute: "numeric",
 		second: "numeric",
 	};
@@ -107,21 +97,21 @@ export const smartNotify = (message: string, caption?: string) => {
 	msgTimeout += msgLen * 35;
 
 	const typeMap = {
-		error: {
-			type: "negative",
-			keywords: ["error", "fail", "not found", "not compatible", "not supported"],
+		error  : {
+			type    : "negative",
+			keywords: [ "error", "fail", "not found", "not compatible", "not supported" ],
 		},
 		warning: {
-			type: "warning",
-			keywords: ["warn"],
+			type    : "warning",
+			keywords: [ "warn" ],
 		},
-		info: {
-			type: "info",
-			keywords: ["info"],
+		info   : {
+			type    : "info",
+			keywords: [ "info" ],
 		},
 		success: {
-			type: "positive",
-			keywords: ["success", "done"],
+			type    : "positive",
+			keywords: [ "success", "done" ],
 		},
 	};
 
@@ -139,10 +129,10 @@ export const smartNotify = (message: string, caption?: string) => {
 	}
 
 	Notify.create({
-		type: type,
-		message: message,
-		caption: caption || "",
-		timeout: msgTimeout,
+		type    : type,
+		message : message,
+		caption : caption || "",
+		timeout : msgTimeout,
 		progress: true,
 		closeBtn: "x",
 	});
@@ -240,7 +230,7 @@ export const handleCoordinator = async (comp: any, orderedResponses?: boolean) =
 		comp.pushMessage(coordMsg);
 		return;
 	}
-	coordMsg.text = res.text ? [...res.text] : ["An error occurred"];
+	coordMsg.text = res.text ? [ ...res.text ] : [ "An error occurred" ];
 	comp.pushMessage(coordMsg);
 	const nextActors = res.text
 		.flatMap((t: string) => t.toLowerCase().split("\n"))

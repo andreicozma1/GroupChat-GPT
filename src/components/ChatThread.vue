@@ -20,9 +20,9 @@
         <template v-slot:stamp>
           <div class="row items-center">
             <span>
-              <q-icon :name="getAssistantIcon(msg.assistantKey)" class="q-mr-sm"/>
+              <q-icon :name="getAssistantIcon(msg.userId)" class="q-mr-sm"/>
                 <q-tooltip>
-                {{ msg.assistantKey }}
+                {{ msg.userId }}
               </q-tooltip>
             </span>
             <span class="text-caption text-italic">
@@ -82,7 +82,7 @@ import {convertDate, dateToStr, getAppVersion, getTimeAgo, handleAssistant, smar
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/Assistants";
-import {ChatMessage, getThreadMessages} from "src/util/ChatUtils";
+import {ChatMessage, ChatThread, getThreadMessages} from "src/util/ChatUtils";
 
 const props = defineProps({
   myName: {
@@ -93,11 +93,6 @@ const props = defineProps({
     type: Object,
     required: false,
     default: null,
-  },
-  hideCoordinator: {
-    type: Boolean,
-    required: false,
-    default: false,
   },
 });
 
@@ -113,7 +108,26 @@ const getAssistantIcon = (assistantKey: string) => {
 };
 
 const parseThreadMessages = (): ChatMessage[] => {
-  let thrd: ChatMessage[] = getThreadMessages(comp.getThread).map((msg: ChatMessage) => {
+  const thread: ChatThread = comp.getThread
+  let messages: ChatMessage[] = getThreadMessages(thread)
+  /************************************************************************
+   ** FILTERING
+   ************************************************************************/
+  messages = messages.filter((msg: ChatMessage) => {
+    // always keep messages with certain keywords
+    const keepKeywords = ["[ERROR]", "[WARNING]", "[INFO]"];
+    if (msg.text.some((line: string) => keepKeywords.some((keyword: string) => line.includes(keyword)))) return true;
+    // always remove messages with certain keywords
+    const removeKeywords = ["[DEBUG]"];
+    if (msg.text.some((line: string) => removeKeywords.some((keyword: string) => line.includes(keyword)))) return false;
+    // remove messages from users that are hidden in thread settings
+    if (thread.hiddenUserIds?.includes(msg.userId)) return false;
+    return true;
+  });
+  /************************************************************************
+   ** MAPPING
+   ************************************************************************/
+  messages = messages.map((msg: ChatMessage) => {
     const text = msg.text.length === 0 ? [] : [...msg.text];
     if (!msg.loading && text.length === 0) text.push("[No message]");
     return {
@@ -121,25 +135,22 @@ const parseThreadMessages = (): ChatMessage[] => {
       text: text,
     };
   });
-  // filter out messages from Coordinator messages if hideCoordinator is true
-  if (props.hideCoordinator) {
-    thrd = thrd.filter((msg: ChatMessage) => {
-      if (msg.text.some((line: string) => line.includes("[ERROR]") || line.includes("[WARN]"))) return true;
-      return msg.name !== AssistantConfigs.coordinator.name;
-    });
-  }
-  thrd.sort((a, b) => {
+  /************************************************************************
+   ** SORTING
+   ************************************************************************/
+  // sort by dateCreated
+  messages.sort((a, b) => {
     const ad = convertDate(a.dateCreated);
     const bd = convertDate(b.dateCreated);
     return ad.getTime() - bd.getTime();
   });
-  // keep loading last
-  thrd.sort((a, b) => {
+  // sort to keep loading messages at the bottom
+  messages.sort((a, b) => {
     if (a.loading && !b.loading) return 1;
     if (!a.loading && b.loading) return -1;
     return 0;
   });
-  return thrd;
+  return messages;
 };
 
 

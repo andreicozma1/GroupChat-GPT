@@ -6,13 +6,14 @@ import { GenerationResult, humanName } from "stores/compStore";
 export interface ChatThread {
 	messageMap: { [key: string]: ChatMessage };
 	orderedKeysList: string[];
+	hiddenUserIds?: string[];
 	appVersion?: string;
 }
 
 export interface ChatMessage extends GenerationResult {
 	id: string | undefined;
 	avatar: string;
-	assistantKey: string;
+	userId: string;
 	name: string;
 	text: string[];
 	images: string[];
@@ -42,7 +43,7 @@ export const getMessageHistory = (config: ChatMessageHistConfig): ChatMessage[] 
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;
 		}
-		const actor_key = m.assistantKey;
+		const actor_key = m.userId;
 		if (actor_key !== undefined) {
 			const actor = AssistantConfigs[actor_key];
 			if (actor && actor.helper === true) return false;
@@ -70,7 +71,7 @@ export const createMessageFromConfig = (cfg: AssistantConfig, comp: any): ChatMe
 		avatar: getRoboHashAvatarUrl(assistantName),
 		name: assistantName,
 		dateCreated: new Date(),
-		assistantKey: assistantKey,
+		userId: assistantKey,
 		loading: true,
 	};
 	msg = comp.pushMessage(msg);

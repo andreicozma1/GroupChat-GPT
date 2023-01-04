@@ -147,7 +147,7 @@ export const smartNotify = (message: string, caption?: string) => {
 };
 
 export const handleAssistant = async (msg: ChatMessage, comp: any) => {
-	const cfg = AssistantConfigs[msg.assistantKey];
+	const cfg = AssistantConfigs[msg.userId];
 	msg.isRegen = msg.result?.messageIds ? msg.result.messageIds.length > 0 : false;
 	if (msg.isRegen) {
 		console.warn("=> Regen");
@@ -205,7 +205,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	prompts = prompts.filter((t: string) => t.split(" ").length > 3);
 	if (prompts.length > 0) {
 		console.log("promptText", prompts);
-		const nextKey = `${msg.assistantKey}_gen`;
+		const nextKey = `${msg.userId}_gen`;
 		for (let i = 0; i < prompts.length; i++) {
 			const prompt = prompts[i];
 			const nextMsg: ChatMessage = createMessageFromAiKey(nextKey, comp);

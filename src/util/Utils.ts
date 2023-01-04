@@ -27,6 +27,10 @@ export const getPicsumImgUrl = (seed: string, options?: ImageOptions) => {
 	return `https://picsum.photos/seed/${seed}/${w}/${h}`;
 };
 
+export const parseNounCount = (singularStr: string, count: number) => {
+	return count === 1 ? singularStr : `${singularStr}s`;
+};
+
 export const getTimeAgo = (date: string | number | Date) => {
 	date = convertDate(date);
 	const now = new Date();
@@ -49,29 +53,27 @@ export const getTimeAgo = (date: string | number | Date) => {
 		years: diffYears,
 	};
 
-	// should use plural?
-	const shouldUsePlural = (value: number) => value > 1;
-
 	// get time ago
-	const getTimeAgo = (value: number, unit: string) => {
-		return `${value} ${unit}${shouldUsePlural(value) ? "s" : ""} ago`;
+	const parseTimeAgoStr = (unit: string, value: number) => {
+		const noun = parseNounCount(unit, value);
+		return `${value} ${noun} ago`;
 	};
 
 	// get time ago
 	if (timeAgo.years > 0) {
-		return getTimeAgo(timeAgo.years, "year");
+		return parseTimeAgoStr("year", timeAgo.years);
 	} else if (timeAgo.months > 0) {
-		return getTimeAgo(timeAgo.months, "month");
+		return parseTimeAgoStr("month", timeAgo.months);
 	} else if (timeAgo.weeks > 0) {
-		return getTimeAgo(timeAgo.weeks, "week");
+		return parseTimeAgoStr("week", timeAgo.weeks);
 	} else if (timeAgo.days > 0) {
-		return getTimeAgo(timeAgo.days, "day");
+		return parseTimeAgoStr("day", timeAgo.days);
 	} else if (timeAgo.hours > 0) {
-		return getTimeAgo(timeAgo.hours, "hour");
+		return parseTimeAgoStr("hour", timeAgo.hours);
 	} else if (timeAgo.minutes > 0) {
-		return getTimeAgo(timeAgo.minutes, "minute");
+		return parseTimeAgoStr("minute", timeAgo.minutes);
 	} else if (timeAgo.seconds > 0) {
-		return getTimeAgo(timeAgo.seconds, "second");
+		return parseTimeAgoStr("second", timeAgo.seconds);
 	} else {
 		return "just now";
 	}

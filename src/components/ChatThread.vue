@@ -167,7 +167,7 @@ const createContentHoverHint = (msg: ChatMessage) => {
   const numTexts = msg.text?.length ?? 0;
   const numImages = msg.images?.length ?? 0;
   const who = isSentByMe(msg) ? "You" : msg.name;
-  const what = `${numTexts} text and ${numImages} image${numImages > 1 ? "s" : ""}`;
+  const what = `${numTexts} text and ${numImages} image${numImages === 1 ? "" : "s"}`;
   const when = dateToStr(msg.dateCreated);
   return `${who} sent ${what} on ${when}`;
 };

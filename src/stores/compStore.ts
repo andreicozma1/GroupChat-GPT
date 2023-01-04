@@ -4,6 +4,7 @@ import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
 import { ChatMessage, ChatThread, getMessageHistory } from "src/util/ChatUtils";
 import { makeApiRequest } from "src/util/OpenAi";
+import { getAppVersion } from "src/util/Utils";
 import { v4 as uuidv4 } from "uuid";
 import { Ref, ref } from "vue";
 
@@ -28,7 +29,8 @@ export const useCompStore = defineStore("counter", {
 			main: {
 				orderedKeysList: [],
 				messageMap: {},
-			},
+				appVersion: getAppVersion(),
+			} as ChatThread,
 			...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,
 		currentThread: "main",
@@ -57,6 +59,9 @@ export const useCompStore = defineStore("counter", {
 			console.log("Clearing thread");
 			this.threads[this.currentThread].orderedKeysList = [];
 			this.updateCache();
+		},
+		getTreadVersion() {
+			return this.threads[this.currentThread].appVersion;
 		},
 		getCachedResponse(hash: number) {
 			return this.completions[hash];

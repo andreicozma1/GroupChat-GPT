@@ -1,6 +1,6 @@
 {
 	"name": "ai-chatbot",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "A chatbot application written using the Quasar Framework",
 	"productName": "AI-ChatBot",
 	"author": "Andrei Cozma <me@andreicozma.com>",

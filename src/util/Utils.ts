@@ -3,6 +3,12 @@ import { AssistantConfigs } from "src/util/assistant/Assistants";
 import { AssistantConfig } from "src/util/assistant/AssistantUtils";
 import { ChatMessage, createMessageFromAiKey, createMessageFromConfig } from "src/util/ChatUtils";
 
+// return process.env.npm_package_version || "unknown";
+import { version } from "./../../package.json";
+
+export const getAppVersion = () => {
+	return version;
+};
 export const getRandomMinMax = (min: number, max: number) => Math.random() * (max - min) + min;
 
 export const getRoboHashAvatarUrl = (seed: string) => {
@@ -94,9 +100,14 @@ export const convertDate = (date: string | number | Date): Date => {
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const smartNotify = (message: string) => {
+	const msgLen = message.length;
+	let msgTimeout = 500;
+	msgTimeout += msgLen * 35;
 	Notify.create({
 		message: message,
-		timeout: 500,
+		timeout: msgTimeout,
+		progress: true,
+		closeBtn: "x",
 	});
 };
 

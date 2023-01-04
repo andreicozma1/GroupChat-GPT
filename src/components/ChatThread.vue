@@ -78,7 +78,7 @@
 <script lang="ts" setup>
 import {copyToClipboard} from "quasar";
 import {getSeededQColor} from "src/util/Colors";
-import {convertDate, dateToStr, getTimeAgo, handleAssistant, smartNotify} from "src/util/Utils";
+import {convertDate, dateToStr, getAppVersion, getTimeAgo, handleAssistant, smartNotify} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/Assistants";
@@ -260,9 +260,19 @@ const loadThread = () => {
   try {
     threadMessages.value = parseThreadMessages();
     scrollToBottom(1000);
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error loading chat thread", err);
-    smartNotify(`Error loading thread: ${err.message}`);
+    smartNotify(`Error loading chat thread.`);
+    const threadVer = comp.getThread.appVersion;
+    let msg = ''
+    if (threadVer) {
+      msg = `Thread from ${comp.getThread.appVersion} not compatible with ${getAppVersion()}.`
+    } else {
+      msg = `Thread is not compatible with ${getAppVersion()}.`
+    }
+    msg += ' '
+    msg += 'Please try again with a new thread or clear cache.'
+    smartNotify(msg);
   }
 }
 

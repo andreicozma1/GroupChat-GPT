@@ -6,6 +6,7 @@ import { GenerationResult, humanName } from "stores/compStore";
 export interface ChatThread {
 	messageMap: { [key: string]: ChatMessage };
 	orderedKeysList: string[];
+	appVersion?: string;
 }
 
 export interface ChatMessage extends GenerationResult {

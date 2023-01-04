@@ -294,6 +294,7 @@ const loadThread = () => {
     } else {
       caption = `Saved content is not compatible with the current version of the app.`
     }
+    caption += "\n"
     caption += 'Please try again with a new thread or clear the cache.'
     smartNotify(`Warning: Conversation data structures have changed.`, caption);
   }

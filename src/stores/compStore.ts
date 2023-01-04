@@ -16,7 +16,7 @@ export interface GenerationResult {
 		responseData: any;
 	};
 	textSnippets?: string[];
-	images?: string[];
+	imageUrls?: string[];
 	hash?: number;
 	cached?: boolean;
 	errorMsg?: string;
@@ -106,7 +106,7 @@ export const useCompStore = defineStore("counter", {
 				cached: undefined,
 				hash: hash,
 				textSnippets: text,
-				images: images,
+				imageUrls: images,
 				result: cache,
 			};
 		},

@@ -4,7 +4,7 @@
     <div v-for="msg in threadMessages" :key="msg.dateCreated">
       <q-chat-message size="6"
                       :sent="isSentByMe(msg)"
-                      :bg-color="isSentByMe(msg) ? null : getSeededQColor(msg.name, 1, 2)"
+                      :bg-color="isSentByMe(msg) ? null : getSeededQColor(msg.userName, 1, 2)"
                       v-bind="msg">
         <div v-for="text in msg.textSnippets" :key="text">
           <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)"/>
@@ -63,8 +63,8 @@
           </div>
         </template>
 
-        <div v-if="msg.images.length > 0">
-          <q-card v-for="image in msg.images" :key="image" :title="image" class="bg-grey-1" flat>
+        <div v-if="msg.imageUrls.length > 0">
+          <q-card v-for="image in msg.imageUrls" :key="image" :title="image" class="bg-grey-1" flat>
             <q-card-section class="q-pa-none">
               <q-img :src="image" draggable fit="contain" style="max-height: 400px"/>
             </q-card-section>
@@ -160,15 +160,15 @@ const createStamp = (msg: ChatMessage) => {
   const what = isSentByMe(msg) ? "Sent" : "Received";
   const on = dateToTimeAgo(msg.dateCreated)
   let res = `${what} ${on}`
-  if (msg.isRegen) res = `*${res}`;
+  if (msg.isCompRegen) res = `*${res}`;
   return res;
 };
 
 
 const createContentHoverHint = (msg: ChatMessage) => {
   const numTexts = msg.textSnippets?.length ?? 0;
-  const numImages = msg.images?.length ?? 0;
-  const who = isSentByMe(msg) ? "You" : msg.name;
+  const numImages = msg.imageUrls?.length ?? 0;
+  const who = isSentByMe(msg) ? "You" : msg.userName;
   const what = `${numTexts} text and ${numImages} image${numImages === 1 ? "" : "s"}`;
   const when = dateToLocaleStr(msg.dateCreated);
   return `${who} sent ${what} on ${when}`;
@@ -187,7 +187,7 @@ const createStampHoverHint = (msg: ChatMessage) => {
 
 
 const isSentByMe = (msg: ChatMessage) => {
-  return msg.name === props.myName;
+  return msg.userName === props.myName;
 };
 
 const getScrollAreaStyle = computed(() => {

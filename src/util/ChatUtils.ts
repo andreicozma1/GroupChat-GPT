@@ -13,14 +13,20 @@ export interface ChatThread {
 
 export interface ChatMessage extends GenerationResult {
 	id: string | undefined;
-	avatar: string;
+	// TODO: Put these in a separate User interface
 	userId: string;
-	name: string;
+	userName: string;
+	userAvatarUrl: string;
+	// TODO: Put these in a separate MessageContent interface and keep track of history
 	textSnippets: string[];
-	images: string[];
+	imageUrls: string[];
+	// TODO: Put dates in ChatMessageDates interface and keep track of edits
 	dateCreated: string | number | Date;
+	// TODO: Put this in ChatMessageFlags interface
 	loading?: boolean;
-	isRegen?: boolean;
+	// TODO: There's probably a better way to do keep track of whether a message is a re-generation
+	// TODO: Alternatively, could also keep history of edits (editMessage function)
+	isCompRegen?: boolean;
 }
 
 // TODO: Make these configurable in UI in the future
@@ -41,7 +47,7 @@ export const getMessageHistory = (
 ): ChatMessage[] => {
 	let hist = getThreadMessages(config.thread);
 	hist = hist.filter((m) => {
-		if (m.name === humanName) {
+		if (m.userName === humanName) {
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;
 		}
@@ -52,10 +58,10 @@ export const getMessageHistory = (
 		}
 		// handle actors to include and exclude
 		if (config.includeActors) {
-			return config.includeActors.some((actor) => actor.name === m.name);
+			return config.includeActors.some((actor) => actor.name === m.userName);
 		}
 		if (config.excludeActors) {
-			return !config.excludeActors.some((actor) => actor.name === m.name);
+			return !config.excludeActors.some((actor) => actor.name === m.userName);
 		}
 		return true;
 	});
@@ -77,9 +83,9 @@ export const createMessageFromConfig = (
 	let msg: ChatMessage = {
 		id: undefined,
 		textSnippets: [],
-		images: [],
-		avatar: getRoboHashAvatarUrl(assistantName),
-		name: assistantName,
+		imageUrls: [],
+		userAvatarUrl: getRoboHashAvatarUrl(assistantName),
+		userName: assistantName,
 		dateCreated: new Date(),
 		userId: assistantKey,
 		loading: true,

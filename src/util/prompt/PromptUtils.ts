@@ -82,7 +82,7 @@ export const promptConversation = (msgHist: ChatMessage[]): string => {
 	const conv = msgHist
 		.map((m) => {
 			const v = m.textSnippets.map((s) => s.trim());
-			const r = [`### ${m.name}:`, ...v];
+			const r = [`### ${m.userName}:`, ...v];
 			return r.join("\n");
 		})
 		.join("\n\n");

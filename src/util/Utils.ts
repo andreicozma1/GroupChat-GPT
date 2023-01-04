@@ -19,13 +19,13 @@ export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	const cfg = AiAssistantConfigs[msg.userId];
-	msg.isRegen = msg.result?.messageIds
+	msg.isCompRegen = msg.result?.messageIds
 		? msg.result.messageIds.length > 0
 		: false;
-	if (msg.isRegen) {
+	if (msg.isCompRegen) {
 		console.warn("=> Regen");
 		msg.textSnippets = [];
-		msg.images = [];
+		msg.imageUrls = [];
 	}
 
 	const res = await comp.generate(cfg, msg.result?.messageIds);
@@ -40,7 +40,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		return;
 	}
 
-	if (res?.images) msg.images.push(...res.images);
+	if (res?.images) msg.imageUrls.push(...res.images);
 	if (res?.text) msg.textSnippets.push(...res.text);
 
 	// const totalLength = msg.text.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)

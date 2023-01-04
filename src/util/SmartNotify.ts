@@ -2,8 +2,9 @@ import {Notify} from "quasar";
 
 export const smartNotify = (message: string, caption?: string) => {
 	const msgLen = message.length;
+	const capLen = caption ? caption.length : 0;
 	let msgTimeout = 500;
-	msgTimeout += msgLen * 35;
+	msgTimeout += msgLen * 40 + capLen * 30;
 
 	const typeMap = {
 		error: {

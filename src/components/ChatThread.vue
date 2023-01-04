@@ -78,7 +78,7 @@
 <script lang="ts" setup>
 import {copyToClipboard} from "quasar";
 import {getSeededQColor} from "src/util/Colors";
-import {getAppVersion, handleAssistant} from "src/util/Utils";
+import {handleAssistant} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
@@ -288,13 +288,14 @@ const loadThread = () => {
   } catch (err: any) {
     console.error("Error loading chat thread", err);
     const threadVer = comp.getThread.appVersion;
-    let msg: string;
+    let caption: string;
     if (threadVer) {
-      msg = `Thread from ${comp.getThread.appVersion} not compatible with ${getAppVersion()}.`
+      caption = `Saved content from version ${threadVer} is not compatible with the current version of the app.`
     } else {
-      msg = `Thread is not compatible with app version ${getAppVersion()}.`
+      caption = `Saved content is not compatible with the current version of the app.`
     }
-    smartNotify(msg, 'Please try again with a new thread or clear cache.');
+    caption += 'Please try again with a new thread or clear the cache.'
+    smartNotify(`Warning: Conversation data structures have changed.`, caption);
   }
 }
 

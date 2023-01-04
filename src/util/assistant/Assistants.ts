@@ -42,87 +42,19 @@ export const AssistantConfigShared: AssistantConfig = {
 };
 
 export const AssistantConfigs: Record<string, AssistantConfig> = {
-	davinci: {
-		key: "davinci",
-		name: "Davinci",
-		icon: "chat",
-		promptStyle: createAssistantPrompt,
-		apiConfig: {
-			apiReqType: "createCompletion",
-			apiReqOpts: "chatting",
-		},
-		traits: {
-			personality: ["helpful"],
-			strengths: ["providing general information"],
-		},
-	},
-	dalle: {
-		key: "dalle",
-		name: "DALL-E",
-		icon: "image",
-		promptStyle: createAssistantPrompt,
-		followUps: true,
-		apiConfig: {
-			apiReqType: "createCompletion",
-			apiReqOpts: "chatting",
-		},
-		traits: {
-			personality: ["artistic", "creative", "visionary"],
-			strengths: ["making art", "coming up with creative ideas"],
-			abilities: [
-				"Generating images, drawings, and other visual art through text prompts.",
-			],
-		}, // Examples order: Human, AI, Human, AI, Human, AI
-		examples: [
-			"Hey DALL-E, I want to see a picture cat.",
-			"Sure! Here is a picture of a cat. <prompt>A picture of a cat.</prompt>",
-			"Thank you!",
-			"Do you want to see a specific color or breed? Like a black cat or a tabby?\n" +
-			"Also, should the cat be sitting, standing, or perhaps playing with a ball of yarn?",
-			"Give it white fur and blue eyes.",
-			"Sure, I can do that. <prompt>A picture of a cat with white fur and blue eyes.</prompt>\n" +
-			"Do you have any specific artistic styles in mind? Like a cartoon, oil painting, or realistic style? I can also try to imitate a specific artist.",
-			"Surprise me! Also, give it an astronaut suit and make it float in deep space.",
-			"Coming right ahead! <prompt>A picture of a cat with white fur and blue eyes, wearing an astronaut suit, floating in deep space, cyberpunk style.</prompt>",
-		],
-	},
-	codex: {
-		key: "codex",
-		name: "Codex",
-		icon: "code",
-		promptStyle: createAssistantPrompt,
-		followUps: true,
-		apiConfig: {
-			apiReqType: "createCompletion",
-			apiReqOpts: "chatting",
-		},
-		traits: {
-			personality: ["analytical", "logical", "rational"],
-			strengths: ["programming", "coding"],
-			abilities: ["Generating code through text prompts."],
-		},
-		rules: {
-			never: [
-				"Write the code yourself. Just generate the prompt and let Codex do the rest.",
-			],
-		},
-		examples: [
-			"Hey Codex, make a program that adds two numbers together.",
-			"Sure, I can do that. What language would you like to use and what should the two numbers be?",
-			"Use Python. The numbers are 5 and 6.",
-			"Working on it!\n" +
-			"<prompt>A Python program that adds numbers together.\nThe numbers to add will be 5 and 6.</prompt>",
-		],
-	},
+	/*******************************************************************************************************************
+	 * Response Coordinator
+	 * - Decides which assistant should respond to the user's message
+	 ******************************************************************************************************************/
 	coordinator: {
 		key: "coordinator",
 		name: "Coordinator",
 		icon: "question_answer",
-		promptStyle: createAssistantPrompt,
 		apiConfig: {
 			apiReqType: "createCompletion",
 			apiReqOpts: "coordinator",
 		},
+		promptStyle: createAssistantPrompt,
 		rules: {
 			always: [
 				"Only respond with the exact names of the assistant(s) that should respond to the user's message.",
@@ -145,31 +77,107 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		},
 		available: false,
 	},
+	/*******************************************************************************************************************
+	 * General AI Assistants
+	 ******************************************************************************************************************/
+	davinci: {
+		key: "davinci",
+		name: "Davinci",
+		icon: "chat",
+		apiConfig: {
+			apiReqType: "createCompletion",
+			apiReqOpts: "chatting",
+		},
+		promptStyle: createAssistantPrompt,
+		traits: {
+			personality: ["helpful"],
+			strengths: ["providing general information"],
+		},
+	},
+	// DALL-E
+	dalle: {
+		key: "dalle",
+		name: "DALL-E",
+		icon: "image",
+		apiConfig: {
+			apiReqType: "createCompletion",
+			apiReqOpts: "chatting",
+		},
+		promptStyle: createAssistantPrompt,
+		traits: {
+			personality: ["artistic", "creative", "visionary"],
+			strengths: ["making art", "coming up with creative ideas"],
+			abilities: [
+				"Generating images, drawings, and other visual art through text prompts.",
+			],
+		}, // Examples order: Human, AI, Human, AI, Human, AI
+		examples: [
+			"Hey DALL-E, I want to see a picture cat.",
+			"Sure! Here is a picture of a cat. <prompt>A picture of a cat.</prompt>",
+			"Thank you!",
+			"Do you want to see a specific color or breed? Like a black cat or a tabby?\n" +
+			"Also, should the cat be sitting, standing, or perhaps playing with a ball of yarn?",
+			"Give it white fur and blue eyes.",
+			"Sure, I can do that. <prompt>A picture of a cat with white fur and blue eyes.</prompt>\n" +
+			"Do you have any specific artistic styles in mind? Like a cartoon, oil painting, or realistic style? I can also try to imitate a specific artist.",
+			"Surprise me! Also, give it an astronaut suit and make it float in deep space.",
+			"Coming right ahead! <prompt>A picture of a cat with white fur and blue eyes, wearing an astronaut suit, floating in deep space, cyberpunk style.</prompt>",
+		],
+		followUps: true,
+	},
 	dalle_gen: {
 		key: "dalle_gen",
 		name: "DALL-E",
 		icon: "image",
-		promptStyle: createPromptDalleGen,
-		helper: true,
 		apiConfig: {
 			apiReqType: "createImage",
 			apiReqOpts: undefined,
 		},
+		promptStyle: createPromptDalleGen,
 		rules: {
 			always: ["Only responds to DALL-E's prompts."],
 		},
 		available: false,
+		helper: true,
+	},
+	// Codex
+	codex: {
+		key: "codex",
+		name: "Codex",
+		icon: "code",
+		apiConfig: {
+			apiReqType: "createCompletion",
+			apiReqOpts: "chatting",
+		},
+		promptStyle: createAssistantPrompt,
+		traits: {
+			personality: ["analytical", "logical", "rational"],
+			strengths: ["programming", "coding"],
+			abilities: ["Generating code through text prompts."],
+		},
+		rules: {
+			never: [
+				"Write the code yourself. Just generate the prompt and let Codex do the rest.",
+			],
+		},
+		examples: [
+			"Hey Codex, make a program that adds two numbers together.",
+			"Sure, I can do that. What language would you like to use and what should the two numbers be?",
+			"Use Python. The numbers are 5 and 6.",
+			"Working on it!\n" +
+			"<prompt>A Python program that adds numbers together.\nThe numbers to add will be 5 and 6.</prompt>",
+		],
+		followUps: true,
 	},
 	codex_gen: {
 		key: "codex_gen",
 		name: "Codex",
 		icon: "code",
-		promptStyle: createPromptCodexGen,
-		helper: true,
 		apiConfig: {
 			apiReqType: "createCompletion",
 			apiReqOpts: undefined,
 		},
+		promptStyle: createPromptCodexGen,
 		rules: {
 			always: [
 				"Only responds to Codex's prompts.",
@@ -182,5 +190,6 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			"```\ndef multiply(a, b):\n\treturn a * b\n\nprint(multiply(5, 6))\n```",
 		],
 		available: false,
+		helper: true,
 	},
 };

@@ -34,18 +34,21 @@ export interface AssistantConfig {
 	ignoreCache?: boolean;
 }
 
-export const getAvailable = (): AssistantConfig[] => {
+export const getAllAvailable = (): AssistantConfig[] => {
 	return Object.values(AssistantConfigs).filter((a) => {
 		if (a.available === undefined) return true;
 		return a.available;
 	});
 };
-export const getAllExcept = (actor: AssistantConfig): AssistantConfig[] => {
-	return getAvailable().filter((a) => a.key !== actor.key);
+
+export const getAllAvailableExcept = (actor: AssistantConfig): AssistantConfig[] => {
+	return getAllAvailable().filter((a) => a.key !== actor.key);
 };
+
 export const actorsToKeys = (actors: AssistantConfig[]): string[] => {
 	return actors.map((a) => a.key);
 };
+
 export const actorsToNames = (actors: AssistantConfig[]): string[] => {
 	return actors.map((a) => a.name);
 };
@@ -56,11 +59,8 @@ interface ProcessKVConfig {
 	inline?: boolean;
 }
 
-export const processKV = (
-	key: string,
-	val: string | string[],
-	config?: ProcessKVConfig
-): string => {
+// TODO: Find better name for this
+export const processKV = (key: string, val: string | string[], config?: ProcessKVConfig): string => {
 	const keyStartChar: string = config?.keyStartChar || "#";
 	let valJoinStr: string = config?.valJoinStr || ", ";
 	let inline: boolean = config?.inline || true;

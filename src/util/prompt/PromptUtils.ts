@@ -1,4 +1,4 @@
-import {AssistantConfig, getAvailable, processKV,} from "src/util/assistant/AssistantUtils";
+import {AssistantConfig, getAllAvailable, processKV,} from "src/util/assistant/AssistantUtils";
 import {ChatMessage} from "src/util/ChatUtils";
 import {humanName} from "stores/compStore";
 
@@ -27,7 +27,7 @@ export const promptMembers = (
 	useKey: boolean,
 	currentAI?: AssistantConfig
 ): string => {
-	const available = getAvailable();
+	const available = getAllAvailable();
 	if (!available || available.length === 0) return "";
 
 	const start = "### CHAT MEMBERS ###";

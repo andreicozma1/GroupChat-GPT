@@ -222,19 +222,19 @@ const getSplitText = (text: string) => {
 };
 
 const sanitizeLine = (line: string) => {
-  // remove all html tags except for allowed tags
-  const allowed = {
+  const tagsReplMap: { [key: string]: string } = {
     prompt: "b",
     image: "b",
     code: "b",
   };
-  // remove all opening and closing tags except for the keys in allowed
+  // replace special tags with valid html tags to distinguish them
   const regex = /<\/?([a-z]+)[^>]*>/gi;
-  const sanitized = line.replace(regex, (match, p1) => {
-    if (p1 in allowed) return `<${allowed[p1]}>`;
+  return line.replace(regex, (match, oldTag: string) => {
+    // replace tag with replacement if it exists
+    if (oldTag in tagsReplMap) return `<${tagsReplMap[oldTag]}>`;
+    // remove all other tags
     return "";
   });
-  return sanitized;
 };
 const copyMessage = (text: string) => {
   copyToClipboard(text).then(() => {
@@ -251,7 +251,7 @@ const editMessage = (msg: ChatMessage) => {
 const regenMessage = (msg: ChatMessage) => {
   smartNotify('Re-generating message');
   console.warn("=> regenerate:", {...msg});
-  console.warn("=> regenerate:", msg.result.messageIds);
+  console.warn("=> regenerate:", msg.result?.messageIds);
   handleAssistant(msg, comp);
 };
 
@@ -274,7 +274,7 @@ const loadThread = () => {
   } catch (err: any) {
     console.error("Error loading chat thread", err);
     const threadVer = comp.getThread.appVersion;
-    let msg = ''
+    let msg: string;
     if (threadVer) {
       msg = `Thread from ${comp.getThread.appVersion} not compatible with ${getAppVersion()}.`
     } else {
@@ -294,7 +294,7 @@ watch(
 watch(comp.getThread, () => loadThread());
 
 watch(
-    () => props.hideCoordinator,
+    () => comp.getThread.hiddenUserIds,
     () => loadThread()
 );
 

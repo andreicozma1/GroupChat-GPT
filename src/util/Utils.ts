@@ -79,7 +79,7 @@ export const getTimeAgo = (date: string | number | Date) => {
 
 export const dateToStr = (date: string | number | Date) => {
 	date = convertDate(date);
-	const options = {
+	const options: Intl.DateTimeFormatOptions = {
 		year: "numeric",
 		month: "numeric",
 		day: "numeric",

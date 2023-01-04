@@ -1,5 +1,5 @@
 <template>
-  <q-card ref="controlsCard" class="fixed-bottom">
+  <q-card class="fixed-bottom">
     <q-card-section class="q-px-sm q-pt-sm q-pb-none">
       <q-input
           ref="userMsgEl"
@@ -59,8 +59,7 @@ import {getRoboHashAvatarUrl, handleCoordinator} from "src/util/Utils";
 
 const comp = useCompStore();
 
-const controlsCard: Ref<QCard | null> = ref(null);
-const scrollAreaStyle = ref({});
+// const controlsCard: Ref<QCard | null> = ref(null);
 const hideCoordinator = ref(true);
 
 const orderedResponses = ref(true);
@@ -105,20 +104,8 @@ const sendMessage = () => {
   }, 500);
 };
 
-const updateIC = () => {
-  setTimeout(() => {
-    const ic = controlsCard.value;
-    let bottom = 0;
-    if (ic) bottom = ic.$el.clientHeight;
-    const newStyle = {bottom: bottom + "px"};
-    if (newStyle.bottom !== scrollAreaStyle.value.bottom) {
-      scrollAreaStyle.value = newStyle;
-    }
-  }, 100);
-};
 
 watch(userMsgStr, () => {
-  updateIC();
   // introduce a delay to detect if the user is typing.
   // The coordinator will not be called until the user stops typing for a while.
   isTyping.value = true;
@@ -158,7 +145,6 @@ const kbShortcuts = (e: KeyboardEvent) => {
       } else {
         userMsgEl.value.blur();
       }
-      updateIC();
       return;
     }
   }
@@ -172,7 +158,6 @@ const kbShortcuts = (e: KeyboardEvent) => {
 
 onMounted(() => {
   document.addEventListener("keydown", kbShortcuts);
-  updateIC();
 });
 
 onBeforeUnmount(() => {

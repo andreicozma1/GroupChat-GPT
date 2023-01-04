@@ -1,24 +1,8 @@
-import {AssistantConfig} from "src/util/assistant/AssistantUtils";
 import {createAssistantPrompt, createPromptCodexGen, createPromptDalleGen,} from "src/util/prompt/Prompts";
-
-export const ApiReqConfigs: { [key: string]: { [key: string]: any } } = {
-	defaults: {
-		chatting: {
-			max_tokens: 250,
-			temperature: 0.75,
-			frequency_penalty: 0.0,
-			presence_penalty: 0.6,
-		},
-		coordinator: {
-			temperature: 0.6,
-			max_tokens: 25,
-		},
-	},
-	custom: {},
-};
+import {AiAssistant} from "src/util/assistant/AiAssistantModels";
 
 // TODO: Use this generic config in the prompt creation functions
-export const AssistantConfigShared: AssistantConfig = {
+export const AiAssistantConfigBase: AiAssistant = {
 	key: "generic",
 	name: "Generic AI",
 	icon: "chat",
@@ -41,7 +25,8 @@ export const AssistantConfigShared: AssistantConfig = {
 	},
 };
 
-export const AssistantConfigs: Record<string, AssistantConfig> = {
+// TODO: Move this into a store
+export const AiAssistantConfigs: Record<string, AiAssistant> = {
 	/*******************************************************************************************************************
 	 * Response Coordinator
 	 * - Decides which assistant should respond to the user's message
@@ -75,7 +60,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			willRespond: "Will respond",
 			willIgnore: "Will ignore",
 		},
-		available: false,
+		isAvailable: false,
 	},
 	/*******************************************************************************************************************
 	 * General AI Assistants
@@ -123,7 +108,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			"Surprise me! Also, give it an astronaut suit and make it float in deep space.",
 			"Coming right ahead! <prompt>A picture of a cat with white fur and blue eyes, wearing an astronaut suit, floating in deep space, cyberpunk style.</prompt>",
 		],
-		followUps: true,
+		allowPromptFollowUps: true,
 	},
 	dalle_gen: {
 		key: "dalle_gen",
@@ -137,8 +122,8 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 		rules: {
 			always: ["Only responds to DALL-E's prompts."],
 		},
-		available: false,
-		helper: true,
+		isAvailable: false,
+		isHelper: true,
 	},
 	// Codex
 	codex: {
@@ -167,7 +152,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			"Working on it!\n" +
 			"<prompt>A Python program that adds numbers together.\nThe numbers to add will be 5 and 6.</prompt>",
 		],
-		followUps: true,
+		allowPromptFollowUps: true,
 	},
 	codex_gen: {
 		key: "codex_gen",
@@ -189,7 +174,7 @@ export const AssistantConfigs: Record<string, AssistantConfig> = {
 			"<prompt>A Python program that multiplies two numbers together.\nThe numbers to multiply will be 5 and 6.</prompt>",
 			"```\ndef multiply(a, b):\n\treturn a * b\n\nprint(multiply(5, 6))\n```",
 		],
-		available: false,
-		helper: true,
+		isAvailable: false,
+		isHelper: true,
 	},
 };

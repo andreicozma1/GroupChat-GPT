@@ -1,12 +1,12 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
-import {AssistantConfigs} from "src/util/assistant/Assistants";
-import {AssistantConfig} from "src/util/assistant/AssistantUtils";
+import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
 import {ChatMessage, ChatThread, getMessageHistory} from "src/util/ChatUtils";
 import {makeApiRequest} from "src/util/OpenAi";
 import {getAppVersion} from "src/util/Utils";
 import {v4 as uuidv4} from "uuid";
 import {Ref, ref} from "vue";
+import {AiAssistant} from "src/util/assistant/AiAssistantModels";
 
 export const humanName = "Human";
 
@@ -111,19 +111,19 @@ export const useCompStore = defineStore("counter", {
 			};
 		},
 		async generate(
-			actor: AssistantConfig,
+			actor: AiAssistant,
 			updateFromMsgIds?: string[]
 		): Promise<GenerationResult> {
 			console.warn("=======================================");
 			console.warn("=> generate:", actor);
-			let ignoreCache = actor.ignoreCache;
+			let ignoreCache = actor.shouldIgnoreCache;
 			let messageHist;
 			if (!updateFromMsgIds) {
 				messageHist = getMessageHistory({
 					thread: this.getThread,
 					includeSelf: true,
 					includeActors: undefined,
-					excludeActors: [AssistantConfigs.coordinator],
+					excludeActors: [AiAssistantConfigs.coordinator],
 					maxLength: 10,
 				});
 			} else {

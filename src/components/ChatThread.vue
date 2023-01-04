@@ -81,7 +81,7 @@ import {getSeededQColor} from "src/util/Colors";
 import {getAppVersion, handleAssistant} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import {AssistantConfigs} from "src/util/assistant/Assistants";
+import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
 import {ChatMessage, ChatThread, getThreadMessages} from "src/util/ChatUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo, parseDate} from "src/util/DateUtils";
@@ -104,9 +104,9 @@ const threadElem: any = ref(null);
 const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 const getAssistantIcon = (assistantKey: string) => {
-  if (!AssistantConfigs[assistantKey]) return "send";
-  if (!AssistantConfigs[assistantKey].icon) return "help";
-  return AssistantConfigs[assistantKey].icon;
+  if (!AiAssistantConfigs[assistantKey]) return "send";
+  if (!AiAssistantConfigs[assistantKey].icon) return "help";
+  return AiAssistantConfigs[assistantKey].icon;
 };
 
 const parseThreadMessages = (): ChatMessage[] => {

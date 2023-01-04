@@ -1,7 +1,8 @@
-import {AssistantConfigs} from "src/util/assistant/Assistants";
-import {AssistantConfig} from "src/util/assistant/AssistantUtils";
+import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
 import {getRoboHashAvatarUrl} from "src/util/ImageUtils";
 import {GenerationResult, humanName} from "stores/compStore";
+import {AiAssistant} from "src/util/assistant/AiAssistantModels";
+import {smartNotify} from "src/util/SmartNotify";
 
 export interface ChatThread {
 	messageMap: { [key: string]: ChatMessage };
@@ -25,8 +26,8 @@ export interface ChatMessage extends GenerationResult {
 export interface ChatMessageHistConfig {
 	thread: ChatThread;
 	includeSelf?: boolean;
-	includeActors?: AssistantConfig[];
-	excludeActors?: AssistantConfig[];
+	includeActors?: AiAssistant[];
+	excludeActors?: AiAssistant[];
 	maxLength?: number;
 }
 
@@ -37,8 +38,6 @@ export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
 export const getMessageHistory = (
 	config: ChatMessageHistConfig
 ): ChatMessage[] => {
-	// const thread = config.thread;
-	// let hist = thread.messages.map((id) => thread.messageMap[id]);
 	let hist = getThreadMessages(config.thread);
 	hist = hist.filter((m) => {
 		if (m.name === humanName) {
@@ -47,8 +46,8 @@ export const getMessageHistory = (
 		}
 		const actor_key = m.userId;
 		if (actor_key !== undefined) {
-			const actor = AssistantConfigs[actor_key];
-			if (actor && actor.helper === true) return false;
+			const actor = AiAssistantConfigs[actor_key];
+			if (actor && actor.isHelper === true) return false;
 		}
 		// handle actors to include and exclude
 		if (config.includeActors) {
@@ -59,12 +58,17 @@ export const getMessageHistory = (
 		}
 		return true;
 	});
-	hist = hist.filter((m) => m.text.length > 0);
+	const hist_zero_len = hist.filter((m) => m.text.length === 0);
+	if (hist_zero_len.length > 0) {
+		smartNotify(`Warning: ${hist_zero_len.length} messages have 0 text snippets`);
+		hist = hist.filter((m) => m.text.length > 0);
+		// TODO: Also remove and warn about messages that have any snippet with 0 length
+	}
 	if (config.maxLength !== undefined) hist = hist.slice(-config.maxLength);
 	return hist;
 };
 export const createMessageFromConfig = (
-	cfg: AssistantConfig,
+	cfg: AiAssistant,
 	comp: any
 ): ChatMessage => {
 	const assistantName: string = cfg?.name || "Unknown AI";
@@ -89,7 +93,7 @@ export const createMessageFromAiKey = (
 	comp: any
 ): ChatMessage | undefined => {
 	key = key.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
-	const cfg: AssistantConfig = AssistantConfigs[key];
+	const cfg: AiAssistant = AiAssistantConfigs[key];
 	const msg = createMessageFromConfig(cfg, comp);
 	if (!cfg) {
 		msg.text.push(`[Error: Unknown assistant key: ${key}]`);

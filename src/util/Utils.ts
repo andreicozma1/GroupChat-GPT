@@ -1,9 +1,9 @@
-import {AssistantConfigs} from "src/util/assistant/Assistants";
-import {AssistantConfig} from "src/util/assistant/AssistantUtils";
+import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
 import {ChatMessage, createMessageFromAiKey, createMessageFromConfig,} from "src/util/ChatUtils";
 
 // return process.env.npm_package_version || "unknown";
 import {version} from "./../../package.json";
+import {AiAssistant} from "src/util/assistant/AiAssistantModels";
 
 export const getAppVersion = () => {
 	return version;
@@ -18,7 +18,7 @@ export const parseNounCount = (singularStr: string, count: number) => {
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const handleAssistant = async (msg: ChatMessage, comp: any) => {
-	const cfg = AssistantConfigs[msg.userId];
+	const cfg = AiAssistantConfigs[msg.userId];
 	msg.isRegen = msg.result?.messageIds
 		? msg.result.messageIds.length > 0
 		: false;
@@ -50,7 +50,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 
 	comp.pushMessage(msg);
 
-	const requiredFollowUps = cfg?.followUps ? cfg.followUps : false;
+	const requiredFollowUps = cfg?.allowPromptFollowUps ? cfg.allowPromptFollowUps : false;
 	// if null or undefined, exit
 	if (!requiredFollowUps) {
 		console.warn("=> No follow-ups");
@@ -100,7 +100,7 @@ export const handleCoordinator = async (
 	orderedResponses?: boolean
 ) => {
 	orderedResponses = orderedResponses === undefined ? true : orderedResponses;
-	const coordConf: AssistantConfig = AssistantConfigs.coordinator;
+	const coordConf: AiAssistant = AiAssistantConfigs.coordinator;
 	const coordMsg: ChatMessage = createMessageFromConfig(coordConf, comp);
 
 	const res = await comp.generate(coordConf);

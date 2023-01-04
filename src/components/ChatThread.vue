@@ -262,17 +262,14 @@ const loadThread = () => {
     scrollToBottom(1000);
   } catch (err: any) {
     console.error("Error loading chat thread", err);
-    smartNotify(`Error loading chat thread.`);
     const threadVer = comp.getThread.appVersion;
     let msg = ''
     if (threadVer) {
       msg = `Thread from ${comp.getThread.appVersion} not compatible with ${getAppVersion()}.`
     } else {
-      msg = `Thread is not compatible with ${getAppVersion()}.`
+      msg = `Thread is not compatible with app version ${getAppVersion()}.`
     }
-    msg += ' '
-    msg += 'Please try again with a new thread or clear cache.'
-    smartNotify(msg);
+    smartNotify(msg, 'Please try again with a new thread or clear cache.');
   }
 }
 

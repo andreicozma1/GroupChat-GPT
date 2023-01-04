@@ -23,6 +23,7 @@ export interface ChatMessage extends GenerationResult {
 	isRegen?: boolean;
 }
 
+// TODO: Make these configurable in UI in the future
 export interface ChatMessageHistConfig {
 	thread: ChatThread;
 	includeSelf?: boolean;

@@ -35,22 +35,22 @@ export const getTimeAgo = (date: string | number | Date) => {
 	date = convertDate(date);
 	const now = new Date();
 	const diff = now.getTime() - date.getTime();
-	const diffSeconds = Math.floor(diff / 1000);
-	const diffMinutes = Math.floor(diffSeconds / 60);
-	const diffHours = Math.floor(diffMinutes / 60);
-	const diffDays = Math.floor(diffHours / 24);
-	const diffWeeks = Math.floor(diffDays / 7);
-	const diffMonths = Math.floor(diffDays / 30);
-	const diffYears = Math.floor(diffDays / 365);
+	const dSec = Math.floor(diff / 1000);
+	const dMin = Math.floor(dSec / 60);
+	const dHour = Math.floor(dMin / 60);
+	const dDay = Math.floor(dHour / 24);
+	const dWeek = Math.floor(dDay / 7);
+	const dMonth = Math.floor(dDay / 30);
+	const dYear = Math.floor(dDay / 365);
 
 	const timeAgo = {
-		seconds: diffSeconds,
-		minutes: diffMinutes,
-		hours: diffHours,
-		days: diffDays,
-		weeks: diffWeeks,
-		months: diffMonths,
-		years: diffYears,
+		seconds: dSec,
+		minutes: dMin,
+		hours: dHour,
+		days: dDay,
+		weeks: dWeek,
+		months: dMonth,
+		years: dYear,
 	};
 
 	// get time ago

@@ -109,6 +109,20 @@ const getAssistantIcon = (assistantKey: string) => {
   return AiAssistantConfigs[assistantKey].icon;
 };
 
+function hasKeepKeywords(msg: ChatMessage) {
+  const keywords = ["[ERROR]", "[WARNING]", "[INFO]"];
+  return msg.textSnippets.some((line: string) => {
+    return keywords.some((keyword: string) => line.includes(keyword))
+  });
+}
+
+function hasRemoveKeywords(msg: ChatMessage) {
+  const keywords = ["[DEBUG]"];
+  return msg.textSnippets.some((line: string) => {
+    return keywords.some((keyword: string) => line.includes(keyword))
+  });
+}
+
 const parseThreadMessages = (): ChatMessage[] => {
   const thread: ChatThread = comp.getThread
   let messages: ChatMessage[] = getThreadMessages(thread)
@@ -117,11 +131,9 @@ const parseThreadMessages = (): ChatMessage[] => {
    ************************************************************************/
   messages = messages.filter((msg: ChatMessage) => {
     // always keep messages with certain keywords
-    const keepKeywords = ["[ERROR]", "[WARNING]", "[INFO]"];
-    if (msg.textSnippets.some((line: string) => keepKeywords.some((keyword: string) => line.includes(keyword)))) return true;
+    if (hasKeepKeywords(msg)) return true;
     // always remove messages with certain keywords
-    const removeKeywords = ["[DEBUG]"];
-    if (msg.textSnippets.some((line: string) => removeKeywords.some((keyword: string) => line.includes(keyword)))) return false;
+    if (hasRemoveKeywords(msg)) return false;
     // remove messages from users that are hidden in thread settings
     if (thread.hiddenUserIds?.includes(msg.userId)) return false;
     return true;

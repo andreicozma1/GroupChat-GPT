@@ -1,9 +1,7 @@
 import {PromptRules, PromptTraits} from "src/util/prompt/PromptModels";
+import {ChatUser} from "src/util/chat/ChatModels";
 
-export interface Assistant {
-	key: string;
-	name: string;
-	icon: string;
+export interface Assistant extends ChatUser {
 	apiConfig: {
 		apiReqType: string;
 		apiReqOpts?: string;

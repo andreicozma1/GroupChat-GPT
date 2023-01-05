@@ -1,12 +1,12 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
-import {ChatMessage, ChatThread, getMessageHistory} from "src/util/chat/ChatUtils";
+import {getMessageHistory} from "src/util/chat/ChatUtils";
 import {makeApiRequest} from "src/util/OpenAi";
 import {getAppVersion} from "src/util/Utils";
-import {v4 as uuidv4} from "uuid";
 import {Ref, ref} from "vue";
 import {Assistant} from "src/util/assistant/AssistantModels";
+import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
 
 export const humanName = "Human";
 
@@ -120,9 +120,9 @@ export const useCompStore = defineStore("counter", {
 			console.warn("=======================================");
 			console.warn("=> generate:", actor);
 			let ignoreCache = actor.shouldIgnoreCache;
-			let messageHist;
+			let msgHist;
 			if (!updateFromMsgIds) {
-				messageHist = getMessageHistory({
+				msgHist = getMessageHistory({
 					thread: this.getThread,
 					includeSelf: true,
 					includeActors: undefined,
@@ -130,12 +130,13 @@ export const useCompStore = defineStore("counter", {
 					maxLength: 10,
 				});
 			} else {
-				messageHist = updateFromMsgIds.map(
+				msgHist = updateFromMsgIds.map(
 					(id) => this.getThread.messageMap[id]
 				);
 				ignoreCache = true;
 			}
-			const {prompt, relevantMsgIds} = actor.promptStyle(actor, messageHist);
+			const prompt = actor.promptStyle(actor, msgHist);
+			const msgIdsRelevant: string[] = msgHist.map((m: ChatMessage) => m.id)
 			// TODO: Change hash prompt to be based on msgIds?
 			const hash = hashPrompt(prompt);
 			console.warn("=> prompt:");
@@ -165,7 +166,7 @@ export const useCompStore = defineStore("counter", {
 				return {
 					errorMsg: errorMsg,
 					result: {
-						messageIds: relevantMsgIds,
+						messageIds: msgIdsRelevant,
 						responseData: undefined,
 					},
 					textSnippets: [],
@@ -175,7 +176,7 @@ export const useCompStore = defineStore("counter", {
 				};
 			}
 			this.completions[hash] = {
-				messageIds: relevantMsgIds,
+				messageIds: msgIdsRelevant,
 				responseData: completion.data,
 			};
 			this.updateCache();
@@ -187,7 +188,7 @@ export const useCompStore = defineStore("counter", {
 		},
 		pushMessage(message: ChatMessage): ChatMessage {
 			// console.log("-------------------------------");
-			if (message.id) {
+			if (this.getThread.messageMap[message.id]) {
 				const existingMsg = this.getThread.messageMap[message.id];
 				if (existingMsg) {
 					this.threads[this.currentThread].messageMap[message.id] = {
@@ -199,7 +200,6 @@ export const useCompStore = defineStore("counter", {
 					return this.threads[this.currentThread].messageMap[message.id];
 				}
 			}
-			message.id = uuidv4();
 			// message.dateCreated = new Date();
 			this.getThread.messageMap[message.id] = message;
 			this.getThread.orderedKeysList.push(message.id);

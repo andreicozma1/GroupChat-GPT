@@ -1,10 +1,11 @@
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
-import {ChatMessage, createMessageFromAiKey, createMessageFromConfig,} from "src/util/chat/ChatUtils";
+import {buildMessage, createMessageFromAiKey,} from "src/util/chat/ChatUtils";
 
 // return process.env.npm_package_version || "unknown";
 import {version} from "./../../package.json";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {GenerationResult} from "stores/compStore";
+import {ChatMessage} from "src/util/chat/ChatModels";
 
 export const getAppVersion = () => {
 	return version.trim();
@@ -104,7 +105,7 @@ export const handleCoordinator = async (
 ) => {
 	orderedResponses = orderedResponses === undefined ? true : orderedResponses;
 	const coordConf: Assistant = AssistantConfigs.coordinator;
-	const coordMsg: ChatMessage = createMessageFromConfig(coordConf, comp);
+	const coordMsg: ChatMessage = buildMessage(coordConf, comp);
 
 	const response: GenerationResult = await comp.generate(coordConf);
 	console.log(response);

@@ -1,40 +1,10 @@
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
 import {getRobohashUrl} from "src/util/ImageUtils";
-import {GenerationResult, humanName} from "stores/compStore";
+import {humanName} from "stores/compStore";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {smartNotify} from "src/util/SmartNotify";
-
-export interface ChatThread {
-	messageMap: { [key: string]: ChatMessage };
-	orderedKeysList: string[];
-	hiddenUserIds?: string[];
-	appVersion?: string;
-}
-
-export interface ChatMessage extends GenerationResult {
-	id: string | undefined;
-	// TODO: Put these in a separate User interface
-	userId: string;
-	userName: string;
-	userAvatarUrl: string;
-
-	// TODO: Put dates in ChatMessageDates interface and keep track of edits
-	dateCreated: string | number | Date;
-	// TODO: Put this in ChatMessageFlags interface
-	loading?: boolean;
-	// TODO: There's probably a better way to do keep track of whether a message is a re-generation
-	// TODO: Alternatively, could also keep history of edits (editMessage function)
-	isCompRegen?: boolean;
-}
-
-// TODO: Make these configurable in UI in the future
-export interface ChatMessageHistConfig {
-	thread: ChatThread;
-	includeSelf?: boolean;
-	includeActors?: Assistant[];
-	excludeActors?: Assistant[];
-	maxLength?: number;
-}
+import {v4 as uuidv4} from "uuid";
+import {ChatMessage, ChatMessageHistConfig, ChatThread, ChatUser} from "src/util/chat/ChatModels";
 
 export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
 	return thread.orderedKeysList.map((key) => thread.messageMap[key]);
@@ -72,22 +42,24 @@ export const getMessageHistory = (
 	if (config.maxLength !== undefined) hist = hist.slice(-config.maxLength);
 	return hist;
 };
-export const createMessageFromConfig = (
-	cfg: Assistant,
+
+
+export const buildMessage = (
+	userCfg: ChatUser,
 	comp: any
 ): ChatMessage => {
-	const assistantName: string = cfg?.name || "Unknown AI";
-	const assistantKey: string = cfg?.key || "unknown";
+	const assistantName: string = userCfg?.name || "Unknown User";
+	const assistantKey: string = userCfg?.key || "unknown";
 	let msg: ChatMessage = {
-		id: undefined,
+		id: uuidv4(),
+		userId: assistantKey,
+		userName: assistantName,
+		userAvatarUrl: getRobohashUrl(assistantName),
 		textSnippets: [],
 		imageUrls: [],
-		userAvatarUrl: getRobohashUrl(assistantName),
-		userName: assistantName,
 		dateCreated: new Date(),
-		userId: assistantKey,
-		loading: true,
-	};
+		loading: true
+	}
 	msg = comp.pushMessage(msg);
 	return msg;
 };
@@ -99,7 +71,7 @@ export const createMessageFromAiKey = (
 ): ChatMessage | undefined => {
 	key = key.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
 	const cfg: Assistant = AssistantConfigs[key];
-	const msg = createMessageFromConfig(cfg, comp);
+	const msg = buildMessage(cfg, comp);
 	if (!cfg) {
 		msg.textSnippets.push(`[Error: Unknown assistant key: ${key}]`);
 		msg.loading = false;

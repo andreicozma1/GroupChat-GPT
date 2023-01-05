@@ -1,8 +1,8 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {CoordinatorConfig} from "src/util/assistant/configs/Coordinator";
-import {DavinciConfig} from "src/util/assistant/configs/Davinci";
-import {DalleConfig, DalleGenConfig} from "src/util/assistant/configs/Dalle";
-import {CodexConfig, CodexGenConfig} from "src/util/assistant/configs/Codex";
+import {CoordinatorConfig} from "src/util/assistant/configs/ConfigCoordinator";
+import {DavinciConfig} from "src/util/assistant/configs/ConfigDavinci";
+import {DalleConfig, DalleGenConfig} from "src/util/assistant/configs/ConfigDalle";
+import {CodexConfig, CodexGenConfig} from "src/util/assistant/configs/ConfigCodex";
 
 // TODO: Move this into a store
 export const AssistantConfigs: Record<string, Assistant> = {

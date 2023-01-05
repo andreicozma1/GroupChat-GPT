@@ -56,9 +56,9 @@ import {useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
 import {handleCoordinator} from "src/util/Utils";
-import {getRobohashUrl} from "src/util/ImageUtils";
-import {ChatMessage} from "src/util/chat/ChatUtils";
-import {v4 as uuidv4} from "uuid";
+import {buildMessage} from "src/util/chat/ChatUtils";
+import {ChatMessage} from "src/util/chat/ChatModels";
+import {UserConfigBase} from "src/util/chat/ConfigUser";
 
 const comp = useCompStore();
 
@@ -86,15 +86,7 @@ const sendMessage = () => {
   console.warn("=======================================");
   console.log("Sending message");
   if (userMsgObj.value === null) {
-    userMsgObj.value = {
-      id: uuidv4(),
-      userName: myName.value,
-      userId: myName.value,
-      userAvatarUrl: getRobohashUrl(myName.value),
-      textSnippets: [],
-      imageUrls: [],
-      dateCreated: new Date(),
-    } as ChatMessage;
+    userMsgObj.value = buildMessage(UserConfigBase, comp)
     comp.pushMessage(userMsgObj.value);
   }
   userMsgObj.value.textSnippets.push(userMsgStr.value);

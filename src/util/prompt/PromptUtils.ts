@@ -1,7 +1,7 @@
 import {getAisAvailable, processKV,} from "src/util/assistant/AssistantUtils";
-import {ChatMessage} from "src/util/chat/ChatUtils";
 import {humanName} from "stores/compStore";
 import {Assistant} from "src/util/assistant/AssistantModels";
+import {ChatMessage} from "src/util/chat/ChatModels";
 
 const getAssistantTraits = (
 	ai: Assistant,

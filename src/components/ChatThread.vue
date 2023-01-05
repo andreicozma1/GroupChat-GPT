@@ -84,9 +84,10 @@ import {getAppVersion, handleAssistant} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
-import {ChatMessage, ChatThread, getThreadMessages} from "src/util/chat/ChatUtils";
+import {getThreadMessages} from "src/util/chat/ChatUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo, parseDate} from "src/util/DateUtils";
+import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
 
 const props = defineProps({
   myName: {

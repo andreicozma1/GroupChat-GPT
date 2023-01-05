@@ -31,4 +31,5 @@ export const ConfigCoordinator: Assistant = {
 		willIgnore: "Will ignore",
 	},
 	isAvailable: false,
+	defaultHidden: true,
 }

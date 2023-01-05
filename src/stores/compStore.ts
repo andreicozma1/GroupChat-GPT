@@ -21,22 +21,26 @@ export interface GenerationResult {
 	errorMsg?: string;
 }
 
+export const createThread = (): ChatThread => {
+	const res: ChatThread = {
+		orderedKeysList: [],
+		messageMap: {},
+		appVersion: getAppVersion(),
+		joinedUserIds: ["coordinator", "davinci", "dalle", "codex"],
+		prefs: {
+			hiddenUsers: [],
+			showDeletedMessages: false,
+			orderedResponses: true,
+		}
+	}
+	return res
+}
+
 export const useCompStore = defineStore("counter", {
 	state: () => ({
 		completions: LocalStorage.getItem("completions") || {},
 		threads: ref({
-			main: {
-				orderedKeysList: [],
-				messageMap: {},
-				appVersion: getAppVersion(),
-				joinedUserIds: ["davinci", "dalle", "codex"],
-				prefs: {
-					hiddenUserIds: [],
-					hideCoordinator: false,
-					showDeletedMessages: false,
-					orderedResponses: true,
-				}
-			} as ChatThread,
+			main: createThread(),
 			...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,
 		currentThread: "main",

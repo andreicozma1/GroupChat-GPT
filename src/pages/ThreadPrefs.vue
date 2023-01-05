@@ -15,18 +15,18 @@
               <q-tooltip>Could not load thread preferences</q-tooltip>
             </q-checkbox>
           </q-item>
-          <q-item dense>
-            <q-checkbox v-model="comp.getThread.prefs.hideCoordinator"
-                        v-if="comp.getThread.prefs"
-                        label="Hide Coordinator"
-                        left-label/>
-            <q-checkbox v-else
-                        :model-value="undefined"
-                        label="Hide Coordinator"
-                        left-label>
-              <q-tooltip>Could not load thread preferences</q-tooltip>
-            </q-checkbox>
-          </q-item>
+          <!--          <q-item dense>-->
+          <!--            <q-checkbox v-model="comp.getThread.prefs.hideCoordinator"-->
+          <!--                        v-if="comp.getThread.prefs"-->
+          <!--                        label="Hide Coordinator"-->
+          <!--                        left-label/>-->
+          <!--            <q-checkbox v-else-->
+          <!--                        :model-value="undefined"-->
+          <!--                        label="Hide Coordinator"-->
+          <!--                        left-label>-->
+          <!--              <q-tooltip>Could not load thread preferences</q-tooltip>-->
+          <!--            </q-checkbox>-->
+          <!--          </q-item>-->
           <q-item dense>
             <q-checkbox v-model="comp.getThread.prefs.showDeletedMessages"
                         v-if="comp.getThread.prefs"

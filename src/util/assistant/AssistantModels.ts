@@ -21,6 +21,7 @@ export interface Assistant extends ChatUser {
 	allowPromptFollowUps?: boolean;
 	isAvailable?: boolean; 			// Whether to show this AI in the list of available AIs
 	isHelper?: boolean;
+	defaultHidden?: boolean;
 	shouldIgnoreCache?: boolean;
 	/*******************************************************************************************************************
 	 ### Other Props

@@ -24,28 +24,7 @@
           @click="sendMessage"
       />
       <q-space/>
-      <q-checkbox v-model="orderedResponses" label="Ordered Responses" left-label/>
-      <q-checkbox v-model="hideCoordinator" label="Hide Coordinator" left-label/>
-      <q-btn
-          color="orange"
-          dense
-          icon-right="clear"
-          label="Clear Thread"
-          no-caps
-          outline
-          rounded
-          @click="comp.clearThread"
-      />
-      <q-btn
-          color="red"
-          dense
-          icon-right="delete_forever"
-          label="Clear Cache"
-          no-caps
-          outline
-          rounded
-          @click="comp.clearCache"
-      />
+      <ThreadPrefs/>
     </q-card-actions>
   </q-card>
 </template>
@@ -59,14 +38,9 @@ import {buildMessage} from "src/util/chat/ChatUtils";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 import {handleCoordinator} from "src/util/assistant/AssistantHandlers";
+import ThreadPrefs from "pages/ThreadPrefs.vue";
 
 const comp = useCompStore();
-
-// const controlsCard: Ref<QCard | null> = ref(null);
-const hideCoordinator = ref(true);
-
-const orderedResponses = ref(true);
-
 
 const userMsgEl: Ref<QInput | null> = ref(null);
 const userMsgStr = ref("");
@@ -95,7 +69,7 @@ const sendMessage = () => {
   responseTimeout.value = setInterval(() => {
     if (!isTyping.value) {
       userMsgObj.value = null;
-      handleCoordinator(comp, orderedResponses.value);
+      handleCoordinator(comp, comp.getThread.orderedResponses);
       clearInterval(responseTimeout.value);
     }
   }, 500);
@@ -116,14 +90,15 @@ watch(userMsgStr, () => {
 });
 
 const kbShortcuts = (e: KeyboardEvent) => {
-  // ctrl+shift+x clears thread
-  if (e.key === "X" && e.ctrlKey && e.shiftKey) {
+  console.log(e)
+  // ctrl/cmd+shift+x clears thread
+  if (e.key.toLowerCase() === "x" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
     e.preventDefault();
     comp.clearThread();
     return;
   }
-  // ctrl+shift+r clears cache
-  if (e.key === "R" && e.ctrlKey && e.shiftKey) {
+  // ctrl/cmd+shift+r clears cache
+  if (e.key.toLowerCase() === "r" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
     e.preventDefault();
     comp.clearCache();
     return;

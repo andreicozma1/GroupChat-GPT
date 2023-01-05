@@ -7,7 +7,8 @@ export const createAssistantPrompt = (
 	msgHist: ChatMessage[]
 ): any => {
 	let start = "### AI GROUP CHAT ###\n";
-	start += "The following is a group-chat conversation between a human and several AI assistants.\n";
+	start +=
+		"The following is a group-chat conversation between a human and several AI assistants.\n";
 
 	const members = promptMembers(false, ai);
 	const rules = promptRules(ai);
@@ -15,24 +16,19 @@ export const createAssistantPrompt = (
 	const conv = promptConversation(msgHist);
 	const end = `### ${ai.name}:\n`;
 
-	return finalizePrompt([start, members, rules, examples, conv, end])
+	return finalizePrompt([start, members, rules, examples, conv, end]);
 };
 
-export const createPromptDalleGen = (
-	ai: Assistant,
-	msgHist: ChatMessage[]
-) => {
+export const createPromptDalleGen = (ai: Assistant, msgHist: ChatMessage[]) => {
 	const usedMessage: ChatMessage = msgHist[msgHist.length - 1];
 	// last text
-	let prompt: string = usedMessage.textSnippets[usedMessage.textSnippets.length - 1];
+	let prompt: string =
+		usedMessage.textSnippets[usedMessage.textSnippets.length - 1];
 	prompt = prompt.replace(/(<([^>]+)>)/gi, "");
-	return prompt
+	return prompt;
 };
 
-export const createPromptCodexGen = (
-	ai: Assistant,
-	msgHist: ChatMessage[]
-) => {
+export const createPromptCodexGen = (ai: Assistant, msgHist: ChatMessage[]) => {
 	const start = "### CODE GENERATION ###\n";
 
 	const rules = promptRules(ai);
@@ -41,14 +37,13 @@ export const createPromptCodexGen = (
 	const usedMessage: ChatMessage = msgHist[msgHist.length - 1];
 	// last text
 	let prompt = "### PROMPT:\n";
-	prompt += usedMessage.textSnippets[usedMessage.textSnippets.length - 1].replace(
-		/(<([^>]+)>)/gi,
-		""
-	);
+	prompt += usedMessage.textSnippets[
+	usedMessage.textSnippets.length - 1
+		].replace(/(<([^>]+)>)/gi, "");
 
 	const end = `### CODE:\n`;
 
-	return finalizePrompt([start, rules, examples, prompt, end])
+	return finalizePrompt([start, rules, examples, prompt, end]);
 };
 
 const finalizePrompt = (all: string[]): string => {

@@ -3,7 +3,7 @@ import {getRobohashUrl} from "src/util/ImageUtils";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {v4 as uuidv4} from "uuid";
-import {ChatMessage, ChatMessageHistConfig, ChatThread, ChatUser} from "src/util/chat/ChatModels";
+import {ChatMessage, ChatMessageHistConfig, ChatThread, ChatUser,} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 
 export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
@@ -35,7 +35,9 @@ export const getMessageHistory = (
 	});
 	const hist_zero_len = hist.filter((m) => m.textSnippets.length === 0);
 	if (hist_zero_len.length > 0) {
-		smartNotify(`Warning: ${hist_zero_len.length} messages have 0 text snippets`);
+		smartNotify(
+			`Warning: ${hist_zero_len.length} messages have 0 text snippets`
+		);
 		hist = hist.filter((m) => m.textSnippets.length > 0);
 		// TODO: Also remove and warn about messages that have any snippet with 0 length
 	}
@@ -43,11 +45,7 @@ export const getMessageHistory = (
 	return hist;
 };
 
-
-export const buildMessage = (
-	userCfg: ChatUser,
-	comp: any
-): ChatMessage => {
+export const buildMessage = (userCfg: ChatUser, comp: any): ChatMessage => {
 	const assistantName: string = userCfg?.name || "Unknown User";
 	const assistantKey: string = userCfg?.id || "unknown";
 	let msg: ChatMessage = {
@@ -58,8 +56,8 @@ export const buildMessage = (
 		textSnippets: [],
 		imageUrls: [],
 		dateCreated: new Date(),
-		loading: true
-	}
+		loading: true,
+	};
 	msg = comp.pushMessage(msg);
 	return msg;
 };

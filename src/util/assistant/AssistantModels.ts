@@ -13,13 +13,13 @@ export interface Assistant extends ChatUser {
 	promptStyle: any;
 	traits?: PromptTraits;
 	rules?: PromptRules;
-	examples?: string[]; 			// Order: Human, AI, Human, AI, etc.
+	examples?: string[]; // Order: Human, AI, Human, AI, etc.
 	/*******************************************************************************************************************
 	 ### Flags
 	 - TODO: Move these into a separate interface (flags)
 	 ******************************************************************************************************************/
 	allowPromptFollowUps?: boolean;
-	isAvailable?: boolean; 			// Whether to show this AI in the list of available AIs
+	isAvailable?: boolean; // Whether to show this AI in the list of available AIs
 	isHelper?: boolean;
 	defaultHidden?: boolean;
 	shouldIgnoreCache?: boolean;

@@ -1,10 +1,10 @@
 import {parseNounCount} from "src/util/Utils";
 
 export const parseDate = (dateRepr: string | number | Date): Date => {
-	if (typeof dateRepr === "string" || typeof dateRepr === "number") dateRepr = new Date(dateRepr);
+	if (typeof dateRepr === "string" || typeof dateRepr === "number")
+		dateRepr = new Date(dateRepr);
 	return dateRepr;
 };
-
 
 export const dateToLocaleStr = (date: string | number | Date) => {
 	date = parseDate(date);

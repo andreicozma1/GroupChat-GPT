@@ -1,4 +1,4 @@
-import {getAisAvailable, processKV,} from "src/util/assistant/AssistantUtils";
+import {getAisAvailable, processKV} from "src/util/assistant/AssistantUtils";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";

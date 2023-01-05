@@ -1,5 +1,5 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {createAssistantPrompt, createPromptDalleGen} from "src/util/prompt/Prompts";
+import {createAssistantPrompt, createPromptDalleGen,} from "src/util/prompt/Prompts";
 
 export const ConfigDalle: Assistant = {
 	id: "dalle",
@@ -30,7 +30,7 @@ export const ConfigDalle: Assistant = {
 		"Coming right ahead! <prompt>A picture of a cat with white fur and blue eyes, wearing an astronaut suit, floating in deep space, cyberpunk style.</prompt>",
 	],
 	allowPromptFollowUps: true,
-}
+};
 
 export const ConfigDalleGen: Assistant = {
 	id: "dalle_gen",
@@ -46,4 +46,4 @@ export const ConfigDalleGen: Assistant = {
 	},
 	isAvailable: false,
 	isHelper: true,
-}
+};

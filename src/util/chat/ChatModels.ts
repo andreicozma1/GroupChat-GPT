@@ -17,7 +17,7 @@ export interface ChatThread {
 		showIgnoredMessages: boolean;
 		showDeletedMessages: boolean;
 		orderedResponses: boolean;
-	}
+	};
 }
 
 export interface ChatMessage extends GenerationResult {

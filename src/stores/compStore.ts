@@ -34,15 +34,16 @@ export const createThread = (): ChatThread => {
 			showIgnoredMessages: true,
 			showDeletedMessages: false,
 			orderedResponses: true,
-		}
-	}
+		},
+	};
 	// for each assistant, check defaultHidden
 	// and add to hiddenUsers if true
 	for (const assistant of res.joinedUserIds) {
-		res.prefs.shownUsers[assistant] = !AssistantConfigs[assistant].defaultHidden ?? true;
+		res.prefs.shownUsers[assistant] =
+			!AssistantConfigs[assistant].defaultHidden ?? true;
 	}
-	return res
-}
+	return res;
+};
 
 export const useCompStore = defineStore("counter", {
 	state: () => ({
@@ -70,7 +71,7 @@ export const useCompStore = defineStore("counter", {
 		},
 		getUser(state): (key: string) => ChatUser {
 			return (key: string) => state.users[key];
-		}
+		},
 	},
 	actions: {
 		updateCache() {
@@ -157,13 +158,11 @@ export const useCompStore = defineStore("counter", {
 					maxLength: 10,
 				});
 			} else {
-				msgHist = updateFromMsgIds.map(
-					(id) => this.getThread.messageMap[id]
-				);
+				msgHist = updateFromMsgIds.map((id) => this.getThread.messageMap[id]);
 				ignoreCache = true;
 			}
 			const prompt = actor.promptStyle(actor, msgHist);
-			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id)
+			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
 			// TODO: Change hash prompt to be based on msgIds?
 			const hash = hashPrompt(prompt);
 			console.warn("=> prompt:");
@@ -235,7 +234,7 @@ export const useCompStore = defineStore("counter", {
 		},
 		deleteMessage(messageId: string): void {
 			if (!this.getThread.messageMap[messageId]) {
-				smartNotify('An error occurred while deleting the message.');
+				smartNotify("An error occurred while deleting the message.");
 				return;
 			}
 			delete this.getThread.messageMap[messageId];
@@ -243,8 +242,8 @@ export const useCompStore = defineStore("counter", {
 				(id) => id !== messageId
 			);
 			this.updateCache();
-			smartNotify('Successfully deleted message.');
-		}
+			smartNotify("Successfully deleted message.");
+		},
 	},
 });
 

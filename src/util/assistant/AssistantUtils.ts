@@ -9,7 +9,7 @@ export const getAisAvailable = (): Assistant[] => {
 };
 
 export const getAisAvailableExcept = (actor: Assistant): Assistant[] => {
-	let res = getAisAvailable()
+	let res = getAisAvailable();
 	res = res.filter((a) => a.id !== actor.id);
 	return res;
 };
@@ -23,7 +23,11 @@ export const getAiNames = (actors: Assistant[]): string[] => {
 };
 
 // TODO: Find better name for these and move them to a separate file
-export const processKV = (key: string, val: string | string[], config?: ProcessKVConfig): string => {
+export const processKV = (
+	key: string,
+	val: string | string[],
+	config?: ProcessKVConfig
+): string => {
 	const keyStartChar: string = config?.keyStartChar || "#";
 	let valJoinStr: string = config?.valJoinStr || ", ";
 	let inline: boolean = config?.inline || true;

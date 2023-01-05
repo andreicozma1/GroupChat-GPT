@@ -17,7 +17,10 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		msg.imageUrls = [];
 	}
 
-	const response: GenerationResult = await comp.generate(cfg, msg.result?.contextIds);
+	const response: GenerationResult = await comp.generate(
+		cfg,
+		msg.result?.contextIds
+	);
 	console.log(response);
 	msg.result = response.result;
 	msg.cached = response.cached;
@@ -44,7 +47,9 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 
 	comp.pushMessage(msg);
 
-	const requiredFollowUps = cfg?.allowPromptFollowUps ? cfg.allowPromptFollowUps : false;
+	const requiredFollowUps = cfg?.allowPromptFollowUps
+		? cfg.allowPromptFollowUps
+		: false;
 	// if null or undefined, exit
 	if (!requiredFollowUps) {
 		console.warn("=> No follow-ups");
@@ -112,7 +117,9 @@ export const handleCoordinator = async (
 		comp.pushMessage(coordMsg);
 		return;
 	}
-	coordMsg.textSnippets = response.textSnippets ? [...response.textSnippets] : ["An error occurred"];
+	coordMsg.textSnippets = response.textSnippets
+		? [...response.textSnippets]
+		: ["An error occurred"];
 	comp.pushMessage(coordMsg);
 	const nextActors = response.textSnippets
 		.flatMap((t: string) => t.toLowerCase().split("\n"))

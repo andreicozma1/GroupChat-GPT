@@ -32,4 +32,4 @@ export const ConfigCoordinator: Assistant = {
 	},
 	isAvailable: false,
 	defaultHidden: true,
-}
+};

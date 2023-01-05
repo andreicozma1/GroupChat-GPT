@@ -1,5 +1,5 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {createAssistantPrompt, createPromptCodexGen} from "src/util/prompt/Prompts";
+import {createAssistantPrompt, createPromptCodexGen,} from "src/util/prompt/Prompts";
 
 export const ConfigCodex: Assistant = {
 	id: "codex",
@@ -28,7 +28,7 @@ export const ConfigCodex: Assistant = {
 		"<prompt>A Python program that adds numbers together.\nThe numbers to add will be 5 and 6.</prompt>",
 	],
 	allowPromptFollowUps: true,
-}
+};
 
 export const ConfigCodexGen: Assistant = {
 	id: "codex_gen",
@@ -52,4 +52,4 @@ export const ConfigCodexGen: Assistant = {
 	],
 	isAvailable: false,
 	isHelper: true,
-}
+};

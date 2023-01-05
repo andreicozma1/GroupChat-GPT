@@ -14,4 +14,4 @@ export const ConfigDavinci: Assistant = {
 		personality: ["helpful"],
 		strengths: ["providing general information"],
 	},
-}
+};

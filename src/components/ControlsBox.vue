@@ -24,6 +24,25 @@
                     @click="sendMessage"
             />
             <q-space/>
+            <q-space/>
+            <q-btn-group flat rounded>
+                <q-btn
+                        color="orange"
+                        icon-right="clear"
+                        label="Thread"
+                        no-caps
+                        outline
+                        @click="comp.clearThread"
+                />
+                <q-btn
+                        color="red"
+                        icon-right="delete_forever"
+                        label="Cache"
+                        no-caps
+                        outline
+                        @click="comp.clearCache"
+                />
+            </q-btn-group>
         </q-card-actions>
     </q-card>
 </template>

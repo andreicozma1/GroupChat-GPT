@@ -6,10 +6,10 @@
 </template>
 
 <script lang="ts" setup>
-import ChatThread from "components/ChatThread.vue";
 import {QCard} from "quasar";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import ControlsBox from "pages/ControlsBox.vue";
+import ControlsBox from "components/ControlsBox.vue";
+import ChatThread from "components/ChatThread.vue";
 
 const controlsCard: Ref<QCard | null> = ref(null);
 const scrollAreaStyle = ref({});

@@ -2,14 +2,12 @@
     <q-layout view="lHh Lpr lFf">
         <q-header elevated>
             <q-toolbar>
-                <q-btn
-                        aria-label="Menu"
-                        dense
-                        flat
-                        icon="menu"
-                        round
-                        @click="toggleLeftDrawer"
-                />
+                <q-btn aria-label="Menu"
+                       dense
+                       flat
+                       icon="menu"
+                       round
+                       @click="toggleLeftDrawer"/>
 
                 <q-toolbar-title> GroupChat-GPT</q-toolbar-title>
 
@@ -26,8 +24,7 @@
                 <EssentialLink
                         v-for="link in essentialLinks"
                         :key="link.title"
-                        v-bind="link"
-                />
+                        v-bind="link"/>
             </q-list>
         </q-drawer>
 
@@ -40,7 +37,7 @@
 <script lang="ts" setup>
 import EssentialLink, {EssentialLinkProps,} from "components/EssentialLink.vue";
 import {ref} from "vue";
-import ThreadPrefs from "pages/ThreadPrefs.vue";
+import ThreadPrefs from "components/ThreadPrefs.vue";
 
 const essentialLinks: EssentialLinkProps[] = [
 	{

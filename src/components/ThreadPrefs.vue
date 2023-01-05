@@ -1,26 +1,9 @@
 <template>
     <q-btn-dropdown flat icon="settings" label="Prefs" rounded size="12px">
         <q-card style="min-width: 320px">
-            <q-card-section class="q-pt-md q-pb-sm justify-center flex">
-                <q-btn-group flat rounded>
-                    <q-btn
-                            color="orange"
-                            icon-right="clear"
-                            label="Thread"
-                            no-caps
-                            outline
-                            @click="comp.clearThread"
-                    />
-                    <q-btn
-                            color="red"
-                            icon-right="delete_forever"
-                            label="Cache"
-                            no-caps
-                            outline
-                            @click="comp.clearCache"
-                    />
-                </q-btn-group>
-            </q-card-section>
+            <!--            <q-card-section class="q-pt-md q-pb-sm justify-center flex">-->
+            <!--               -->
+            <!--            </q-card-section>-->
 
             <q-card-section class="q-py-sm">
                 <q-list>
@@ -28,8 +11,7 @@
                             expand-separator
                             icon="people"
                             label="Members"
-                            popup
-                    >
+                            popup>
                         <q-card bordered flat>
                             <q-list separator>
                                 <q-item v-for="member in getThreadUsers()" :key="member">

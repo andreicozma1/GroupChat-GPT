@@ -1,7 +1,27 @@
 <template>
   <q-btn-dropdown flat rounded icon="settings" label="Prefs" size="12px">
     <q-card>
-      <q-card-section class="q-pa-sm">
+      <q-card-section class="q-py-sm">
+        <q-btn-group rounded flat>
+          <q-btn
+              color="orange"
+              icon-right="clear"
+              label="Thread"
+              no-caps
+              outline
+              @click="comp.clearThread"
+          />
+          <q-btn
+              color="red"
+              icon-right="delete_forever"
+              label="Cache"
+              no-caps
+              outline
+              @click="comp.clearCache"
+          />
+        </q-btn-group>
+      </q-card-section>
+      <q-card-section class="q-py-sm q-px-none">
         <q-list>
           <!--          Members -->
           <q-expansion-item expand-separator icon="people" label="Members" popup>
@@ -54,28 +74,6 @@
               </q-list>
             </q-card>
           </q-expansion-item>
-
-
-          <q-item dense>
-            <q-btn-group rounded flat>
-              <q-btn
-                  color="orange"
-                  icon-right="clear"
-                  label="Thread"
-                  no-caps
-                  outline
-                  @click="comp.clearThread"
-              />
-              <q-btn
-                  color="red"
-                  icon-right="delete_forever"
-                  label="Cache"
-                  no-caps
-                  outline
-                  @click="comp.clearCache"
-              />
-            </q-btn-group>
-          </q-item>
         </q-list>
       </q-card-section>
     </q-card>

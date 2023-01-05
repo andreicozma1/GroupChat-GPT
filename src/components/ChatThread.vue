@@ -137,7 +137,9 @@ const parseThreadMessages = (): ChatMessage[] => {
     // always remove messages with certain keywords
     if (hasRemoveKeywords(msg)) return false;
     // remove messages from users that are hidden in thread settings
-    if (thread.prefs?.hiddenUsers && thread.prefs.hiddenUsers[msg.userId]) return false;
+    if (thread.prefs?.shownUsers) {
+      return thread.prefs.shownUsers[msg.userId] ?? true;
+    }
     return true;
   });
   /************************************************************************
@@ -310,7 +312,7 @@ watch(
 watch(comp.getThread, () => loadThread());
 
 watch(
-    () => comp.getThread.prefs?.hiddenUsers,
+    () => comp.getThread.prefs?.shownUsers,
     () => loadThread()
 );
 

@@ -13,7 +13,7 @@ export interface ChatThread {
 	appVersion?: string;
 	joinedUserIds: string[];
 	prefs: {
-		hiddenUsers: { [key: string]: boolean };
+		shownUsers: { [key: string]: boolean };
 		showDeletedMessages: boolean;
 		orderedResponses: boolean;
 	}

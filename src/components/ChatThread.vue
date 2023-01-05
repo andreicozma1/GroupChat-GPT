@@ -131,6 +131,7 @@ const parseThreadMessages = (): ChatMessage[] => {
    ** FILTERING
    ************************************************************************/
   messages = messages.filter((msg: ChatMessage) => {
+    if (msg.isDeleted) return false;
     // always keep messages with certain keywords
     if (hasKeepKeywords(msg)) return true;
     // always remove messages with certain keywords

@@ -149,8 +149,10 @@ const parseThreadMessages = (): ChatMessage[] => {
     const bd = parseDate(b.dateCreated);
     return ad.getTime() - bd.getTime();
   });
-  // sort to keep loading messages at the bottom
   messages.sort((a, b) => {
+    // if isCompRegen is true, keep the same order
+    if (a.isCompRegen || b.isCompRegen) return 0;
+    // otherwise, keep loading messages at the bottom
     if (a.loading && !b.loading) return 1;
     if (!a.loading && b.loading) return -1;
     return 0;
@@ -190,7 +192,7 @@ const createStampHoverHint = (msg: ChatMessage) => {
 
 const parseTexts = (msg: ChatMessage) => {
   const texts = msg.textSnippets;
-  if (!texts || texts.length === 0) return [""];
+  if ((!texts || texts.length === 0) && !msg.loading) return [""];
   return texts
 }
 

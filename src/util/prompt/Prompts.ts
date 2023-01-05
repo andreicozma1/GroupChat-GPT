@@ -7,8 +7,7 @@ export const createAssistantPrompt = (
 	messages: ChatMessage[]
 ): any => {
 	let start = "### AI GROUP CHAT ###\n";
-	start +=
-		"The following is a group-chat conversation between a human and several AI assistants.\n";
+	start += "The following is a group-chat conversation between a human and several AI assistants.\n";
 
 	const members = promptMembers(false, ai);
 	const rules = promptRules(ai);

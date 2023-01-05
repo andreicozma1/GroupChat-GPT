@@ -23,26 +23,28 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	msg.isCompRegen = msg.result?.messageIds
 		? msg.result.messageIds.length > 0
 		: false;
-	if (msg.isCompRegen) {
-		console.warn("=> Regen");
-		msg.textSnippets = [];
-		msg.imageUrls = [];
-	}
 
-	const res: GenerationResult = await comp.generate(cfg, msg.result?.messageIds);
-	console.log(res);
-	msg.cached = res.cached;
-	msg.result = res.result;
-	msg.loading = false;
 
-	if (res.errorMsg) {
-		msg.textSnippets.push("[ERROR]\n" + res.errorMsg);
+	const response: GenerationResult = await comp.generate(cfg, msg.result?.messageIds);
+	console.log(response);
+	msg.result = response.result;
+	msg.cached = response.cached;
+
+	if (response.errorMsg) {
+		msg.textSnippets.push("[ERROR]\n" + response.errorMsg);
 		comp.pushMessage(msg);
 		return;
 	}
 
-	if (res?.imageUrls) msg.imageUrls.push(...res.imageUrls);
-	if (res?.textSnippets) msg.textSnippets.push(...res.textSnippets);
+	if (msg.isCompRegen) {
+		console.warn("=> Regen");
+		msg.loading = true;
+		msg.textSnippets = [];
+		msg.imageUrls = [];
+	}
+
+	if (response?.textSnippets) msg.textSnippets.push(...response.textSnippets);
+	if (response?.imageUrls) msg.imageUrls.push(...response.imageUrls);
 
 	// const totalLength = msg.textSnippets.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
 	// const sleepTime = totalLength * 25
@@ -104,26 +106,24 @@ export const handleCoordinator = async (
 	const coordConf: Assistant = AssistantConfigs.coordinator;
 	const coordMsg: ChatMessage = createMessageFromConfig(coordConf, comp);
 
-	const res = await comp.generate(coordConf);
+	const response: GenerationResult = await comp.generate(coordConf);
+	console.log(response);
+	coordMsg.result = response.result;
+	coordMsg.cached = response.cached;
 
-	console.log(res);
-	coordMsg.cached = res.cached;
-	coordMsg.result = res.result;
-	coordMsg.loading = false;
-
-	if (res.errorMsg) {
-		coordMsg.textSnippets.push("[ERROR]\n" + res.errorMsg);
+	if (response.errorMsg) {
+		coordMsg.textSnippets.push("[ERROR]\n" + response.errorMsg);
 		comp.pushMessage(coordMsg);
 		return;
 	}
-	if (!res.textSnippets) {
+	if (!response.textSnippets) {
 		coordMsg.textSnippets.push("Error: No text in result]");
 		comp.pushMessage(coordMsg);
 		return;
 	}
-	coordMsg.textSnippets = res.textSnippets ? [...res.textSnippets] : ["An error occurred"];
+	coordMsg.textSnippets = response.textSnippets ? [...response.textSnippets] : ["An error occurred"];
 	comp.pushMessage(coordMsg);
-	const nextActors = res.textSnippets
+	const nextActors = response.textSnippets
 		.flatMap((t: string) => t.toLowerCase().split("\n"))
 		.filter((t: string) => t.includes("respond"))
 		.flatMap((t: string) => t.split(":")[1].split(","))

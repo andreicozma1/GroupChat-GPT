@@ -4,7 +4,7 @@ import {createAssistantPrompt, createPromptCodexGen,} from "src/util/prompt/Prom
 export const ConfigCodex: Assistant = {
 	id: "codex",
 	name: "Codex",
-	icon: "code",
+	icon: "chat",
 	apiConfig: {
 		apiReqType: "createCompletion",
 		apiReqOpts: "chatting",

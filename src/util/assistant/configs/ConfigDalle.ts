@@ -4,7 +4,7 @@ import {createAssistantPrompt, createPromptDalleGen,} from "src/util/prompt/Prom
 export const ConfigDalle: Assistant = {
 	id: "dalle",
 	name: "DALL-E",
-	icon: "image",
+	icon: "chat",
 	apiConfig: {
 		apiReqType: "createCompletion",
 		apiReqOpts: "chatting",

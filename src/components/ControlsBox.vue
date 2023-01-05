@@ -50,10 +50,11 @@
 import {useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
-import {buildMessage} from "src/util/chat/ChatUtils";
+import {createMessageFromUserCfg} from "src/util/chat/ChatUtils";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
-import {handleCoordinator} from "src/util/assistant/AssistantHandlers";
+import {handleAssistantCfg} from "src/util/assistant/AssistantHandlers";
+import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
 
 const comp = useCompStore();
 
@@ -74,7 +75,7 @@ const sendMessage = () => {
 	console.warn("=======================================");
 	console.log("Sending message");
 	if (userMsgObj.value === null) {
-		userMsgObj.value = buildMessage(ConfigUserBase, comp);
+		userMsgObj.value = createMessageFromUserCfg(ConfigUserBase, comp);
 		comp.pushMessage(userMsgObj.value);
 	}
 	userMsgObj.value.textSnippets.push(userMsgStr.value);
@@ -84,7 +85,7 @@ const sendMessage = () => {
 	responseTimeout.value = setInterval(() => {
 		if (!isTyping.value) {
 			userMsgObj.value = null;
-			handleCoordinator(comp, comp.getThread.prefs?.orderedResponses);
+			handleAssistantCfg(AssistantConfigs.coordinator, comp);
 			clearInterval(responseTimeout.value);
 		}
 	}, 500);

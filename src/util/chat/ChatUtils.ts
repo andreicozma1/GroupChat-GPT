@@ -39,7 +39,7 @@ export const getMessageHistory = (
 	return hist;
 };
 
-export const buildMessage = (userCfg: ChatUser, comp: any): ChatMessage => {
+export const createMessageFromUserCfg = (userCfg: ChatUser, comp: any): ChatMessage => {
 	const assistantName: string = userCfg?.name || "Unknown User";
 	const assistantKey: string = userCfg?.id || "unknown";
 	let msg: ChatMessage = {
@@ -56,18 +56,8 @@ export const buildMessage = (userCfg: ChatUser, comp: any): ChatMessage => {
 	return msg;
 };
 
-// TODO: better handling for undefined case
-export const createMessageFromAiKey = (
-	key: string,
-	comp: any,
-	prevMsg: ChatMessage
-): ChatMessage | undefined => {
-	key = key.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
-	const cfg: Assistant = AssistantConfigs[key];
-	if (!cfg) {
-		prevMsg.textSnippets.push(`[Error: Unknown assistant key: ${key}]`);
-		comp.pushMessage(prevMsg);
-		return undefined;
-	}
-	return buildMessage(cfg, comp);
+export const createMessageFromUserId = (id: string, comp: any): ChatMessage => {
+	id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
+	const cfg: Assistant = AssistantConfigs[id];
+	return createMessageFromUserCfg(cfg, comp);
 };

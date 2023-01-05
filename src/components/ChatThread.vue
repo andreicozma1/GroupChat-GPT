@@ -130,7 +130,7 @@ import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo, parseDate} from "src/util/DateUtils";
 import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
-import {handleAssistant} from "src/util/assistant/AssistantHandlers";
+import {handleAssistantMsg} from "src/util/assistant/AssistantHandlers";
 
 const props = defineProps({
 	scrollAreaStyle: {
@@ -306,7 +306,7 @@ const regenMessage = (msg: ChatMessage) => {
 	console.warn("=> regen:", {...msg});
 	console.warn("msg:", {...msg});
 	console.warn("ctxIds:", msg.result?.contextIds);
-	handleAssistant(msg, comp);
+	handleAssistantMsg(msg, comp);
 };
 
 const canRegenMessage = (msg: ChatMessage) => {

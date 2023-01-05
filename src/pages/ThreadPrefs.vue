@@ -35,11 +35,11 @@
                   <q-item-section>
                     <q-item-label>{{ member.name }}</q-item-label>
                     <q-item-label caption>
-                      {{ comp.getThread.prefs.shownUsers[member.key] ? "Visible" : "Hidden" }}
+                      {{ comp.getThread.prefs.shownUsers[member.id] ? "Visible" : "Hidden" }}
                     </q-item-label>
                   </q-item-section>
                   <q-item-section side>
-                    <q-checkbox v-model="comp.getThread.prefs.shownUsers[member.key]"
+                    <q-checkbox v-model="comp.getThread.prefs.shownUsers[member.id]"
                                 v-if="comp.getThread.prefs?.shownUsers"
                                 color="primary"/>
                     <q-checkbox v-else

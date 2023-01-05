@@ -2,7 +2,7 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt, createPromptCodexGen} from "src/util/prompt/Prompts";
 
 export const ConfigCodex: Assistant = {
-	key: "codex",
+	id: "codex",
 	name: "Codex",
 	icon: "code",
 	apiConfig: {
@@ -31,7 +31,7 @@ export const ConfigCodex: Assistant = {
 }
 
 export const ConfigCodexGen: Assistant = {
-	key: "codex_gen",
+	id: "codex_gen",
 	name: "Codex",
 	icon: "code",
 	apiConfig: {

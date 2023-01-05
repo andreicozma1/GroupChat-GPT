@@ -10,12 +10,12 @@ export const getAisAvailable = (): Assistant[] => {
 
 export const getAisAvailableExcept = (actor: Assistant): Assistant[] => {
 	let res = getAisAvailable()
-	res = res.filter((a) => a.key !== actor.key);
+	res = res.filter((a) => a.id !== actor.id);
 	return res;
 };
 
 export const getAiIds = (actors: Assistant[]): string[] => {
-	return actors.map((a) => a.key);
+	return actors.map((a) => a.id);
 };
 
 export const getAiNames = (actors: Assistant[]): string[] => {

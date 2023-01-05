@@ -2,7 +2,7 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt, createPromptDalleGen} from "src/util/prompt/Prompts";
 
 export const ConfigDalle: Assistant = {
-	key: "dalle",
+	id: "dalle",
 	name: "DALL-E",
 	icon: "image",
 	apiConfig: {
@@ -33,7 +33,7 @@ export const ConfigDalle: Assistant = {
 }
 
 export const ConfigDalleGen: Assistant = {
-	key: "dalle_gen",
+	id: "dalle_gen",
 	name: "DALL-E",
 	icon: "image",
 	apiConfig: {

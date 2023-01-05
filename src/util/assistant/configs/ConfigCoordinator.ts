@@ -2,7 +2,7 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt} from "src/util/prompt/Prompts";
 
 export const ConfigCoordinator: Assistant = {
-	key: "coordinator",
+	id: "coordinator",
 	name: "Coordinator",
 	icon: "question_answer",
 	apiConfig: {

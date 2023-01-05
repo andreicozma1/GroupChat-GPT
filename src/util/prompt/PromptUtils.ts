@@ -8,7 +8,7 @@ const getAssistantTraits = (
 	useKey: boolean,
 	tag?: string
 ): string => {
-	const id = useKey ? ai.key : ai.name;
+	const id = useKey ? ai.id : ai.name;
 	let res = `* ${id}`;
 	if (tag) res += ` (${tag})`;
 	res += ":\n";
@@ -36,7 +36,7 @@ export const promptMembers = (
 	const info = available
 		.map((ai) => {
 			let tag = undefined;
-			if (currentAI && currentAI.key === ai.key) tag = "You";
+			if (currentAI && currentAI.id === ai.id) tag = "You";
 			return getAssistantTraits(ai, useKey, tag);
 		})
 		.join("\n\n");

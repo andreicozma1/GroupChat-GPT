@@ -15,7 +15,7 @@ export const getMessageHistory = (
 ): ChatMessage[] => {
 	let hist = getThreadMessages(config.thread);
 	hist = hist.filter((m: ChatMessage) => {
-		if (m.userId === ConfigUserBase.key) {
+		if (m.userId === ConfigUserBase.id) {
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;
 		}
@@ -49,7 +49,7 @@ export const buildMessage = (
 	comp: any
 ): ChatMessage => {
 	const assistantName: string = userCfg?.name || "Unknown User";
-	const assistantKey: string = userCfg?.key || "unknown";
+	const assistantKey: string = userCfg?.id || "unknown";
 	let msg: ChatMessage = {
 		id: uuidv4(),
 		userId: assistantKey,

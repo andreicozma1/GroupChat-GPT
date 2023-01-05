@@ -2,7 +2,7 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt} from "src/util/prompt/Prompts";
 
 export const ConfigDavinci: Assistant = {
-	key: "davinci",
+	id: "davinci",
 	name: "Davinci",
 	icon: "chat",
 	apiConfig: {

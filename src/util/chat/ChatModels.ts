@@ -2,7 +2,7 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 import {GenerationResult} from "stores/compStore";
 
 export interface ChatUser {
-	key: string;
+	id: string;
 	name: string;
 	icon: string;
 }

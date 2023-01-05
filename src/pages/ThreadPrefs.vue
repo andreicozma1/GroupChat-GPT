@@ -24,8 +24,7 @@
 
       <q-card-section class="q-py-sm">
         <q-list>
-          <!--          Members -->
-          <q-expansion-item expand-separator icon="people" label="Members" popup>
+          <q-expansion-item expand-separator icon="people" label="Visible Members" popup>
 
             <q-card flat bordered>
               <q-list separator>
@@ -52,7 +51,6 @@
             </q-card>
           </q-expansion-item>
 
-          <!--          General -->
           <q-expansion-item expand-separator icon="settings" label="General" popup>
             <q-card flat bordered>
               <q-list separator>

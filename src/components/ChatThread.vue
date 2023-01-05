@@ -30,22 +30,22 @@
                     <div class="row items-center">
                         <q-btn :disable="!canRegenMessage(msg)"
                                :icon="getAssistantIcon(msg.userId)"
-                               class="q-mr-sm"
-                               color="black"
+                               class="q-ma-none q-pa-none"
+                               color="blue-grey-8"
                                dense
                                flat
                                round
                                size="xs"
                                @click="regenMessage(msg)">
                             <q-tooltip v-if="canRegenMessage(msg)">
-                                Click to re-generate message
+                                Click to re-generate message ({{ msg.userId }})
                             </q-tooltip>
                             <q-tooltip v-else>
-                                This message cannot be re-generated
+                                This message cannot be re-generated ({{ msg.userId }})
                             </q-tooltip>
                         </q-btn>
 
-                        <div class="text-caption text-italic">
+                        <div class="text-caption text-blue-grey-10">
                             <q-item-label :lines="1">
                                 {{ createStamp(msg) }}
                             </q-item-label>
@@ -61,41 +61,37 @@
                             </q-tooltip>
                         </div>
                         <div v-if="msg.isDeleted" class="text-bold"> Delete?</div>
-                        <q-btn
-                                v-if="!msg.isDeleted"
-                                color="black"
-                                dense
-                                flat
-                                icon="edit"
-                                round
-                                size="xs"
-                                @click="editMessage(msg)"/>
-                        <q-btn
-                                v-if="!msg.isDeleted"
-                                :icon="msg.isIgnored ? 'visibility' : 'visibility_off'"
-                                color="black"
-                                dense
-                                flat
-                                round
-                                size="xs"
-                                @click="ignoreMessage(msg)"/>
-                        <q-btn
-                                :icon="msg.isDeleted ? 'delete_forever' : 'delete'"
-                                color="black"
-                                dense
-                                flat
-                                round
-                                size="xs"
-                                @click="deleteMessage(msg)"/>
-                        <q-btn
-                                v-if="msg.isDeleted"
-                                color="black"
-                                dense
-                                flat
-                                icon="restore"
-                                round
-                                size="xs"
-                                @click="restoreMessage(msg)"/>
+                        <q-btn v-if="!msg.isDeleted"
+                               color="blue-grey-8"
+                               dense
+                               flat
+                               icon="edit"
+                               round
+                               size="xs"
+                               @click="editMessage(msg)"/>
+                        <q-btn v-if="!msg.isDeleted"
+                               :icon="msg.isIgnored ? 'visibility' : 'visibility_off'"
+                               color="blue-grey-8"
+                               dense
+                               flat
+                               round
+                               size="xs"
+                               @click="ignoreMessage(msg)"/>
+                        <q-btn :icon="msg.isDeleted ? 'delete_forever' : 'delete'"
+                               color="blue-grey-8"
+                               dense
+                               flat
+                               round
+                               size="xs"
+                               @click="deleteMessage(msg)"/>
+                        <q-btn v-if="msg.isDeleted"
+                               color="blue-grey-8"
+                               dense
+                               flat
+                               icon="restore"
+                               round
+                               size="xs"
+                               @click="restoreMessage(msg)"/>
                     </div>
                 </template>
 

@@ -89,7 +89,7 @@ export const useCompStore = defineStore("counter", {
 			this.threads[this.currentThread].orderedKeysList = [];
 			this.updateCache();
 		},
-		getTreadVersion() {
+		getThreadVersion() {
 			return this.threads[this.currentThread].appVersion;
 		},
 		getCachedResponse(hash: number) {
@@ -161,10 +161,14 @@ export const useCompStore = defineStore("counter", {
 				msgHist = updateFromMsgIds.map((id) => this.getThread.messageMap[id]);
 				ignoreCache = true;
 			}
-			const prompt = actor.promptStyle(actor, msgHist);
-			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
-			// TODO: Change hash prompt to be based on msgIds?
-			const hash = hashPrompt(prompt);
+			let prompt = undefined
+			try {
+				prompt = actor.promptStyle(actor, msgHist);
+			} catch (e) {
+				console.error("Error in promptStyle:");
+				console.error(e);
+			}
+			const hash = prompt ? hashPrompt(prompt) : 0;
 			console.warn("=> prompt:");
 			console.log(prompt);
 			// if we already have a completion for this prompt, return it
@@ -174,11 +178,14 @@ export const useCompStore = defineStore("counter", {
 					cached: true,
 				};
 			}
+			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
+			// TODO: Change hash prompt to be based on msgIds?
+
 			let completion;
 			try {
+				if (prompt === undefined) throw new Error("Prompt was undefined");
 				completion = await makeApiRequest(actor, prompt);
-				if (completion === null || completion === undefined)
-					throw new Error("No response");
+				if (completion === null || completion === undefined) throw new Error("No response");
 			} catch (error: any) {
 				console.error(error);
 				if (error.stack) console.error(error.stack);

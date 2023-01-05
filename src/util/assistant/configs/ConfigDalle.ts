@@ -45,5 +45,4 @@ export const ConfigDalleGen: Assistant = {
 		always: ["Only responds to DALL-E's prompts."],
 	},
 	isAvailable: false,
-	isHelper: true,
 };

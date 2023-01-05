@@ -19,11 +19,6 @@ export const getMessageHistory = (
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;
 		}
-		const actor_key = m.userId;
-		if (actor_key !== undefined) {
-			const actor = AssistantConfigs[actor_key];
-			if (actor && actor.isHelper === true) return false;
-		}
 		// handle actors to include and exclude
 		if (config.includeActors) {
 			return config.includeActors.some((actor) => actor.name === m.userName);

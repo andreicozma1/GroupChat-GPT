@@ -51,5 +51,4 @@ export const ConfigCodexGen: Assistant = {
 		"```\ndef multiply(a, b):\n\treturn a * b\n\nprint(multiply(5, 6))\n```",
 	],
 	isAvailable: false,
-	isHelper: true,
 };

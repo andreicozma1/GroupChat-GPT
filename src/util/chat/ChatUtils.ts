@@ -65,16 +65,15 @@ export const buildMessage = (userCfg: ChatUser, comp: any): ChatMessage => {
 // TODO: better handling for undefined case
 export const createMessageFromAiKey = (
 	key: string,
-	comp: any
+	comp: any,
+	prevMsg: ChatMessage
 ): ChatMessage | undefined => {
 	key = key.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
 	const cfg: Assistant = AssistantConfigs[key];
-	const msg = buildMessage(cfg, comp);
 	if (!cfg) {
-		msg.textSnippets.push(`[Error: Unknown assistant key: ${key}]`);
-		msg.loading = false;
-		comp.pushMessage(msg);
+		prevMsg.textSnippets.push(`[Error: Unknown assistant key: ${key}]`);
+		comp.pushMessage(prevMsg);
 		return undefined;
 	}
-	return msg;
+	return buildMessage(cfg, comp);
 };

@@ -17,16 +17,16 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		msg.imageUrls = [];
 	}
 
-	const response: GenerationResult = await comp.generate(
+	const res: GenerationResult = await comp.generate(
 		cfg,
 		msg.result?.contextIds
 	);
-	console.log(response);
-	msg.result = response.result;
-	msg.cached = response.cached;
+	console.log(res);
+	msg.result = res.result;
+	msg.cached = res.cached;
 
-	if (response.errorMsg) {
-		msg.textSnippets.push("[ERROR]\n" + response.errorMsg);
+	if (res.errorMsg) {
+		msg.textSnippets.push("[ERROR]\n" + res.errorMsg);
 		comp.pushMessage(msg);
 		return;
 	}
@@ -37,8 +37,8 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	// 	msg.imageUrls = [];
 	// }
 
-	if (response?.textSnippets) msg.textSnippets.push(...response.textSnippets);
-	if (response?.imageUrls) msg.imageUrls.push(...response.imageUrls);
+	if (res?.textSnippets) msg.textSnippets.push(...res.textSnippets);
+	if (res?.imageUrls) msg.imageUrls.push(...res.imageUrls);
 
 	// const totalLength = msg.textSnippets.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
 	// const sleepTime = totalLength * 25
@@ -85,7 +85,8 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 			const prompt = prompts[i];
 			const nextMsg: ChatMessage | undefined = createMessageFromAiKey(
 				nextKey,
-				comp
+				comp,
+				msg
 			);
 			if (!nextMsg) return;
 			nextMsg.textSnippets.push(`<prompt>${prompt}</prompt>`);
@@ -99,29 +100,29 @@ export const handleCoordinator = async (
 	orderedResponses?: boolean
 ) => {
 	orderedResponses = orderedResponses === undefined ? true : orderedResponses;
-	const coordConf: Assistant = AssistantConfigs.coordinator;
-	const coordMsg: ChatMessage = buildMessage(coordConf, comp);
+	const cfg: Assistant = AssistantConfigs.coordinator;
+	const msg: ChatMessage = buildMessage(cfg, comp);
 
-	const response: GenerationResult = await comp.generate(coordConf);
-	console.log(response);
-	coordMsg.result = response.result;
-	coordMsg.cached = response.cached;
+	const res: GenerationResult = await comp.generate(cfg);
+	console.log(res);
+	msg.result = res.result;
+	msg.cached = res.cached;
 
-	if (response.errorMsg) {
-		coordMsg.textSnippets.push("[ERROR]\n" + response.errorMsg);
-		comp.pushMessage(coordMsg);
+	if (res.errorMsg) {
+		msg.textSnippets.push("[ERROR]\n" + res.errorMsg);
+		comp.pushMessage(msg);
 		return;
 	}
-	if (!response.textSnippets) {
-		coordMsg.textSnippets.push("Error: No text in result]");
-		comp.pushMessage(coordMsg);
+	if (!res.textSnippets) {
+		msg.textSnippets.push("Error: No text in result]");
+		comp.pushMessage(msg);
 		return;
 	}
-	coordMsg.textSnippets = response.textSnippets
-		? [...response.textSnippets]
+	msg.textSnippets = res.textSnippets
+		? [...res.textSnippets]
 		: ["An error occurred"];
-	comp.pushMessage(coordMsg);
-	const nextActors = response.textSnippets
+	comp.pushMessage(msg);
+	const nextActors = res.textSnippets
 		.flatMap((t: string) => t.toLowerCase().split("\n"))
 		.filter((t: string) => t.includes("respond"))
 		.flatMap((t: string) => t.split(":")[1].split(","))
@@ -132,7 +133,8 @@ export const handleCoordinator = async (
 	for (const nextKey of nextActors) {
 		const nextMsg: ChatMessage | undefined = createMessageFromAiKey(
 			nextKey,
-			comp
+			comp,
+			msg
 		);
 		if (!nextMsg) return;
 		if (orderedResponses) {

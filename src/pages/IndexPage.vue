@@ -8,15 +8,11 @@
 <script lang="ts" setup>
 import ChatThread from "components/ChatThread.vue";
 import {QCard} from "quasar";
-import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import ControlsBox from "pages/ControlsBox.vue";
 
-const comp = useCompStore();
-
 const controlsCard: Ref<QCard | null> = ref(null);
 const scrollAreaStyle = ref({});
-
 
 const userMsgStr = ref("");
 const userMsgValid = computed(() => {
@@ -25,7 +21,6 @@ const userMsgValid = computed(() => {
 
 const isTyping = ref(false);
 const isTypingTimeout: Ref<any> = ref(null);
-
 
 const updateIC = () => {
   setTimeout(() => {

@@ -8,8 +8,6 @@ import {Ref, ref} from "vue";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
 
-export const humanName = "Human";
-
 export interface GenerationResult {
 	result?: {
 		messageIds: string[];
@@ -35,7 +33,6 @@ export const useCompStore = defineStore("counter", {
 			...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,
 		currentThread: "main",
-		userName: humanName,
 	}),
 	getters: {
 		getAllCompletions(state) {

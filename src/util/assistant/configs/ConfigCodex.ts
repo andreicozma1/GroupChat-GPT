@@ -1,7 +1,7 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt, createPromptCodexGen} from "src/util/prompt/Prompts";
 
-export const CodexConfig: Assistant = {
+export const ConfigCodex: Assistant = {
 	key: "codex",
 	name: "Codex",
 	icon: "code",
@@ -30,7 +30,7 @@ export const CodexConfig: Assistant = {
 	allowPromptFollowUps: true,
 }
 
-export const CodexGenConfig: Assistant = {
+export const ConfigCodexGen: Assistant = {
 	key: "codex_gen",
 	name: "Codex",
 	icon: "code",

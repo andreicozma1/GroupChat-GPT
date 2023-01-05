@@ -1,6 +1,6 @@
 <template>
   <div class="full-width">
-    <ChatThread :my-name="myName" :scroll-area-style="scrollAreaStyle"/>
+    <ChatThread :scroll-area-style="scrollAreaStyle"/>
     <ControlsBox ref="controlsCard"/>
   </div>
 </template>
@@ -17,7 +17,6 @@ const comp = useCompStore();
 const controlsCard: Ref<QCard | null> = ref(null);
 const scrollAreaStyle = ref({});
 
-const myName = computed(() => comp.userName);
 
 const userMsgStr = ref("");
 const userMsgValid = computed(() => {

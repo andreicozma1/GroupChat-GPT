@@ -88,12 +88,9 @@ import {getThreadMessages} from "src/util/chat/ChatUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo, parseDate} from "src/util/DateUtils";
 import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
+import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 
 const props = defineProps({
-  myName: {
-    type: String,
-    required: true,
-  },
   scrollAreaStyle: {
     type: Object,
     required: false,
@@ -198,7 +195,7 @@ const parseTexts = (msg: ChatMessage) => {
 }
 
 const isSentByMe = (msg: ChatMessage) => {
-  return msg.userName === props.myName;
+  return msg.userName === ConfigUserBase.name;
 };
 
 const getScrollAreaStyle = computed(() => {
@@ -229,8 +226,7 @@ const scrollToBottom = (duration?: number) => {
 };
 
 const getSplitText = (text: string) => {
-  text = text.split("\n")
-  return text;
+  return text.split("\n");
 };
 
 const sanitizeLine = (line: string) => {

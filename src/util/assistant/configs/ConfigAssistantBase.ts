@@ -2,7 +2,7 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt} from "src/util/prompt/Prompts";
 
 // TODO: Use this generic config in the prompt creation functions
-export const AssistantConfigBase: Assistant = {
+export const ConfigAssistantBase: Assistant = {
 	key: "generic",
 	name: "Generic AI",
 	icon: "chat",

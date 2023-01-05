@@ -1,7 +1,7 @@
 import {getAisAvailable, processKV,} from "src/util/assistant/AssistantUtils";
-import {humanName} from "stores/compStore";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
+import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 
 const getAssistantTraits = (
 	ai: Assistant,
@@ -53,7 +53,7 @@ export const promptExamples = (ai: Assistant): string => {
 	for (let i = 0; i < ai.examples.length; i++) {
 		const msg = ai.examples[i];
 		const isHuman = i % 2 === 0;
-		const name = isHuman ? humanName : ai.name;
+		const name = isHuman ? ConfigUserBase.name : ai.name;
 		res += `### ${name}:\n${msg}\n\n`;
 	}
 

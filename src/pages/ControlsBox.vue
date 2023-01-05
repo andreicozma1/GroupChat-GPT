@@ -58,7 +58,7 @@ import {QCard, QInput} from "quasar";
 import {handleCoordinator} from "src/util/Utils";
 import {buildMessage} from "src/util/chat/ChatUtils";
 import {ChatMessage} from "src/util/chat/ChatModels";
-import {UserConfigBase} from "src/util/chat/ConfigUser";
+import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 
 const comp = useCompStore();
 
@@ -67,7 +67,6 @@ const hideCoordinator = ref(true);
 
 const orderedResponses = ref(true);
 
-const myName = computed(() => comp.userName);
 
 const userMsgEl: Ref<QInput | null> = ref(null);
 const userMsgStr = ref("");
@@ -86,7 +85,7 @@ const sendMessage = () => {
   console.warn("=======================================");
   console.log("Sending message");
   if (userMsgObj.value === null) {
-    userMsgObj.value = buildMessage(UserConfigBase, comp)
+    userMsgObj.value = buildMessage(ConfigUserBase, comp)
     comp.pushMessage(userMsgObj.value);
   }
   userMsgObj.value.textSnippets.push(userMsgStr.value);

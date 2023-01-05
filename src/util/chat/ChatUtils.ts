@@ -1,10 +1,10 @@
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
 import {getRobohashUrl} from "src/util/ImageUtils";
-import {humanName} from "stores/compStore";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {v4 as uuidv4} from "uuid";
 import {ChatMessage, ChatMessageHistConfig, ChatThread, ChatUser} from "src/util/chat/ChatModels";
+import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 
 export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
 	return thread.orderedKeysList.map((key) => thread.messageMap[key]);
@@ -14,8 +14,8 @@ export const getMessageHistory = (
 	config: ChatMessageHistConfig
 ): ChatMessage[] => {
 	let hist = getThreadMessages(config.thread);
-	hist = hist.filter((m) => {
-		if (m.userName === humanName) {
+	hist = hist.filter((m: ChatMessage) => {
+		if (m.userId === ConfigUserBase.key) {
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;
 		}

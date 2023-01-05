@@ -1,8 +1,8 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {CoordinatorConfig} from "src/util/assistant/configs/ConfigCoordinator";
-import {DavinciConfig} from "src/util/assistant/configs/ConfigDavinci";
-import {DalleConfig, DalleGenConfig} from "src/util/assistant/configs/ConfigDalle";
-import {CodexConfig, CodexGenConfig} from "src/util/assistant/configs/ConfigCodex";
+import {ConfigCoordinator} from "src/util/assistant/configs/ConfigCoordinator";
+import {ConfigDavinci} from "src/util/assistant/configs/ConfigDavinci";
+import {ConfigDalle, ConfigDalleGen} from "src/util/assistant/configs/ConfigDalle";
+import {ConfigCodex, ConfigCodexGen} from "src/util/assistant/configs/ConfigCodex";
 
 // TODO: Move this into a store
 export const AssistantConfigs: Record<string, Assistant> = {
@@ -10,15 +10,15 @@ export const AssistantConfigs: Record<string, Assistant> = {
 	 * Response Coordinator
 	 * - Decides which assistant should respond to the user's message
 	 ******************************************************************************************************************/
-	coordinator: CoordinatorConfig,
+	coordinator: ConfigCoordinator,
 	/*******************************************************************************************************************
 	 * General AI Assistants
 	 ******************************************************************************************************************/
-	davinci: DavinciConfig,
+	davinci: ConfigDavinci,
 	// DALL-E
-	dalle: DalleConfig,
-	dalle_gen: DalleGenConfig,
+	dalle: ConfigDalle,
+	dalle_gen: ConfigDalleGen,
 	// Codex
-	codex: CodexConfig,
-	codex_gen: CodexGenConfig,
+	codex: ConfigCodex,
+	codex_gen: ConfigCodexGen,
 };

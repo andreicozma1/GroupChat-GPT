@@ -1,7 +1,7 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt, createPromptDalleGen} from "src/util/prompt/Prompts";
 
-export const DalleConfig: Assistant = {
+export const ConfigDalle: Assistant = {
 	key: "dalle",
 	name: "DALL-E",
 	icon: "image",
@@ -32,7 +32,7 @@ export const DalleConfig: Assistant = {
 	allowPromptFollowUps: true,
 }
 
-export const DalleGenConfig: Assistant = {
+export const ConfigDalleGen: Assistant = {
 	key: "dalle_gen",
 	name: "DALL-E",
 	icon: "image",

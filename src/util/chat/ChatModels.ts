@@ -28,6 +28,7 @@ export interface ChatMessage extends GenerationResult {
 	// TODO: There's probably a better way to do keep track of whether a message is a re-generation
 	// TODO: Alternatively, could also keep history of edits (editMessage function)
 	isCompRegen?: boolean;
+	isDeleted?: boolean;
 }
 
 // TODO: Make these configurable in UI in the future

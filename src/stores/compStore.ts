@@ -10,7 +10,7 @@ import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
 
 export interface GenerationResult {
 	result?: {
-		messageIds: string[];
+		contextIds: string[];
 		responseData: any;
 	};
 	// TODO: Put these in a separate MessageContent interface and keep track of history
@@ -133,7 +133,7 @@ export const useCompStore = defineStore("counter", {
 				ignoreCache = true;
 			}
 			const prompt = actor.promptStyle(actor, msgHist);
-			const msgIdsRelevant: string[] = msgHist.map((m: ChatMessage) => m.id)
+			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id)
 			// TODO: Change hash prompt to be based on msgIds?
 			const hash = hashPrompt(prompt);
 			console.warn("=> prompt:");
@@ -163,7 +163,7 @@ export const useCompStore = defineStore("counter", {
 				return {
 					errorMsg: errorMsg,
 					result: {
-						messageIds: msgIdsRelevant,
+						contextIds: contextIds,
 						responseData: undefined,
 					},
 					textSnippets: [],
@@ -173,7 +173,7 @@ export const useCompStore = defineStore("counter", {
 				};
 			}
 			this.completions[hash] = {
-				messageIds: msgIdsRelevant,
+				contextIds: contextIds,
 				responseData: completion.data,
 			};
 			this.updateCache();

@@ -6,12 +6,12 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 
 export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	const cfg = AssistantConfigs[msg.userId];
-	msg.isCompRegen = msg.result?.messageIds
-		? msg.result.messageIds.length > 0
+	msg.isCompRegen = msg.result?.contextIds
+		? msg.result.contextIds.length > 0
 		: false;
 
 
-	const response: GenerationResult = await comp.generate(cfg, msg.result?.messageIds);
+	const response: GenerationResult = await comp.generate(cfg, msg.result?.contextIds);
 	console.log(response);
 	msg.result = response.result;
 	msg.cached = response.cached;

@@ -258,22 +258,21 @@ const editMessage = (msg: ChatMessage) => {
 };
 
 const regenMessage = (msg: ChatMessage) => {
-  smartNotify('Re-generating message');
-  console.warn("=> regenerate:", {...msg});
-  console.warn("=> regenerate:", msg.result?.messageIds);
+  console.warn("=> regen:", {...msg});
+  console.warn("msg:", {...msg});
+  console.warn("ctxIds:", msg.result?.contextIds);
   handleAssistant(msg, comp);
 };
 
 const canRegenMessage = (msg: ChatMessage) => {
-  const msgIds = msg.result?.messageIds
+  const msgIds = msg.result?.contextIds
   if (msgIds) return msgIds.length > 0
   return false
 };
 
 const deleteMessage = (msg: ChatMessage) => {
-  smartNotify(`Message deletion is not yet implemented`);
   console.warn("=> delete:", {...msg});
-  // comp.deleteMessage(msg);
+  msg.isDeleted = true;
 };
 
 const loadThread = () => {

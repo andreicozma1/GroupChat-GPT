@@ -36,13 +36,15 @@
                                flat
                                round
                                size="xs"
-                               @click="regenMessage(msg)"/>
-                        <q-tooltip v-if="canRegenMessage(msg)">
-                            Click to re-generate message
-                        </q-tooltip>
-                        <q-tooltip v-else>
-                            This message cannot be re-generated
-                        </q-tooltip>
+                               @click="regenMessage(msg)">
+                            <q-tooltip v-if="canRegenMessage(msg)">
+                                Click to re-generate message
+                            </q-tooltip>
+                            <q-tooltip v-else>
+                                This message cannot be re-generated
+                            </q-tooltip>
+                        </q-btn>
+
                         <div class="text-caption text-italic">
                             <q-item-label :lines="1">
                                 {{ createStamp(msg) }}

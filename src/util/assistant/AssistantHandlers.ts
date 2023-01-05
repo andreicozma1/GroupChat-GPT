@@ -51,14 +51,12 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	const requiredFollowUps = cfg?.allowPromptFollowUps
 		? cfg.allowPromptFollowUps
 		: false;
-	// if null or undefined, exit
+
 	if (!requiredFollowUps) {
 		console.warn("=> No follow-ups");
 		return;
 	}
-	// if string, make it an array
-	// for each
-	// filter out texts that contain <prompt> tags
+
 	let prompts = msg.textSnippets
 		.filter((t: string) => t.includes("<prompt>"))
 		.map((t: string) =>

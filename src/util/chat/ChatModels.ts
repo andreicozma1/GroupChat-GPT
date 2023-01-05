@@ -10,8 +10,9 @@ export interface ChatUser {
 export interface ChatThread {
 	messageMap: { [key: string]: ChatMessage };
 	orderedKeysList: string[];
-	hiddenUserIds?: string[];
+	hiddenUserIds: string[];
 	appVersion?: string;
+	joinedUserIds: string[];
 }
 
 export interface ChatMessage extends GenerationResult {

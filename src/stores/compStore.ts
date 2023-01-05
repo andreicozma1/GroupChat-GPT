@@ -29,6 +29,8 @@ export const useCompStore = defineStore("counter", {
 				orderedKeysList: [],
 				messageMap: {},
 				appVersion: getAppVersion(),
+				joinedUserIds: ["davinci", "dalle", "codex"],
+				hiddenUserIds: [],
 			} as ChatThread,
 			...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,

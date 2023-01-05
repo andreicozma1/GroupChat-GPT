@@ -131,13 +131,14 @@ const parseThreadMessages = (): ChatMessage[] => {
    ** FILTERING
    ************************************************************************/
   messages = messages.filter((msg: ChatMessage) => {
+    // TODO: Toggle / menu to show / hide deleted messages
     if (msg.isDeleted) return false;
     // always keep messages with certain keywords
     if (hasKeepKeywords(msg)) return true;
     // always remove messages with certain keywords
     if (hasRemoveKeywords(msg)) return false;
     // remove messages from users that are hidden in thread settings
-    if (thread.hiddenUserIds?.includes(msg.userId)) return false;
+    if (thread.hiddenUserIds.includes(msg.userId)) return false;
     return true;
   });
   /************************************************************************

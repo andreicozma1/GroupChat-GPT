@@ -6,16 +6,17 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 
 export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 	const cfg = AssistantConfigs[msg.userId];
+
 	msg.isCompRegen = msg.result?.contextIds
 		? msg.result.contextIds.length > 0
 		: false;
 
 	if (msg.isCompRegen) {
 		console.warn("=> Regen");
-		msg.loading = true;
 		msg.textSnippets = [];
 		msg.imageUrls = [];
 	}
+	comp.pushMessage(msg, true);
 
 	const res: GenerationResult = await comp.generate(
 		cfg,
@@ -27,7 +28,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 
 	if (res.errorMsg) {
 		msg.textSnippets.push("[ERROR]\n" + res.errorMsg);
-		comp.pushMessage(msg);
+		comp.pushMessage(msg, false);
 		return;
 	}
 

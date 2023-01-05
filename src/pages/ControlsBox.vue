@@ -69,7 +69,7 @@ const sendMessage = () => {
   responseTimeout.value = setInterval(() => {
     if (!isTyping.value) {
       userMsgObj.value = null;
-      handleCoordinator(comp, comp.getThread.orderedResponses);
+      handleCoordinator(comp, comp.getThread.prefs?.orderedResponses);
       clearInterval(responseTimeout.value);
     }
   }, 500);
@@ -90,7 +90,6 @@ watch(userMsgStr, () => {
 });
 
 const kbShortcuts = (e: KeyboardEvent) => {
-  console.log(e)
   // ctrl/cmd+shift+x clears thread
   if (e.key.toLowerCase() === "x" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
     e.preventDefault();

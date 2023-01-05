@@ -30,10 +30,12 @@ export const useCompStore = defineStore("counter", {
 				messageMap: {},
 				appVersion: getAppVersion(),
 				joinedUserIds: ["davinci", "dalle", "codex"],
-				hiddenUserIds: [],
-				hideCoordinator: false,
-				showDeletedMessages: false,
-				orderedResponses: true,
+				prefs: {
+					hiddenUserIds: [],
+					hideCoordinator: false,
+					showDeletedMessages: false,
+					orderedResponses: true,
+				}
 			} as ChatThread,
 			...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,

@@ -123,15 +123,6 @@ export const handleCoordinator = async (
 	// for each actor, call the appropriate handler
 	console.log("Next Actors: ", nextActors);
 	for (const nextKey of nextActors) {
-		// nextKey = nextKey.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
-		// const nextCfg: AssistantConfig = AssistantConfigs[nextKey];
-		// const nextMsg = createMessageFromConfig(nextCfg, comp);
-		// if (!nextCfg) {
-		// 	nextMsg.textSnippets.push(`[Error: Unknown assistant key: ${nextKey}]`);
-		// 	nextMsg.loading = false;
-		// 	comp.pushMessage(nextMsg);
-		// 	return;
-		// }
 		const nextMsg: ChatMessage | undefined = createMessageFromAiKey(
 			nextKey,
 			comp

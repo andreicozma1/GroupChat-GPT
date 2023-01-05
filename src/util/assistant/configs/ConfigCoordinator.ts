@@ -20,11 +20,11 @@ export const ConfigCoordinator: Assistant = {
 	},
 	examples: [
 		"Hey Davinci",
-		"Respond: Davinci\nIgnore: DALL-E, Codex",
+		"Ignore: DALL-E, Codex\nRespond: Davinci",
 		"Hey DALL-E, I want to see a cat.",
-		"Respond: DALL-E\nIgnore: Davinci, Codex",
+		"Ignore: Davinci, Codex\nRespond: DALL-E",
 		"Hey Codex, make a program that adds two numbers.",
-		"Respond: Codex\nIgnore: Davinci, DALL-E",
+		"Ignore: Davinci, DALL-E\nRespond: Codex",
 	],
 	extras: {
 		willRespond: "Will respond",

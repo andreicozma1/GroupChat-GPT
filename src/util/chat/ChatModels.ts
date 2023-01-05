@@ -12,10 +12,12 @@ export interface ChatThread {
 	orderedKeysList: string[];
 	appVersion?: string;
 	joinedUserIds: string[];
-	hiddenUserIds: string[];
-	hideCoordinator: boolean;
-	showDeletedMessages: boolean;
-	orderedResponses: boolean;
+	prefs: {
+		hiddenUserIds: string[];
+		hideCoordinator: boolean;
+		showDeletedMessages: boolean;
+		orderedResponses: boolean;
+	}
 }
 
 export interface ChatMessage extends GenerationResult {

@@ -44,6 +44,14 @@
                                 This message cannot be re-generated ({{ msg.userId }})
                             </q-tooltip>
                         </q-btn>
+                        <q-icon v-if="msg.cached"
+                                name="cached"
+                                color="blue-grey-8"
+                                class="q-ma-none q-pa-none">
+                            <q-tooltip v-if="msg.dateCreated">
+                                This message was retrieved from cache.
+                            </q-tooltip>
+                        </q-icon>
 
                         <div class="text-caption text-blue-grey-10">
                             <q-item-label :lines="1">
@@ -54,13 +62,8 @@
                             </q-tooltip>
                         </div>
                         <q-space></q-space>
-                        <div v-if="msg.cached">
-                            <q-icon class="q-ml-sm" name="cached"/>
-                            <q-tooltip v-if="msg.dateCreated">
-                                This message was retrieved from cache.
-                            </q-tooltip>
-                        </div>
-                        <div v-if="msg.isDeleted" class="text-bold"> Delete?</div>
+
+                        <div v-if="msg.isDeleted" class="text-bold">Delete?</div>
                         <q-btn v-if="!msg.isDeleted"
                                color="blue-grey-8"
                                dense
@@ -78,14 +81,14 @@
                                size="xs"
                                @click="ignoreMessage(msg)"/>
                         <q-btn :icon="msg.isDeleted ? 'delete_forever' : 'delete'"
-                               color="blue-grey-8"
+                               :color="msg.isDeleted ? 'black' : 'blue-grey-8'"
                                dense
                                flat
                                round
                                size="xs"
                                @click="deleteMessage(msg)"/>
                         <q-btn v-if="msg.isDeleted"
-                               color="blue-grey-8"
+                               :color="msg.isDeleted ? 'black' : 'blue-grey-8'"
                                dense
                                flat
                                icon="restore"
@@ -276,6 +279,7 @@ const sanitizeLine = (line: string) => {
 		prompt: "b",
 		image: "b",
 		code: "b",
+		result: "b",
 	};
 	// replace special tags with valid html tags to distinguish them
 	const regex = /<\/?([a-z]+)[^>]*>/gi;

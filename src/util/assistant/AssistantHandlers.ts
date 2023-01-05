@@ -60,7 +60,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 	// console.log(`sleepTime: ${sleepTime}`)
 	// await sleep(sleepTime)
 
-	comp.pushMessage(msg);
+	// comp.pushMessage(msg);
 
 	// const requiredFollowUps = cfg?.allowPromptFollowUps
 	// 	? cfg.allowPromptFollowUps
@@ -71,7 +71,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 	// 	return;
 	// }
 
-	const nextActors = res.textSnippets
+	const nextActors = msg.textSnippets
 		.flatMap((t: string) => t.toLowerCase().split("\n"))
 		.filter((t: string) => t.includes("respond"))
 		.flatMap((t: string) => t.split(":")[1].split(","))
@@ -121,14 +121,15 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 				console.log("promptText", prompts);
 				const nextId = `${msg.userId}_gen`;
 				for (let i = 0; i < prompts.length; i++) {
-					const prompt = prompts[i];
+					const prompt = `<result>${prompts[i]}</result>`
+					msg.textSnippets.push(prompt);
+
 					const nextMsg: ChatMessage | undefined = createMessageFromUserId(
 						nextId,
 						comp,
 					);
-					if (!nextMsg) return;
-					nextMsg.textSnippets.push(`<prompt>${prompt}</prompt>`);
-					comp.pushMessage(nextMsg);
+					if (!nextMsg) continue;
+					nextMsg.textSnippets.push(prompt);
 					await handleAssistantMsg(nextMsg, comp);
 				}
 			}

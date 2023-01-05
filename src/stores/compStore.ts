@@ -161,6 +161,10 @@ export const useCompStore = defineStore("counter", {
 				msgHist = updateFromMsgIds.map((id) => this.getThread.messageMap[id]);
 				ignoreCache = true;
 			}
+			for (let i = 0; i < msgHist.length; i++) {
+				console.warn(`=> msg ${i}:`);
+				console.log({...msgHist[i]});
+			}
 			let prompt = undefined
 			try {
 				prompt = actor.promptStyle(actor, msgHist);

@@ -1,6 +1,7 @@
 import {promptConversation, promptExamples, promptMembers, promptRules,} from "src/util/prompt/PromptUtils";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
+import {smartNotify} from "src/util/SmartNotify";
 
 export const createAssistantPrompt = (
 	ai: Assistant,
@@ -20,11 +21,31 @@ export const createAssistantPrompt = (
 };
 
 export const createPromptDalleGen = (ai: Assistant, msgHist: ChatMessage[]) => {
-	// TODO: Fix DALL-E prompt uses 1 message too early
-	const usedMessage: ChatMessage = msgHist[msgHist.length - 1];
-	// last text
-	let prompt: string = usedMessage.textSnippets[usedMessage.textSnippets.length - 1];
+	// find the last message that contains a html tag in any of the text snippets
+
+	const usedMessages: ChatMessage[] = msgHist.filter((msg) => {
+		// based on regex
+		return msg.textSnippets.some((text: string) => {
+			return /(<([^>]+)>)/gi.test(text);
+		});
+	});
+	if (usedMessages.length === 0) {
+		smartNotify("Error: No messages with prompts found in message history");
+		return undefined;
+	}
+	// now get the actual textSnippet that contains the html tag
+	const promptSnippets = usedMessages[usedMessages.length - 1].textSnippets.filter((text: string) => {
+		return /(<([^>]+)>)/gi.test(text);
+	})
+
+	if (promptSnippets.length === 0) {
+		smartNotify("Error: No prompt found in the conversation history");
+		return undefined;
+	}
+
+	let prompt = promptSnippets[promptSnippets.length - 1];
 	prompt = prompt.replace(/(<([^>]+)>)/gi, "");
+
 	return prompt;
 };
 

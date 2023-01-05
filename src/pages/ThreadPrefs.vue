@@ -24,7 +24,7 @@
 
       <q-card-section class="q-py-sm">
         <q-list>
-          <q-expansion-item expand-separator icon="people" label="Visible Members" popup>
+          <q-expansion-item expand-separator icon="people" label="Members" popup>
 
             <q-card flat bordered>
               <q-list separator>
@@ -34,6 +34,9 @@
                   </q-item-section>
                   <q-item-section>
                     <q-item-label>{{ member.name }}</q-item-label>
+                    <q-item-label caption>
+                      {{ comp.getThread.prefs.shownUsers[member.key] ? "Visible" : "Hidden" }}
+                    </q-item-label>
                   </q-item-section>
                   <q-item-section side>
                     <q-checkbox v-model="comp.getThread.prefs.shownUsers[member.key]"

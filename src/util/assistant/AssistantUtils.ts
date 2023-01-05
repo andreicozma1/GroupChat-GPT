@@ -1,24 +1,24 @@
-import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
-import {AiAssistant, ProcessKVConfig} from "src/util/assistant/AiAssistantModels";
+import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
+import {Assistant, ProcessKVConfig} from "src/util/assistant/AssistantModels";
 
-export const getAisAvailable = (): AiAssistant[] => {
-	return Object.values(AiAssistantConfigs).filter((a) => {
+export const getAisAvailable = (): Assistant[] => {
+	return Object.values(AssistantConfigs).filter((a) => {
 		if (a.isAvailable === undefined) return true;
 		return a.isAvailable;
 	});
 };
 
-export const getAisAvailableExcept = (actor: AiAssistant): AiAssistant[] => {
+export const getAisAvailableExcept = (actor: Assistant): Assistant[] => {
 	let res = getAisAvailable()
 	res = res.filter((a) => a.key !== actor.key);
 	return res;
 };
 
-export const getAiIds = (actors: AiAssistant[]): string[] => {
+export const getAiIds = (actors: Assistant[]): string[] => {
 	return actors.map((a) => a.key);
 };
 
-export const getAiNames = (actors: AiAssistant[]): string[] => {
+export const getAiNames = (actors: Assistant[]): string[] => {
 	return actors.map((a) => a.name);
 };
 

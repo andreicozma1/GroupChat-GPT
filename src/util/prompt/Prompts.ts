@@ -1,9 +1,9 @@
 import {ChatMessage} from "src/util/ChatUtils";
 import {promptConversation, promptExamples, promptMembers, promptRules,} from "src/util/prompt/PromptUtils";
-import {AiAssistant} from "src/util/assistant/AiAssistantModels";
+import {Assistant} from "src/util/assistant/AssistantModels";
 
 export const createAssistantPrompt = (
-	ai: AiAssistant,
+	ai: Assistant,
 	messages: ChatMessage[]
 ): any => {
 	let start = "### AI GROUP CHAT ###\n";
@@ -23,7 +23,7 @@ export const createAssistantPrompt = (
 };
 
 export const createPromptDalleGen = (
-	ai: AiAssistant,
+	ai: Assistant,
 	messages: ChatMessage[]
 ) => {
 	const usedMessage: ChatMessage = messages[messages.length - 1];
@@ -37,7 +37,7 @@ export const createPromptDalleGen = (
 };
 
 export const createPromptCodexGen = (
-	ai: AiAssistant,
+	ai: Assistant,
 	messages: ChatMessage[]
 ) => {
 	const start = "### CODE GENERATION ###\n";

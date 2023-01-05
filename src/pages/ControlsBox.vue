@@ -56,7 +56,9 @@ import {useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
 import {handleCoordinator} from "src/util/Utils";
-import {getRoboHashAvatarUrl} from "src/util/ImageUtils";
+import {getRobohashUrl} from "src/util/ImageUtils";
+import {ChatMessage} from "src/util/chat/ChatUtils";
+import {v4 as uuidv4} from "uuid";
 
 const comp = useCompStore();
 
@@ -72,7 +74,8 @@ const userMsgStr = ref("");
 const userMsgValid = computed(() => {
   return userMsgStr.value.trim().length > 0;
 });
-const userMsgObj: Ref<any> = ref(null);
+
+const userMsgObj: Ref<ChatMessage | null> = ref(null);
 
 const isTyping = ref(false);
 const isTypingTimeout: Ref<any> = ref(null);
@@ -84,15 +87,17 @@ const sendMessage = () => {
   console.log("Sending message");
   if (userMsgObj.value === null) {
     userMsgObj.value = {
-      text: [],
-      images: [],
-      avatar: getRoboHashAvatarUrl(myName.value),
-      name: myName.value,
+      id: uuidv4(),
+      userName: myName.value,
+      userId: myName.value,
+      userAvatarUrl: getRobohashUrl(myName.value),
+      textSnippets: [],
+      imageUrls: [],
       dateCreated: new Date(),
-    };
+    } as ChatMessage;
     comp.pushMessage(userMsgObj.value);
   }
-  userMsgObj.value.text.push(userMsgStr.value);
+  userMsgObj.value.textSnippets.push(userMsgStr.value);
   userMsgStr.value = "";
 
   if (responseTimeout.value) clearInterval(responseTimeout.value);

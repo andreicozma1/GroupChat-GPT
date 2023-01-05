@@ -1,10 +1,10 @@
-import {getAisAvailable, processKV,} from "src/util/assistant/AiAssistantUtils";
+import {getAisAvailable, processKV,} from "src/util/assistant/AssistantUtils";
 import {ChatMessage} from "src/util/ChatUtils";
 import {humanName} from "stores/compStore";
-import {AiAssistant} from "src/util/assistant/AiAssistantModels";
+import {Assistant} from "src/util/assistant/AssistantModels";
 
 const getAssistantTraits = (
-	ai: AiAssistant,
+	ai: Assistant,
 	useKey: boolean,
 	tag?: string
 ): string => {
@@ -26,7 +26,7 @@ const getAssistantTraits = (
 
 export const promptMembers = (
 	useKey: boolean,
-	currentAI?: AiAssistant
+	currentAI?: Assistant
 ): string => {
 	const available = getAisAvailable();
 	if (!available || available.length === 0) return "";
@@ -44,7 +44,7 @@ export const promptMembers = (
 	return start + "\n" + info;
 };
 
-export const promptExamples = (ai: AiAssistant): string => {
+export const promptExamples = (ai: Assistant): string => {
 	if (!ai.examples || ai.examples.length == 0) return "";
 
 	const start = "### EXAMPLES ###";
@@ -60,7 +60,7 @@ export const promptExamples = (ai: AiAssistant): string => {
 	return start + "\n" + res;
 };
 
-export const promptRules = (ai: AiAssistant): string => {
+export const promptRules = (ai: Assistant): string => {
 	if (!ai.rules) return "";
 
 	const start = "### RULES ###";

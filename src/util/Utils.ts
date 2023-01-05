@@ -1,12 +1,13 @@
-import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
-import {ChatMessage, createMessageFromAiKey, createMessageFromConfig,} from "src/util/ChatUtils";
+import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
+import {ChatMessage, createMessageFromAiKey, createMessageFromConfig,} from "src/util/chat/ChatUtils";
 
 // return process.env.npm_package_version || "unknown";
 import {version} from "./../../package.json";
-import {AiAssistant} from "src/util/assistant/AiAssistantModels";
+import {Assistant} from "src/util/assistant/AssistantModels";
+import {GenerationResult} from "stores/compStore";
 
 export const getAppVersion = () => {
-	return version;
+	return version.trim();
 };
 export const getRandomMinMax = (min: number, max: number) =>
 	Math.random() * (max - min) + min;
@@ -18,7 +19,7 @@ export const parseNounCount = (singularStr: string, count: number) => {
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const handleAssistant = async (msg: ChatMessage, comp: any) => {
-	const cfg = AiAssistantConfigs[msg.userId];
+	const cfg = AssistantConfigs[msg.userId];
 	msg.isCompRegen = msg.result?.messageIds
 		? msg.result.messageIds.length > 0
 		: false;
@@ -28,7 +29,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		msg.imageUrls = [];
 	}
 
-	const res = await comp.generate(cfg, msg.result?.messageIds);
+	const res: GenerationResult = await comp.generate(cfg, msg.result?.messageIds);
 	console.log(res);
 	msg.cached = res.cached;
 	msg.result = res.result;
@@ -40,10 +41,10 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		return;
 	}
 
-	if (res?.images) msg.imageUrls.push(...res.images);
-	if (res?.text) msg.textSnippets.push(...res.text);
+	if (res?.imageUrls) msg.imageUrls.push(...res.imageUrls);
+	if (res?.textSnippets) msg.textSnippets.push(...res.textSnippets);
 
-	// const totalLength = msg.text.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
+	// const totalLength = msg.textSnippets.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
 	// const sleepTime = totalLength * 25
 	// console.log(`sleepTime: ${sleepTime}`)
 	// await sleep(sleepTime)
@@ -75,7 +76,7 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		return t.trim();
 	});
 	msg.textSnippets = msg.textSnippets.filter((t: string) => t.length > 0);
-	// msg.text = msg.text.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
+	// msg.textSnippets = msg.textSnippets.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
 	comp.pushMessage(msg);
 
 	prompts = prompts.filter((t: string) => t.split(" ").length > 3);
@@ -100,7 +101,7 @@ export const handleCoordinator = async (
 	orderedResponses?: boolean
 ) => {
 	orderedResponses = orderedResponses === undefined ? true : orderedResponses;
-	const coordConf: AiAssistant = AiAssistantConfigs.coordinator;
+	const coordConf: Assistant = AssistantConfigs.coordinator;
 	const coordMsg: ChatMessage = createMessageFromConfig(coordConf, comp);
 
 	const res = await comp.generate(coordConf);
@@ -115,14 +116,14 @@ export const handleCoordinator = async (
 		comp.pushMessage(coordMsg);
 		return;
 	}
-	if (!res.text) {
+	if (!res.textSnippets) {
 		coordMsg.textSnippets.push("Error: No text in result]");
 		comp.pushMessage(coordMsg);
 		return;
 	}
-	coordMsg.textSnippets = res.text ? [...res.text] : ["An error occurred"];
+	coordMsg.textSnippets = res.textSnippets ? [...res.textSnippets] : ["An error occurred"];
 	comp.pushMessage(coordMsg);
-	const nextActors = res.text
+	const nextActors = res.textSnippets
 		.flatMap((t: string) => t.toLowerCase().split("\n"))
 		.filter((t: string) => t.includes("respond"))
 		.flatMap((t: string) => t.split(":")[1].split(","))
@@ -135,7 +136,7 @@ export const handleCoordinator = async (
 		// const nextCfg: AssistantConfig = AssistantConfigs[nextKey];
 		// const nextMsg = createMessageFromConfig(nextCfg, comp);
 		// if (!nextCfg) {
-		// 	nextMsg.text.push(`[Error: Unknown assistant key: ${nextKey}]`);
+		// 	nextMsg.textSnippets.push(`[Error: Unknown assistant key: ${nextKey}]`);
 		// 	nextMsg.loading = false;
 		// 	comp.pushMessage(nextMsg);
 		// 	return;

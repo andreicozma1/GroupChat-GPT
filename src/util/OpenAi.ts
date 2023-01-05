@@ -1,6 +1,6 @@
 import {Configuration, OpenAIApi} from "openai";
 import {CreateCompletionRequest, CreateImageRequest} from "openai/api";
-import {AiAssistant} from "src/util/assistant/AiAssistantModels";
+import {Assistant} from "src/util/assistant/AssistantModels";
 import {ApiReqConfigs} from "src/util/assistant/ApiReqConfigs";
 
 export const openAiConfig = {
@@ -35,7 +35,7 @@ export const ApiReqMap: {
 	},
 };
 
-export const makeApiRequest = async (ai: AiAssistant, prompt: string) => {
+export const makeApiRequest = async (ai: Assistant, prompt: string) => {
 	const {apiReqType, apiReqOpts} = ai.apiConfig;
 	const {func, defaultOpts} = ApiReqMap[apiReqType];
 	let opts = {...defaultOpts};

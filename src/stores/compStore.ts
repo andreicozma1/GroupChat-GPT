@@ -1,12 +1,12 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
-import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
-import {ChatMessage, ChatThread, getMessageHistory} from "src/util/ChatUtils";
+import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
+import {ChatMessage, ChatThread, getMessageHistory} from "src/util/chat/ChatUtils";
 import {makeApiRequest} from "src/util/OpenAi";
 import {getAppVersion} from "src/util/Utils";
 import {v4 as uuidv4} from "uuid";
 import {Ref, ref} from "vue";
-import {AiAssistant} from "src/util/assistant/AiAssistantModels";
+import {Assistant} from "src/util/assistant/AssistantModels";
 
 export const humanName = "Human";
 
@@ -15,8 +15,9 @@ export interface GenerationResult {
 		messageIds: string[];
 		responseData: any;
 	};
-	textSnippets?: string[];
-	imageUrls?: string[];
+	// TODO: Put these in a separate MessageContent interface and keep track of history
+	textSnippets: string[];
+	imageUrls: string[];
 	hash?: number;
 	cached?: boolean;
 	errorMsg?: string;
@@ -72,6 +73,8 @@ export const useCompStore = defineStore("counter", {
 				return {
 					errorMsg: "Cached response was null/undefined",
 					result: undefined,
+					textSnippets: [],
+					imageUrls: [],
 					cached: undefined,
 					hash: hash,
 				};
@@ -111,7 +114,7 @@ export const useCompStore = defineStore("counter", {
 			};
 		},
 		async generate(
-			actor: AiAssistant,
+			actor: Assistant,
 			updateFromMsgIds?: string[]
 		): Promise<GenerationResult> {
 			console.warn("=======================================");
@@ -123,7 +126,7 @@ export const useCompStore = defineStore("counter", {
 					thread: this.getThread,
 					includeSelf: true,
 					includeActors: undefined,
-					excludeActors: [AiAssistantConfigs.coordinator],
+					excludeActors: [AssistantConfigs.coordinator],
 					maxLength: 10,
 				});
 			} else {
@@ -165,6 +168,8 @@ export const useCompStore = defineStore("counter", {
 						messageIds: relevantMsgIds,
 						responseData: undefined,
 					},
+					textSnippets: [],
+					imageUrls: [],
 					cached: false,
 					hash: hash,
 				};

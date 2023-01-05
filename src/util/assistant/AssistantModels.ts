@@ -1,6 +1,6 @@
 import {PromptRules, PromptTraits} from "src/util/prompt/PromptModels";
 
-export interface AiAssistant {
+export interface Assistant {
 	key: string;
 	name: string;
 	icon: string;

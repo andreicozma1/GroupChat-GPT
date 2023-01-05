@@ -1,7 +1,7 @@
-import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
-import {getRoboHashAvatarUrl} from "src/util/ImageUtils";
+import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
+import {getRobohashUrl} from "src/util/ImageUtils";
 import {GenerationResult, humanName} from "stores/compStore";
-import {AiAssistant} from "src/util/assistant/AiAssistantModels";
+import {Assistant} from "src/util/assistant/AssistantModels";
 import {smartNotify} from "src/util/SmartNotify";
 
 export interface ChatThread {
@@ -17,9 +17,7 @@ export interface ChatMessage extends GenerationResult {
 	userId: string;
 	userName: string;
 	userAvatarUrl: string;
-	// TODO: Put these in a separate MessageContent interface and keep track of history
-	textSnippets: string[];
-	imageUrls: string[];
+
 	// TODO: Put dates in ChatMessageDates interface and keep track of edits
 	dateCreated: string | number | Date;
 	// TODO: Put this in ChatMessageFlags interface
@@ -33,8 +31,8 @@ export interface ChatMessage extends GenerationResult {
 export interface ChatMessageHistConfig {
 	thread: ChatThread;
 	includeSelf?: boolean;
-	includeActors?: AiAssistant[];
-	excludeActors?: AiAssistant[];
+	includeActors?: Assistant[];
+	excludeActors?: Assistant[];
 	maxLength?: number;
 }
 
@@ -53,7 +51,7 @@ export const getMessageHistory = (
 		}
 		const actor_key = m.userId;
 		if (actor_key !== undefined) {
-			const actor = AiAssistantConfigs[actor_key];
+			const actor = AssistantConfigs[actor_key];
 			if (actor && actor.isHelper === true) return false;
 		}
 		// handle actors to include and exclude
@@ -75,7 +73,7 @@ export const getMessageHistory = (
 	return hist;
 };
 export const createMessageFromConfig = (
-	cfg: AiAssistant,
+	cfg: Assistant,
 	comp: any
 ): ChatMessage => {
 	const assistantName: string = cfg?.name || "Unknown AI";
@@ -84,7 +82,7 @@ export const createMessageFromConfig = (
 		id: undefined,
 		textSnippets: [],
 		imageUrls: [],
-		userAvatarUrl: getRoboHashAvatarUrl(assistantName),
+		userAvatarUrl: getRobohashUrl(assistantName),
 		userName: assistantName,
 		dateCreated: new Date(),
 		userId: assistantKey,
@@ -100,7 +98,7 @@ export const createMessageFromAiKey = (
 	comp: any
 ): ChatMessage | undefined => {
 	key = key.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
-	const cfg: AiAssistant = AiAssistantConfigs[key];
+	const cfg: Assistant = AssistantConfigs[key];
 	const msg = createMessageFromConfig(cfg, comp);
 	if (!cfg) {
 		msg.textSnippets.push(`[Error: Unknown assistant key: ${key}]`);

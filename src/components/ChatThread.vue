@@ -5,6 +5,8 @@
       <q-chat-message size="6"
                       :sent="isSentByMe(msg)"
                       :bg-color="isSentByMe(msg) ? null : getSeededQColor(msg.userName, 1, 2)"
+                      :name="msg.userName"
+                      :avatar="msg.userAvatarUrl"
                       v-bind="msg">
         <div v-for="text in msg.textSnippets" :key="text">
           <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)"/>
@@ -78,11 +80,11 @@
 <script lang="ts" setup>
 import {copyToClipboard} from "quasar";
 import {getSeededQColor} from "src/util/Colors";
-import {handleAssistant} from "src/util/Utils";
+import {getAppVersion, handleAssistant} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import {AiAssistantConfigs} from "src/util/assistant/AiAssistantConfigs";
-import {ChatMessage, ChatThread, getThreadMessages} from "src/util/ChatUtils";
+import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
+import {ChatMessage, ChatThread, getThreadMessages} from "src/util/chat/ChatUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo, parseDate} from "src/util/DateUtils";
 
@@ -104,9 +106,9 @@ const threadElem: any = ref(null);
 const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 const getAssistantIcon = (assistantKey: string) => {
-  if (!AiAssistantConfigs[assistantKey]) return "send";
-  if (!AiAssistantConfigs[assistantKey].icon) return "help";
-  return AiAssistantConfigs[assistantKey].icon;
+  if (!AssistantConfigs[assistantKey]) return "send";
+  if (!AssistantConfigs[assistantKey].icon) return "help";
+  return AssistantConfigs[assistantKey].icon;
 };
 
 function hasKeepKeywords(msg: ChatMessage) {
@@ -287,16 +289,21 @@ const loadThread = () => {
     scrollToBottom(1000);
   } catch (err: any) {
     console.error("Error loading chat thread", err);
-    const threadVer = comp.getThread.appVersion;
+    const threadVer = comp.getThread?.appVersion?.trim() ?? "unknown";
+    const appVer = getAppVersion()
+    console.log("Thread version:", threadVer);
+    console.log("App version:", appVer);
+    console.log(threadVer === appVer);
     let caption: string;
-    if (threadVer) {
-      caption = `Saved content from version ${threadVer} is not compatible with the current version of the app.`
+    if (threadVer !== appVer) {
+      caption = `Saved content from version ${threadVer}`
     } else {
-      caption = `Saved content is not compatible with the current version of the app.`
+      caption = `Saved content`
     }
+    caption += ` may not be compatible with version ${getAppVersion()} of the app.`
     caption += "\n"
     caption += 'Please try again with a new thread or clear the cache.'
-    smartNotify(`Warning: Conversation data structures have changed.`, caption);
+    smartNotify(`An error occurred while loading saved chat thread`, caption);
   }
 }
 

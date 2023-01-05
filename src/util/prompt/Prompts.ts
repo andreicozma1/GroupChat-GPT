@@ -1,4 +1,4 @@
-import {ChatMessage} from "src/util/ChatUtils";
+import {ChatMessage} from "src/util/chat/ChatUtils";
 import {promptConversation, promptExamples, promptMembers, promptRules,} from "src/util/prompt/PromptUtils";
 import {Assistant} from "src/util/assistant/AssistantModels";
 

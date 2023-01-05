@@ -20,6 +20,7 @@ export const createAssistantPrompt = (
 };
 
 export const createPromptDalleGen = (ai: Assistant, msgHist: ChatMessage[]) => {
+	// TODO: Fix DALL-E prompt uses 1 message too early
 	const usedMessage: ChatMessage = msgHist[msgHist.length - 1];
 	// last text
 	let prompt: string =

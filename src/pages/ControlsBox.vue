@@ -55,10 +55,10 @@
 import {useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
-import {handleCoordinator} from "src/util/Utils";
 import {buildMessage} from "src/util/chat/ChatUtils";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
+import {handleCoordinator} from "src/util/assistant/AssistantHandlers";
 
 const comp = useCompStore();
 

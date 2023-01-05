@@ -80,7 +80,7 @@
 <script lang="ts" setup>
 import {copyToClipboard} from "quasar";
 import {getSeededQColor} from "src/util/Colors";
-import {getAppVersion, handleAssistant} from "src/util/Utils";
+import {getAppVersion} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
@@ -89,6 +89,7 @@ import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo, parseDate} from "src/util/DateUtils";
 import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
+import {handleAssistant} from "src/util/assistant/AssistantHandlers";
 
 const props = defineProps({
   scrollAreaStyle: {

@@ -1,5 +1,5 @@
 import {getAisAvailable, processKV,} from "src/util/assistant/AssistantUtils";
-import {ChatMessage} from "src/util/ChatUtils";
+import {ChatMessage} from "src/util/chat/ChatUtils";
 import {humanName} from "stores/compStore";
 import {Assistant} from "src/util/assistant/AssistantModels";
 
@@ -81,7 +81,7 @@ export const promptConversation = (msgHist: ChatMessage[]): string => {
 
 	const conv = msgHist
 		.map((m) => {
-			const v = m.textSnippets.map((s) => s.trim());
+			const v = m.textSnippets.map((s: string) => s.trim());
 			const r = [`### ${m.userName}:`, ...v];
 			return r.join("\n");
 		})

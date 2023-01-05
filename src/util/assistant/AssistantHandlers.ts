@@ -10,6 +10,12 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		? msg.result.contextIds.length > 0
 		: false;
 
+	if (msg.isCompRegen) {
+		console.warn("=> Regen");
+		msg.loading = true;
+		msg.textSnippets = [];
+		msg.imageUrls = [];
+	}
 
 	const response: GenerationResult = await comp.generate(cfg, msg.result?.contextIds);
 	console.log(response);
@@ -22,12 +28,11 @@ export const handleAssistant = async (msg: ChatMessage, comp: any) => {
 		return;
 	}
 
-	if (msg.isCompRegen) {
-		console.warn("=> Regen");
-		msg.loading = true;
-		msg.textSnippets = [];
-		msg.imageUrls = [];
-	}
+	// if (msg.isCompRegen) {
+	// 	console.warn("=> Regen");
+	// 	msg.textSnippets = [];
+	// 	msg.imageUrls = [];
+	// }
 
 	if (response?.textSnippets) msg.textSnippets.push(...response.textSnippets);
 	if (response?.imageUrls) msg.imageUrls.push(...response.imageUrls);

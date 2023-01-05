@@ -6,7 +6,9 @@
 
         <q-toolbar-title> GroupChat-GPT</q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <ThreadPrefs/>
+
+        <div class="q-ml-sm">Quasar v{{ $q.version }}</div>
       </q-toolbar>
     </q-header>
 
@@ -27,6 +29,7 @@
 <script lang="ts" setup>
 import EssentialLink, {EssentialLinkProps} from "components/EssentialLink.vue";
 import {ref} from "vue";
+import ThreadPrefs from "pages/ThreadPrefs.vue";
 
 const essentialLinks: EssentialLinkProps[] = [
   {

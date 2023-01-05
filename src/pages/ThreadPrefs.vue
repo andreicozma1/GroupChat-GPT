@@ -1,44 +1,53 @@
 <template>
-  <q-btn-dropdown color="primary" rounded icon="settings">
+  <q-btn-dropdown flat rounded icon="settings" label="Prefs" size="12px">
     <q-card>
       <q-card-section class="q-pa-sm">
         <q-list>
-          <q-item dense>
-            <q-checkbox v-model="comp.getThread.prefs.orderedResponses"
-                        v-if="comp.getThread.prefs"
-                        label="Ordered Responses"
-                        left-label/>
-            <q-checkbox v-else
-                        :model-value="undefined"
-                        label="Ordered Responses"
-                        left-label>
-              <q-tooltip>Could not load thread preferences</q-tooltip>
-            </q-checkbox>
-          </q-item>
-          <!--          <q-item dense>-->
-          <!--            <q-checkbox v-model="comp.getThread.prefs.hideCoordinator"-->
-          <!--                        v-if="comp.getThread.prefs"-->
-          <!--                        label="Hide Coordinator"-->
-          <!--                        left-label/>-->
-          <!--            <q-checkbox v-else-->
-          <!--                        :model-value="undefined"-->
-          <!--                        label="Hide Coordinator"-->
-          <!--                        left-label>-->
-          <!--              <q-tooltip>Could not load thread preferences</q-tooltip>-->
-          <!--            </q-checkbox>-->
-          <!--          </q-item>-->
-          <q-item dense>
-            <q-checkbox v-model="comp.getThread.prefs.showDeletedMessages"
-                        v-if="comp.getThread.prefs"
-                        label="Show Deleted Messages"
-                        left-label/>
-            <q-checkbox v-else
-                        :model-value="undefined"
-                        label="Show Deleted Messages"
-                        left-label>
-              <q-tooltip>Could not load thread preferences</q-tooltip>
-            </q-checkbox>
-          </q-item>
+          <!--          Members -->
+          <q-expansion-item expand-separator icon="people" label="Members">
+
+            <q-card flat bordered>
+              <q-item dense
+                      v-for="member in getThreadUsers()" :key="member">
+                <q-item-section>
+                  <q-item-label>{{ member.name }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-card>
+          </q-expansion-item>
+
+          <!--          General -->
+          <q-expansion-item expand-separator icon="settings" label="General">
+            <q-card flat bordered>
+              <q-item dense>
+                <q-checkbox v-model="comp.getThread.prefs.orderedResponses"
+                            v-if="comp.getThread.prefs"
+                            label="Ordered Responses"
+                            left-label/>
+                <q-checkbox v-else
+                            :model-value="undefined"
+                            label="Ordered Responses"
+                            left-label>
+                  <q-tooltip>Could not load thread preferences</q-tooltip>
+                </q-checkbox>
+              </q-item>
+
+              <q-item dense>
+                <q-checkbox v-model="comp.getThread.prefs.showDeletedMessages"
+                            v-if="comp.getThread.prefs"
+                            label="Show Deleted Messages"
+                            left-label/>
+                <q-checkbox v-else
+                            :model-value="undefined"
+                            label="Show Deleted Messages"
+                            left-label>
+                  <q-tooltip>Could not load thread preferences</q-tooltip>
+                </q-checkbox>
+              </q-item>
+            </q-card>
+          </q-expansion-item>
+
+
           <q-item dense>
             <q-btn-group rounded flat>
               <q-btn
@@ -70,6 +79,11 @@ import {useCompStore} from "stores/compStore";
 import {watch} from "vue";
 
 const comp = useCompStore();
+
+const getThreadUsers = () => {
+  const res = comp.getThread.joinedUserIds.map((id) => comp.getUser(id));
+  return res;
+};
 
 watch(() => comp.getThread.prefs, () => {
   console.log("Thread prefs changed");

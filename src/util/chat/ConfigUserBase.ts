@@ -1,7 +1,7 @@
 import {ChatUser} from "src/util/chat/ChatModels";
 
 export const ConfigUserBase: ChatUser = {
-	key: "human",
+	key: "user",
 	name: "Human",
 	icon: "chat",
 };

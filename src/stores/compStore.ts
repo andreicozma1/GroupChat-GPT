@@ -6,7 +6,8 @@ import {makeApiRequest} from "src/util/OpenAi";
 import {getAppVersion} from "src/util/Utils";
 import {Ref, ref} from "vue";
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
+import {ChatMessage, ChatThread, ChatUser} from "src/util/chat/ChatModels";
+import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 
 export interface GenerationResult {
 	result?: {
@@ -28,9 +29,16 @@ export const createThread = (): ChatThread => {
 		appVersion: getAppVersion(),
 		joinedUserIds: ["coordinator", "davinci", "dalle", "codex"],
 		prefs: {
-			hiddenUsers: [],
+			hiddenUsers: {},
 			showDeletedMessages: false,
 			orderedResponses: true,
+		}
+	}
+	// for each assistant, check defaultHidden
+	// and add to hiddenUsers if true
+	for (const assistant of res.joinedUserIds) {
+		if (AssistantConfigs[assistant].defaultHidden) {
+			res.prefs.hiddenUsers[assistant] = true;
 		}
 	}
 	return res
@@ -43,6 +51,11 @@ export const useCompStore = defineStore("counter", {
 			main: createThread(),
 			...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,
+		users: ref({
+			user: ConfigUserBase,
+			...AssistantConfigs,
+			...(LocalStorage.getItem("users") || {}),
+		}) as Ref<Record<string, ChatUser>>,
 		currentThread: "main",
 	}),
 	getters: {
@@ -52,6 +65,12 @@ export const useCompStore = defineStore("counter", {
 		getThread(state): ChatThread {
 			return state.threads[state.currentThread];
 		},
+		getUsers(state): Record<string, ChatUser> {
+			return state.users;
+		},
+		getUser(state): (key: string) => ChatUser {
+			return (key: string) => state.users[key];
+		}
 	},
 	actions: {
 		updateCache() {

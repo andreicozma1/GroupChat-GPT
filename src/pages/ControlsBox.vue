@@ -24,7 +24,6 @@
           @click="sendMessage"
       />
       <q-space/>
-      <ThreadPrefs/>
     </q-card-actions>
   </q-card>
 </template>
@@ -38,7 +37,6 @@ import {buildMessage} from "src/util/chat/ChatUtils";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 import {handleCoordinator} from "src/util/assistant/AssistantHandlers";
-import ThreadPrefs from "pages/ThreadPrefs.vue";
 
 const comp = useCompStore();
 

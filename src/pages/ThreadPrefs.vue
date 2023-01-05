@@ -1,7 +1,7 @@
 <template>
   <q-btn-dropdown flat rounded icon="settings" label="Prefs" size="12px">
     <q-card>
-      <q-card-section class="q-py-sm">
+      <q-card-section class="q-pt-sm q-pb-none">
         <q-btn-group rounded flat>
           <q-btn
               color="orange"

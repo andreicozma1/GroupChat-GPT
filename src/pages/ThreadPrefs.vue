@@ -4,20 +4,22 @@
       <q-card-section class="q-pa-sm">
         <q-list>
           <!--          Members -->
-          <q-expansion-item expand-separator icon="people" label="Members">
+          <q-expansion-item expand-separator icon="people" label="Members" popup>
 
             <q-card flat bordered>
-              <q-item dense
-                      v-for="member in getThreadUsers()" :key="member">
-                <q-item-section>
-                  <q-item-label>{{ member.name }}</q-item-label>
-                </q-item-section>
-              </q-item>
+              <q-list separator>
+                <q-item dense
+                        v-for="member in getThreadUsers()" :key="member">
+                  <q-item-section>
+                    <q-item-label>{{ member.name }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
             </q-card>
           </q-expansion-item>
 
           <!--          General -->
-          <q-expansion-item expand-separator icon="settings" label="General">
+          <q-expansion-item expand-separator icon="settings" label="General" popup>
             <q-card flat bordered>
               <q-item dense>
                 <q-checkbox v-model="comp.getThread.prefs.orderedResponses"

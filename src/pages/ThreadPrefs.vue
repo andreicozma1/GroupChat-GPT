@@ -21,31 +21,37 @@
           <!--          General -->
           <q-expansion-item expand-separator icon="settings" label="General" popup>
             <q-card flat bordered>
-              <q-item dense>
-                <q-checkbox v-model="comp.getThread.prefs.orderedResponses"
-                            v-if="comp.getThread.prefs"
-                            label="Ordered Responses"
-                            left-label/>
-                <q-checkbox v-else
-                            :model-value="undefined"
-                            label="Ordered Responses"
-                            left-label>
-                  <q-tooltip>Could not load thread preferences</q-tooltip>
-                </q-checkbox>
-              </q-item>
+              <q-list separator>
+                <q-item dense>
+                  <q-checkbox v-model="comp.getThread.prefs.orderedResponses"
+                              v-if="comp.getThread.prefs"
+                              label="Ordered Responses"
+                              size="xs"
+                              left-label/>
+                  <q-checkbox v-else
+                              :model-value="undefined"
+                              label="Ordered Responses"
+                              size="xs"
+                              left-label>
+                    <q-tooltip>Could not load thread preferences</q-tooltip>
+                  </q-checkbox>
+                </q-item>
 
-              <q-item dense>
-                <q-checkbox v-model="comp.getThread.prefs.showDeletedMessages"
-                            v-if="comp.getThread.prefs"
-                            label="Show Deleted Messages"
-                            left-label/>
-                <q-checkbox v-else
-                            :model-value="undefined"
-                            label="Show Deleted Messages"
-                            left-label>
-                  <q-tooltip>Could not load thread preferences</q-tooltip>
-                </q-checkbox>
-              </q-item>
+                <q-item dense>
+                  <q-checkbox v-model="comp.getThread.prefs.showDeletedMessages"
+                              v-if="comp.getThread.prefs"
+                              label="Show Deleted Messages"
+                              size="xs"
+                              left-label/>
+                  <q-checkbox v-else
+                              :model-value="undefined"
+                              label="Show Deleted Messages"
+                              size="xs"
+                              left-label>
+                    <q-tooltip>Could not load thread preferences</q-tooltip>
+                  </q-checkbox>
+                </q-item>
+              </q-list>
             </q-card>
           </q-expansion-item>
 

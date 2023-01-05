@@ -117,6 +117,7 @@ export const handleCoordinator = async (
 		comp.pushMessage(msg);
 		return;
 	}
+
 	msg.textSnippets = res.textSnippets
 		? [...res.textSnippets]
 		: ["An error occurred"];
@@ -125,10 +126,19 @@ export const handleCoordinator = async (
 		.flatMap((t: string) => t.toLowerCase().split("\n"))
 		.filter((t: string) => t.includes("respond"))
 		.flatMap((t: string) => t.split(":")[1].split(","))
-		.map((a: string) => a.trim().toLowerCase());
+		.map((a: string) => a.trim().toLowerCase())
+		.filter((a: string) => a !== "none");
 
 	// for each actor, call the appropriate handler
 	console.log("Next Actors: ", nextActors);
+
+	if (nextActors.length === 0) {
+		console.warn("=> No follow-ups");
+		msg.textSnippets.push("[INFO] It appears that all assistants chose to ignore your message, lol.");
+		msg.textSnippets.push("Try sending a message that is more interesting.");
+		return;
+	}
+
 	for (const nextKey of nextActors) {
 		const nextMsg: ChatMessage | undefined = createMessageFromAiKey(
 			nextKey,

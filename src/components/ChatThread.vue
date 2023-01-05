@@ -8,7 +8,7 @@
                       :name="msg.userName"
                       :avatar="msg.userAvatarUrl"
                       v-bind="msg">
-        <div v-for="text in msg.textSnippets" :key="text">
+        <div v-for="text in parseTexts(msg)" :key="text">
           <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)"/>
           <q-tooltip v-if="msg.dateCreated" :delay="750">
             {{ createContentHoverHint(msg) }}
@@ -141,17 +141,6 @@ const parseThreadMessages = (): ChatMessage[] => {
     return true;
   });
   /************************************************************************
-   ** MAPPING
-   ************************************************************************/
-  messages = messages.map((msg: ChatMessage) => {
-    const text = msg.textSnippets.length === 0 ? [] : [...msg.textSnippets];
-    if (!msg.loading && text.length === 0) text.push("[No message]");
-    return {
-      ...msg,
-      textSnippets: text,
-    };
-  });
-  /************************************************************************
    ** SORTING
    ************************************************************************/
   // sort by dateCreated
@@ -199,6 +188,11 @@ const createStampHoverHint = (msg: ChatMessage) => {
   return res;
 };
 
+const parseTexts = (msg: ChatMessage) => {
+  const texts = msg.textSnippets;
+  if (!texts || texts.length === 0) return [""];
+  return texts
+}
 
 const isSentByMe = (msg: ChatMessage) => {
   return msg.userName === props.myName;
@@ -232,9 +226,8 @@ const scrollToBottom = (duration?: number) => {
 };
 
 const getSplitText = (text: string) => {
-  const fallback = ["[Error: Text is null]"];
-  // split text into lines
-  return text?.split("\n") ?? fallback;
+  text = text.split("\n")
+  return text;
 };
 
 const sanitizeLine = (line: string) => {

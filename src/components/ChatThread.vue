@@ -1,13 +1,15 @@
 <template>
   <q-scroll-area ref="threadElem" :style="getScrollAreaStyle">
     <q-chat-message :label="threadMessages.length.toString() + ' messages'" class="q-pt-md"/>
-    <div v-for="msg in threadMessages" :key="msg.dateCreated">
-      <q-chat-message size="6"
-                      :sent="isSentByMe(msg)"
-                      :bg-color="isSentByMe(msg) ? null : getSeededQColor(msg.userName, 1, 2)"
-                      :name="msg.userName"
-                      :avatar="msg.userAvatarUrl"
-                      v-bind="msg">
+    <div v-for="msg in threadMessages" :key="msg.dateCreated" :style="getMsgStyle(msg)">
+      <q-chat-message
+          v-bind="msg"
+          size="6"
+          :sent="isSentByMe(msg)"
+          :bg-color="getBgColor(msg)"
+          :name="msg.userName"
+          :avatar="msg.userAvatarUrl"
+      >
         <div v-for="text in parseTexts(msg)" :key="text">
           <div v-for="line in getSplitText(text)" :key="line" @click="copyMessage(text)" v-html="sanitizeLine(line)"/>
           <q-tooltip v-if="msg.dateCreated" :delay="750">
@@ -40,17 +42,39 @@
                 This message was retrieved from cache.
               </q-tooltip>
             </span>
+
+            <span v-if="msg.isDeleted" class="text-bold">
+            Delete?
+            </span>
             <q-btn dense
                    round
                    flat
                    size="xs"
-                   icon="delete_forever"
-                   color="black"
+                   :icon="msg.isDeleted ? 'delete_forever' : 'delete'"
+                   :color="msg.isDeleted ? 'red' : 'black'"
                    @click="deleteMessage(msg)"/>
+            <!--            Restore -->
             <q-btn dense
                    round
                    flat
                    size="xs"
+                   icon="restore"
+                   v-if="msg.isDeleted"
+                   color="green-11"
+                   @click="restoreMessage(msg)"/>
+            <q-btn dense
+                   round
+                   flat
+                   size="xs"
+                   v-if="!msg.isDeleted"
+                   :icon="msg.isIgnored ? 'visibility' : 'visibility_off'"
+                   color="black"
+                   @click="ignoreMessage(msg)"/>
+            <q-btn dense
+                   round
+                   flat
+                   size="xs"
+                   v-if="!msg.isDeleted"
                    icon="edit"
                    color="black"
                    @click="editMessage(msg)"/>
@@ -62,6 +86,7 @@
                    color="black"
                    v-if="canRegenMessage(msg)"
                    @click="regenMessage(msg)"/>
+
           </div>
         </template>
 
@@ -131,7 +156,7 @@ const parseThreadMessages = (): ChatMessage[] => {
    ** FILTERING
    ************************************************************************/
   messages = messages.filter((msg: ChatMessage) => {
-    if (!thread.prefs?.showDeletedMessages && msg.isDeleted) return false;
+    if (!comp.getThread.prefs.showIgnoredMessages && msg.isIgnored) return false;
     // always keep messages with certain keywords
     if (hasKeepKeywords(msg)) return true;
     // always remove messages with certain keywords
@@ -268,6 +293,7 @@ const regenMessage = (msg: ChatMessage) => {
 };
 
 const canRegenMessage = (msg: ChatMessage) => {
+  if (msg.isDeleted) return false;
   const msgIds = msg.result?.contextIds
   if (msgIds) return msgIds.length > 0
   return false
@@ -275,8 +301,35 @@ const canRegenMessage = (msg: ChatMessage) => {
 
 const deleteMessage = (msg: ChatMessage) => {
   console.warn("=> delete:", {...msg});
+  // 2nd click - confirmation and delete
+  if (msg.isDeleted) {
+    comp.deleteMessage(msg.id);
+    return
+  }
+  // 1st click - will need 2nd click to confirm
   msg.isDeleted = true;
+  msg.isIgnored = true;
 };
+
+const ignoreMessage = (msg: ChatMessage) => {
+  console.warn("=> ignore:", {...msg});
+  msg.isIgnored = msg.isIgnored === undefined ? true : !msg.isIgnored;
+};
+
+const restoreMessage = (msg: ChatMessage) => {
+  console.warn("=> restore:", {...msg});
+  msg.isDeleted = false;
+  msg.isIgnored = false;
+};
+
+const getMsgStyle = (msg: ChatMessage) => {
+  if (msg.isIgnored) return {opacity: 0.8};
+};
+
+const getBgColor = (msg: ChatMessage) => {
+  if (msg.isDeleted) return null;
+  return isSentByMe(msg) ? null : getSeededQColor(msg.userName, 1, 2)
+}
 
 const loadThread = () => {
   try {

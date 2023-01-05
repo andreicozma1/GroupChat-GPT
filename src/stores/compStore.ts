@@ -8,6 +8,7 @@ import {Ref, ref} from "vue";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage, ChatThread, ChatUser} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
+import {smartNotify} from "src/util/SmartNotify";
 
 export interface GenerationResult {
 	result?: {
@@ -30,6 +31,7 @@ export const createThread = (): ChatThread => {
 		joinedUserIds: ["coordinator", "davinci", "dalle", "codex"],
 		prefs: {
 			shownUsers: {},
+			showIgnoredMessages: true,
 			showDeletedMessages: false,
 			orderedResponses: true,
 		}
@@ -231,6 +233,18 @@ export const useCompStore = defineStore("counter", {
 			this.updateCache();
 			return message;
 		},
+		deleteMessage(messageId: string): void {
+			if (!this.getThread.messageMap[messageId]) {
+				smartNotify('An error occurred while deleting the message.');
+				return;
+			}
+			delete this.getThread.messageMap[messageId];
+			this.getThread.orderedKeysList = this.getThread.orderedKeysList.filter(
+				(id) => id !== messageId
+			);
+			this.updateCache();
+			smartNotify('Successfully deleted message.');
+		}
 	},
 });
 

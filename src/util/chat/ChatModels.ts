@@ -14,6 +14,7 @@ export interface ChatThread {
 	joinedUserIds: string[];
 	prefs: {
 		shownUsers: { [key: string]: boolean };
+		showIgnoredMessages: boolean;
 		showDeletedMessages: boolean;
 		orderedResponses: boolean;
 	}
@@ -34,6 +35,7 @@ export interface ChatMessage extends GenerationResult {
 	// TODO: Alternatively, could also keep history of edits (editMessage function)
 	isCompRegen?: boolean;
 	isDeleted?: boolean;
+	isIgnored?: boolean;
 }
 
 // TODO: Make these configurable in UI in the future

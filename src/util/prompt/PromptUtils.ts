@@ -39,7 +39,7 @@ export const promptMembers = (
 			if (currentAI && currentAI.key === ai.key) tag = "You";
 			return getAssistantTraits(ai, useKey, tag);
 		})
-		.join("\n");
+		.join("\n\n");
 
 	return start + "\n" + info;
 };

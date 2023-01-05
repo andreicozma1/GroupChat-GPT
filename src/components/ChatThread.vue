@@ -38,20 +38,13 @@
                                size="xs"
                                @click="regenMessage(msg)">
                             <q-tooltip v-if="canRegenMessage(msg)">
-                                Click to re-generate message ({{ msg.userId }})
+                                Re-generate message ({{ msg.userId }})
                             </q-tooltip>
                             <q-tooltip v-else>
                                 This message cannot be re-generated ({{ msg.userId }})
                             </q-tooltip>
                         </q-btn>
-                        <q-icon v-if="msg.cached"
-                                name="cached"
-                                color="blue-grey-8"
-                                class="q-ma-none q-pa-none">
-                            <q-tooltip v-if="msg.dateCreated">
-                                This message was retrieved from cache.
-                            </q-tooltip>
-                        </q-icon>
+
 
                         <div class="text-caption text-blue-grey-10">
                             <q-item-label :lines="1">
@@ -71,7 +64,11 @@
                                icon="edit"
                                round
                                size="xs"
-                               @click="editMessage(msg)"/>
+                               @click="editMessage(msg)">
+                            <q-tooltip>
+                                Edit message
+                            </q-tooltip>
+                        </q-btn>
                         <q-btn v-if="!msg.isDeleted"
                                :icon="msg.isIgnored ? 'visibility' : 'visibility_off'"
                                color="blue-grey-8"
@@ -79,14 +76,22 @@
                                flat
                                round
                                size="xs"
-                               @click="ignoreMessage(msg)"/>
+                               @click="ignoreMessage(msg)">
+                            <q-tooltip>
+                                {{ msg.isIgnored ? 'Use message' : 'Ignore message' }}
+                            </q-tooltip>
+                        </q-btn>
                         <q-btn :icon="msg.isDeleted ? 'delete_forever' : 'delete'"
                                :color="msg.isDeleted ? 'black' : 'blue-grey-8'"
                                dense
                                flat
                                round
                                size="xs"
-                               @click="deleteMessage(msg)"/>
+                               @click="deleteMessage(msg)">
+                            <q-tooltip>
+                                {{ msg.isDeleted ? "Yes, delete" : 'Delete' }}
+                            </q-tooltip>
+                        </q-btn>
                         <q-btn v-if="msg.isDeleted"
                                :color="msg.isDeleted ? 'black' : 'blue-grey-8'"
                                dense
@@ -94,7 +99,11 @@
                                icon="restore"
                                round
                                size="xs"
-                               @click="restoreMessage(msg)"/>
+                               @click="restoreMessage(msg)">
+                            <q-tooltip>
+                                Restore
+                            </q-tooltip>
+                        </q-btn>
                     </div>
                 </template>
 
@@ -204,10 +213,12 @@ const parseThreadMessages = (): ChatMessage[] => {
 };
 
 const createStamp = (msg: ChatMessage) => {
-	const what = isSentByMe(msg) ? "Sent" : "Received";
+	// const what = isSentByMe(msg) ? "Sent" : "Received";
 	const on = dateToTimeAgo(msg.dateCreated);
-	let res = `${what} ${on}`;
-	if (msg.isCompRegen) res = `*${res}`;
+	// let res = `${what} ${on}`;
+	let res = `${on}`;
+	// if (msg.isCompRegen) res = `* ${res}`;
+	if (msg.cached) res = `${res} (cached)`;
 	return res;
 };
 

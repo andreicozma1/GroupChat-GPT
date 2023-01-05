@@ -47,9 +47,8 @@ export const smartNotify = (message: string, caption?: string) => {
 	Notify.create({
 		type: type,
 		message: message,
-		caption: caption || "",
+		caption: caption,
 		timeout: msgTimeout,
 		progress: true,
-		closeBtn: "x",
 	});
 };

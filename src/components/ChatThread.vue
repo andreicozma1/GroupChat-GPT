@@ -133,7 +133,7 @@ import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {getThreadMessages} from "src/util/chat/ChatUtils";
 import {smartNotify} from "src/util/SmartNotify";
-import {dateToLocaleStr, dateToTimeAgo, parseDate} from "src/util/DateUtils";
+import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {ChatMessage, ChatThread, ChatUser} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 import {handleAssistantMsg} from "src/util/assistant/AssistantHandlers";
@@ -155,52 +155,17 @@ const parseThreadMessages = (): ChatMessage[] => {
 	const thread: ChatThread = comp.getThread;
 	let messages: ChatMessage[] = getThreadMessages(thread);
 
-	const hasKeepKeywords = (msg: ChatMessage) => {
-		const keywords = ["[ERROR]", "[WARNING]", "[INFO]"];
-		return msg.textSnippets.some((line: string) => {
-			return keywords.some((keyword: string) => line.includes(keyword));
-		});
-	}
-
-	const hasRemoveKeywords = (msg: ChatMessage) => {
-		const keywords = ["[DEBUG]"];
-		return msg.textSnippets.some((line: string) => {
-			return keywords.some((keyword: string) => line.includes(keyword));
-		});
-	}
-
 	/************************************************************************
 	 ** FILTERING
 	 ************************************************************************/
 	messages = messages.filter((msg: ChatMessage) => {
 		if (!comp.getThread.prefs.showIgnoredMessages && msg.isIgnored)
 			return false;
-		// always keep messages with certain keywords
-		if (hasKeepKeywords(msg)) return true;
-		// always remove messages with certain keywords
-		if (hasRemoveKeywords(msg)) return false;
 		// remove messages from users that are hidden in thread settings
 		if (thread.prefs?.shownUsers) {
 			return thread.prefs.shownUsers[msg.userId] ?? true;
 		}
 		return true;
-	});
-	/************************************************************************
-	 ** SORTING
-	 ************************************************************************/
-	// sort by dateCreated
-	messages.sort((a, b) => {
-		const ad = parseDate(a.dateCreated);
-		const bd = parseDate(b.dateCreated);
-		return ad.getTime() - bd.getTime();
-	});
-	messages.sort((a, b) => {
-		// if isCompRegen is true, keep the same order
-		if (a.isCompRegen || b.isCompRegen) return 0;
-		// otherwise, keep loading messages at the bottom
-		if (a.loading && !b.loading) return 1;
-		if (!a.loading && b.loading) return -1;
-		return 0;
 	});
 	return messages;
 };

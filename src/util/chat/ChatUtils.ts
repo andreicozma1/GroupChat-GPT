@@ -4,9 +4,54 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 import {v4 as uuidv4} from "uuid";
 import {ChatMessage, ChatMessageHistConfig, ChatThread, ChatUser,} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
+import {parseDate} from "src/util/DateUtils";
 
 export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
-	return thread.orderedKeysList.map((key) => thread.messageMap[key]);
+	let messages = thread.orderedKeysList.map((key) => thread.messageMap[key]);
+
+	const hasKeepKeywords = (msg: ChatMessage) => {
+		const keywords = ["[ERROR]", "[WARNING]", "[INFO]"];
+		return msg.textSnippets.some((line: string) => {
+			return keywords.some((keyword: string) => line.includes(keyword));
+		});
+	}
+
+	const hasRemoveKeywords = (msg: ChatMessage) => {
+		const keywords = ["[DEBUG]"];
+		return msg.textSnippets.some((line: string) => {
+			return keywords.some((keyword: string) => line.includes(keyword));
+		});
+	}
+
+	/************************************************************************
+	 ** FILTERING
+	 ************************************************************************/
+	messages = messages.filter((msg: ChatMessage) => {
+		if (msg.isIgnored) return false;
+		// always keep messages with certain keywords
+		if (hasKeepKeywords(msg)) return true;
+		// always remove messages with certain keywords
+		if (hasRemoveKeywords(msg)) return false;
+		return true;
+	});
+	/************************************************************************
+	 ** SORTING
+	 ************************************************************************/
+	// sort by dateCreated
+	messages.sort((a, b) => {
+		const ad = parseDate(a.dateCreated);
+		const bd = parseDate(b.dateCreated);
+		return ad.getTime() - bd.getTime();
+	});
+	messages.sort((a, b) => {
+		// if isCompRegen is true, keep the same order
+		// if (a.isCompRegen || b.isCompRegen) return 0;
+		// otherwise, keep loading messages at the bottom
+		if (a.loading && !b.loading) return 1;
+		if (!a.loading && b.loading) return -1;
+		return 0;
+	});
+	return messages;
 };
 
 export const getMessageHistory = (

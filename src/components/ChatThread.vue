@@ -22,10 +22,6 @@
                     </q-tooltip>
                 </div>
 
-                <div v-if="msg.loading">
-                    <q-spinner-dots class="q-ml-md" color="primary" size="2em"/>
-                </div>
-
                 <div v-if="msg.imageUrls.length > 0">
                     <q-card v-for="image in msg.imageUrls"
                             :key="image"
@@ -39,6 +35,10 @@
                                    style="max-height: 400px"/>
                         </q-card-section>
                     </q-card>
+                </div>
+
+                <div v-if="msg.loading">
+                    <q-spinner-dots class="q-ml-md" color="primary" size="2em"/>
                 </div>
 
                 <template v-slot:stamp>

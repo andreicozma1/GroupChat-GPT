@@ -72,8 +72,9 @@ const responseTimeout: Ref<any> = ref(null);
 
 const sendMessage = () => {
 	if (!userMsgValid.value) return;
-	console.warn("=======================================");
-	console.log("Sending message");
+	console.warn("=".repeat(60));
+	console.warn("=".repeat(60));
+	console.warn("=> sendMessage:");
 	if (userMsgObj.value === null) {
 		userMsgObj.value = createMessageFromUserCfg(ConfigUserBase, comp);
 		comp.pushMessage(userMsgObj.value);
@@ -84,6 +85,7 @@ const sendMessage = () => {
 	if (responseTimeout.value) clearInterval(responseTimeout.value);
 	responseTimeout.value = setInterval(() => {
 		if (!isTyping.value) {
+			console.log("=> userMsgObj:", {...userMsgObj.value});
 			userMsgObj.value = null;
 			handleAssistantCfg(AssistantConfigs.coordinator, comp);
 			clearInterval(responseTimeout.value);

@@ -20,27 +20,33 @@ const handleAssistantId = async (nextKey: string, comp: any) => {
 
 export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 	const cfg = AssistantConfigs[msg.userId];
+	console.warn("*".repeat(40));
+
+	console.warn(`=> handleAssistantMsg (${msg.userId})`);
+	console.log("=> msg:", msg);
 
 	msg.isCompRegen = msg.result?.contextIds
 		? msg.result.contextIds.length > 0
 		: false;
+	console.log("=> msg.isCompRegen:", msg.isCompRegen);
 
-	if (msg.isCompRegen) {
-		console.warn("=> Regen");
-		msg.textSnippets = [];
-		msg.imageUrls = [];
-	}
+	// if (msg.isCompRegen) {
+	// 	console.warn("=> Regen");
+	// 	msg.textSnippets = [];
+	// 	msg.imageUrls = [];
+	// }
 	comp.pushMessage(msg, true);
 
 	const res: GenerationResult = await comp.generate(
 		cfg,
 		msg.result?.contextIds
 	);
-	console.log(res);
+	console.log("=> res:", res);
 	msg.result = res.result;
 	msg.cached = res.cached;
 
 	if (res.errorMsg) {
+		console.error("=> res.errorMsg:", res.errorMsg);
 		msg.textSnippets.push("[ERROR]\n" + res.errorMsg);
 		comp.pushMessage(msg, false);
 		return;
@@ -52,8 +58,12 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 	// 	msg.imageUrls = [];
 	// }
 
-	if (res?.textSnippets) msg.textSnippets.push(...res.textSnippets);
-	if (res?.imageUrls) msg.imageUrls.push(...res.imageUrls);
+	if (res?.textSnippets) {
+		msg.textSnippets = res.textSnippets
+	}
+	if (res?.imageUrls) {
+		msg.imageUrls = res.imageUrls
+	}
 
 	// const totalLength = msg.textSnippets.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
 	// const sleepTime = totalLength * 25

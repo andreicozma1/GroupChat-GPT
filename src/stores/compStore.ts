@@ -145,9 +145,10 @@ export const useCompStore = defineStore("counter", {
 			actor: Assistant,
 			msgHistIds?: string[]
 		): Promise<GenerationResult> {
-			console.warn("=======================================");
+			console.warn("-".repeat(20));
+
 			console.warn(`=> generate (${actor.id}):`, actor);
-			let ignoreCache = actor.shouldIgnoreCache;
+			let ignoreCache = actor.shouldIgnoreCache === undefined ? false : actor.shouldIgnoreCache;
 			let msgHist;
 			if (!msgHistIds) {
 				// First-time generation
@@ -165,7 +166,9 @@ export const useCompStore = defineStore("counter", {
 			}
 			console.warn("=> msgHist:");
 			for (let i = 0; i < msgHist.length; i++) {
-				console.log(`#${i}:`, {...msgHist[i]});
+				console.log("----------------")
+				console.log(`msgHist[${i}] -> (${msgHist[i].textSnippets.length} texts & ${msgHist[i].imageUrls.length} images)`,
+					{...msgHist[i]}, [...msgHist[i].textSnippets]);
 			}
 			let prompt = undefined
 			try {

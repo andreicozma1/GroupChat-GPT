@@ -1,5 +1,6 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt, createPromptDalleGen,} from "src/util/prompt/Prompts";
+import {createExamplePrompt} from "src/util/assistant/AssistantUtils";
 
 export const ConfigDalle: Assistant = {
 	id: "dalle",
@@ -18,16 +19,26 @@ export const ConfigDalle: Assistant = {
 		],
 	}, // Examples order: Human, AI, Human, AI, Human, AI
 	examples: [
+		// ------------------------------------------------------------
 		"Hey DALL-E, I want to see a picture cat.",
-		"Sure! Here is a picture of a cat. <prompt>A picture of a cat.</prompt>",
-		"Thank you!",
+		// ------------------------------------------------------------
+		"Sure! Here is a picture of a cat.\n" +
 		"Do you want to see a specific color or breed? Like a black cat or a tabby?\n" +
-		"Also, should the cat be sitting, standing, or perhaps playing with a ball of yarn?",
-		"Give it white fur and blue eyes.",
-		"Sure, I can do that. <prompt>A picture of a cat with white fur and blue eyes.</prompt>\n" +
-		"Do you have any specific artistic styles in mind? Like a cartoon, oil painting, or realistic style? I can also try to imitate a specific artist.",
-		"Surprise me! Also, give it an astronaut suit and make it float in deep space.",
-		"Coming right ahead! <prompt>A picture of a cat with white fur and blue eyes, wearing an astronaut suit, floating in deep space, cyberpunk style.</prompt>",
+		"Also, should the cat be sitting, standing, or perhaps playing with a ball of yarn?\n" +
+		"Let me know if there is anything else you want to add.\n",
+		createExamplePrompt("A picture of a cat."),
+		// ------------------------------------------------------------
+		"Tabby, sitting on a chair. Also, give it a cowboy hat.",
+		// ------------------------------------------------------------
+		"Sure, I can do that.\n" +
+		"Do you have any specific artistic styles in mind? Like a cartoon, oil painting, or realistic style?\n" +
+		"I can also try to imitate a specific artist.\n",
+		createExamplePrompt("A picture of a tabby cat, sitting on a chair, wearing a cowboy hat."),
+		// ------------------------------------------------------------
+		"Surprise me!",
+		// ------------------------------------------------------------
+		"How about a cartoon style?\n",
+		createExamplePrompt("A picture of a tabby cat, sitting on a chair, wearing a cowboy hat, cartoon style."),
 	],
 	followupPromptHelperId: "dalle_gen",
 };

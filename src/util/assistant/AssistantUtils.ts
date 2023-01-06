@@ -48,3 +48,12 @@ export const processKV = (
 
 	return [`${keyStartChar} ${key}:`, val].join(inline ? " " : "\n");
 };
+
+export const createExamplePrompt = (...message: string[]): string => {
+	let res = "<prompt>\n"
+	for (let i = 0; i < message.length; i++) {
+		res += message[i] + "\n"
+	}
+	res += "</prompt>\n"
+	return res
+}

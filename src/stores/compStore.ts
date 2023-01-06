@@ -1,13 +1,13 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
-import {makeApiRequest} from "src/util/OpenAi";
 import {getAppVersion} from "src/util/Utils";
 import {Ref, ref} from "vue";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage, ChatThread, ChatUser} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 import {smartNotify} from "src/util/SmartNotify";
+import {makeApiRequest} from "src/util/openai/OpenAiUtils";
 
 export interface GenerationResult {
 	result?: {

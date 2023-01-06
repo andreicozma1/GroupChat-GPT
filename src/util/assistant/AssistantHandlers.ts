@@ -67,7 +67,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 
 	if (res.errorMsg) {
 		console.error("=> res.errorMsg:", res.errorMsg);
-		msg.textSnippets.push("[ERROR]\n" + res.errorMsg);
+		msg.textSnippets = ["[ERROR]" + "\n" + res.errorMsg]
 		comp.pushMessage(msg);
 		return;
 	}

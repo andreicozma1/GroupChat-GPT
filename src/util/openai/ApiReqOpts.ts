@@ -1,5 +1,5 @@
 // TODO: Move this into a store
-export const ApiReqConfigs: { [key: string]: { [key: string]: any } } = {
+export const ApiReqOpts: { [key: string]: { [key: string]: any } } = {
 	defaults: {
 		chatting: {
 			max_tokens: 250,

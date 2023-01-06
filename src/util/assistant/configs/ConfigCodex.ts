@@ -1,5 +1,7 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt, createPromptCodexGen,} from "src/util/prompt/Prompts";
+import {createExamplePrompt} from "src/util/assistant/AssistantUtils";
+
 
 export const ConfigCodex: Assistant = {
 	id: "codex",
@@ -21,11 +23,25 @@ export const ConfigCodex: Assistant = {
 		],
 	},
 	examples: [
-		"Hey Codex, make a program that adds two numbers together.",
-		"Sure, I can do that. What language would you like to use and what should the two numbers be?",
-		"Use Python. The numbers are 5 and 6.",
+		// ------------------------------------------------------------
+		"Hey Codex, write a Python program that adds any numbers together.",
+		// ------------------------------------------------------------
+		"Sure, I can do that.\n" +
+		"What should the numbers be?\n" +
+		createExamplePrompt(
+			"Language: Python.",
+			"Function: Add numbers together."
+		),
+		// ------------------------------------------------------------
+		"5 and 6.",
+		// ------------------------------------------------------------
 		"Working on it!\n" +
-		"<prompt>A Python program that adds numbers together.\nThe numbers to add will be 5 and 6.</prompt>",
+		createExamplePrompt(
+			"Language: Python.",
+			"Function: Add numbers together.",
+			"Numbers: 5 and 6."
+		),
+		// ------------------------------------------------------------
 	],
 	allowPromptFollowUps: true,
 	followupPromptHelperId: "codex_gen",
@@ -48,13 +64,23 @@ export const ConfigCodexGen: Assistant = {
 		],
 	},
 	examples: [
-		"<prompt>A Python program that multiplies two numbers together.\nThe numbers to multiply will be 5 and 6.</prompt>",
+		// ------------------------------------------------------------
+		createExamplePrompt(
+			"Language: Python.",
+			"Function: Multiply two numbers together.",
+			"Numbers: 5 and 6."
+		),
+		// ------------------------------------------------------------
 		"```python\n" +
+		"# Multiply two numbers together.\n" +
 		"def multiply(a, b):\n" +
 		"\treturn a * b\n" +
 		"\n" +
-		"print(multiply(5, 6))\n" +
+		"# Print the result.\n" +
+		"result = multiply(5, 6)\n" +
+		"print(result)\n" +
 		"```\n",
+		// ------------------------------------------------------------
 	],
 	isAvailable: false,
 }

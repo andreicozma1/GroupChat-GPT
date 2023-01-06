@@ -26,6 +26,21 @@
                     <q-spinner-dots class="q-ml-md" color="primary" size="2em"/>
                 </div>
 
+                <div v-if="msg.imageUrls.length > 0">
+                    <q-card v-for="image in msg.imageUrls"
+                            :key="image"
+                            :title="image"
+                            class="bg-grey-1"
+                            flat>
+                        <q-card-section class="q-pa-none">
+                            <q-img :src="image"
+                                   draggable
+                                   fit="contain"
+                                   style="max-height: 400px"/>
+                        </q-card-section>
+                    </q-card>
+                </div>
+
                 <template v-slot:stamp>
                     <div class="row items-center">
                         <q-btn :disable="!canRegenMessage(msg)"
@@ -107,20 +122,6 @@
                     </div>
                 </template>
 
-                <div v-if="msg.imageUrls.length > 0">
-                    <q-card v-for="image in msg.imageUrls"
-                            :key="image"
-                            :title="image"
-                            class="bg-grey-1"
-                            flat>
-                        <q-card-section class="q-pa-none">
-                            <q-img :src="image"
-                                   draggable
-                                   fit="contain"
-                                   style="max-height: 400px"/>
-                        </q-card-section>
-                    </q-card>
-                </div>
             </q-chat-message>
         </div>
     </q-scroll-area>

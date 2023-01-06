@@ -1,5 +1,5 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {createAssistantPrompt, createPromptCodexGen,} from "src/util/prompt/AssistantPrompts";
+import {createAssistantPrompt, createPromptCodexGen,} from "src/util/assistant/AssistantPrompts";
 import {createCodeBlock, createExamplePrompt} from "src/util/assistant/AssistantUtils";
 
 

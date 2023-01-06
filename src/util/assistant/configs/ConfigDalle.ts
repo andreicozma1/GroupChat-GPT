@@ -1,5 +1,5 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {createAssistantPrompt, createPromptDalleGen,} from "src/util/prompt/AssistantPrompts";
+import {createAssistantPrompt, createPromptDalleGen,} from "src/util/assistant/AssistantPrompts";
 import {createExamplePrompt} from "src/util/assistant/AssistantUtils";
 
 export const ConfigDalle: Assistant = {

@@ -1,5 +1,5 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {createAssistantPrompt} from "src/util/prompt/AssistantPrompts";
+import {createAssistantPrompt} from "src/util/assistant/AssistantPrompts";
 
 // TODO: Use this generic config in the prompt creation functions
 export const ConfigAssistantBase: Assistant = {

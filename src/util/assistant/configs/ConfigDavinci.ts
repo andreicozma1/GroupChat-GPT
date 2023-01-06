@@ -1,5 +1,5 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {createAssistantPrompt} from "src/util/prompt/AssistantPrompts";
+import {createAssistantPrompt} from "src/util/assistant/AssistantPrompts";
 
 export const ConfigDavinci: Assistant = {
 	id: "davinci",

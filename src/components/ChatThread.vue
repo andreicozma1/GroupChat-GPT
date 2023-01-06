@@ -371,13 +371,15 @@ watch(
 		scrollToBottom(1000);
 	}
 );
-
-watch(comp.getThread, () => loadThread());
-
-watch(
-	() => comp.getThread.prefs?.shownUsers,
-	() => loadThread()
-);
+//
+watch(() => Object.keys(comp.getThread.messageMap), () => {
+	loadThread();
+});
+//
+// watch(
+// 	() => comp.getThread.prefs?.shownUsers,
+// 	() => loadThread()
+// );
 
 onMounted(() => {
 	loadThread();

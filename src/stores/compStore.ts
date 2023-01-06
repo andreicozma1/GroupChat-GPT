@@ -161,6 +161,8 @@ export const useCompStore = defineStore("counter", {
 				msgHist = msgHistIds.map((id) => this.getThread.messageMap[id]);
 				ignoreCache = true;
 			}
+			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
+			msgHist = msgHist.filter((m: ChatMessage) => !m.isIgnored);
 			console.warn("=> msgHist:");
 			for (let i = 0; i < msgHist.length; i++) {
 				console.log("----------------")
@@ -186,7 +188,6 @@ export const useCompStore = defineStore("counter", {
 					cached: true,
 				};
 			}
-			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
 			// TODO: Change hash prompt to be based on msgIds?
 
 			let completion;

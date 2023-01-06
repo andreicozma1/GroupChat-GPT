@@ -49,7 +49,12 @@ export const ConfigCodexGen: Assistant = {
 	},
 	examples: [
 		"<prompt>A Python program that multiplies two numbers together.\nThe numbers to multiply will be 5 and 6.</prompt>",
-		"```\ndef multiply(a, b):\n\treturn a * b\n\nprint(multiply(5, 6))\n```",
+		"```python\n" +
+		"def multiply(a, b):\n" +
+		"\treturn a * b\n" +
+		"\n" +
+		"print(multiply(5, 6))\n" +
+		"```\n",
 	],
 	isAvailable: false,
 }

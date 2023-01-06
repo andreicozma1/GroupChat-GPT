@@ -143,13 +143,14 @@ export const useCompStore = defineStore("counter", {
 		},
 		async generate(
 			actor: Assistant,
-			updateFromMsgIds?: string[]
+			msgHistIds?: string[]
 		): Promise<GenerationResult> {
 			console.warn("=======================================");
-			console.warn("=> generate:", actor);
+			console.warn(`=> generate (${actor.id}):`, actor);
 			let ignoreCache = actor.shouldIgnoreCache;
 			let msgHist;
-			if (!updateFromMsgIds) {
+			if (!msgHistIds) {
+				// First-time generation
 				msgHist = getMessageHistory({
 					thread: this.getThread,
 					includeSelf: true,
@@ -158,12 +159,13 @@ export const useCompStore = defineStore("counter", {
 					maxLength: 10,
 				});
 			} else {
-				msgHist = updateFromMsgIds.map((id) => this.getThread.messageMap[id]);
+				// Re-generation from specified context
+				msgHist = msgHistIds.map((id) => this.getThread.messageMap[id]);
 				ignoreCache = true;
 			}
+			console.warn("=> msgHist:");
 			for (let i = 0; i < msgHist.length; i++) {
-				console.warn(`=> msg ${i}:`);
-				console.log({...msgHist[i]});
+				console.log(`#${i}:`, {...msgHist[i]});
 			}
 			let prompt = undefined
 			try {

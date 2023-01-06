@@ -52,8 +52,5 @@ export const ConfigDalleGen: Assistant = {
 		apiReqOpts: undefined,
 	},
 	promptStyle: createPromptDalleGen,
-	rules: {
-		always: ["Only responds to DALL-E's prompts."],
-	},
 	isAvailable: false,
 }

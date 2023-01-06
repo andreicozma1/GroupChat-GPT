@@ -1,6 +1,6 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {createAssistantPrompt, createPromptCodexGen,} from "src/util/prompt/Prompts";
-import {createExamplePrompt} from "src/util/assistant/AssistantUtils";
+import {createCodeBlock, createExamplePrompt} from "src/util/assistant/AssistantUtils";
 
 
 export const ConfigCodex: Assistant = {
@@ -19,27 +19,33 @@ export const ConfigCodex: Assistant = {
 	},
 	rules: {
 		never: [
-			"Write the code yourself. Just generate the prompt and let Codex do the rest.",
+			"Write the code yourself.",
 		],
+		always: [
+			"Only generate the prompt with instructions.",
+		]
 	},
 	examples: [
 		// ------------------------------------------------------------
-		"Hey Codex, write a Python program that adds any numbers together.",
+		"Hey Codex, write a Python function that adds any numbers together.",
 		// ------------------------------------------------------------
 		"Sure, I can do that.\n" +
-		"What should the numbers be?\n" +
+		"Do you want it to run an example and print the result? If so, what should the numbers be?",
 		createExamplePrompt(
-			"Language: Python.",
-			"Function: Add numbers together."
+			"Language: Python",
+			"Instructions:",
+			"1. Write a function that can add any numbers together.",
 		),
 		// ------------------------------------------------------------
-		"5 and 6.",
+		"Yes, use 5 and 6.",
 		// ------------------------------------------------------------
 		"Working on it!\n" +
 		createExamplePrompt(
-			"Language: Python.",
-			"Function: Add numbers together.",
-			"Numbers: 5 and 6."
+			"Language: Python",
+			"Instructions:",
+			"1. Write a function that can add any numbers together.",
+			"2. Run the function with the numbers 5 and 6.",
+			"3. Print the result.",
 		),
 		// ------------------------------------------------------------
 	],
@@ -58,28 +64,37 @@ export const ConfigCodexGen: Assistant = {
 	promptStyle: createPromptCodexGen,
 	rules: {
 		always: [
-			"Only responds to Codex's prompts.",
-			"Wrap the code in a markdown code block and use the language name as the language identifier if possible.",
-			"Use the language identifier `text` if the language is not supported by markdown.",
+			"Use Markdown and wrap any code in a code block.",
+			"Use a language identifier for the code block if possible.",
+			"Before each code block, write a description or explanation of what the following code will do.",
 		],
 	},
 	examples: [
+		// TODO: Use LeetCode Examples
 		// ------------------------------------------------------------
 		createExamplePrompt(
-			"Language: Python.",
-			"Function: Multiply two numbers together.",
-			"Numbers: 5 and 6."
+			"Language: Python",
+			"Instructions:",
+			"1. Write a function that multiplies two numbers together.",
+			"2. Run the an example with the numbers 5 and 6.",
+			"3. Print the result.",
 		),
 		// ------------------------------------------------------------
-		"```python\n" +
-		"# Multiply two numbers together.\n" +
-		"def multiply(a, b):\n" +
-		"\treturn a * b\n" +
+		"# Multiplying Numbers\n" +
+		"Language: Python\n" +
+		"## Function Definition\n" +
+		"First, we define a function called `multiply`, which takes two parameters, `a` and `b`.\n" +
 		"\n" +
-		"# Print the result.\n" +
-		"result = multiply(5, 6)\n" +
-		"print(result)\n" +
-		"```\n",
+		createCodeBlock("python",
+			"def multiply(a, b):",
+			"\treturn a * b"),
+		"\n" +
+		"## Example\n" +
+		"Next, we run the function with the numbers 5 and 6, then print the result.\n" +
+		"\n" +
+		createCodeBlock("python",
+			"result = multiply(5, 6)",
+			"print(result)"),
 		// ------------------------------------------------------------
 	],
 	isAvailable: false,

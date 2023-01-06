@@ -8,7 +8,7 @@
             <q-chat-message
                     :avatar="msg.userAvatarUrl"
                     :bg-color="getMsgBgColor(msg)"
-                    :name="msg.userName"
+                    :name="getUserName(msg)"
                     :sent="isSentByMe(msg)"
                     size="6"
                     v-bind="msg">
@@ -22,13 +22,13 @@
                 </div>
 
                 <div v-if="msg.imageUrls.length > 0">
-                    <q-card v-for="image in msg.imageUrls"
-                            :key="image"
-                            :title="image"
+                    <q-card v-for="imageUrl in msg.imageUrls"
+                            :key="imageUrl"
+                            :title="imageUrl"
                             class="bg-grey-1"
                             flat>
                         <q-card-section class="q-pa-none">
-                            <q-img :src="image"
+                            <q-img :src="imageUrl"
                                    draggable
                                    fit="contain"
                                    style="max-height: 400px"/>
@@ -43,7 +43,7 @@
                 <template v-slot:stamp>
                     <div class="row items-center">
                         <q-btn :disable="!canRegenMessage(msg)"
-                               :icon="getAssistantIcon(msg.userId)"
+                               :icon="getUserIcon(msg)"
                                class="q-ma-none q-pa-none"
                                color="blue-grey-8"
                                dense
@@ -131,11 +131,10 @@ import {getSeededQColor} from "src/util/Colors";
 import {copyClipboard, getAppVersion} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
 import {getThreadMessages} from "src/util/chat/ChatUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo, parseDate} from "src/util/DateUtils";
-import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
+import {ChatMessage, ChatThread, ChatUser} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 import {handleAssistantMsg} from "src/util/assistant/AssistantHandlers";
 
@@ -206,6 +205,24 @@ const parseThreadMessages = (): ChatMessage[] => {
 	return messages;
 };
 
+const getUserName = (msg: ChatMessage): string => {
+	const user: ChatUser = comp.getUser(msg.userId);
+	return `${user.name} (${user.id})`;
+};
+
+const getUserIcon = (msg: ChatMessage) => {
+	const user: ChatUser = comp.getUser(msg.userId);
+	if (!user) {
+		console.error(`User "${msg.userId}" not found.`);
+		smartNotify(`Error: User "${msg.userId}" not found.`);
+		return "send";
+	}
+	if (!user.icon) {
+		console.warn(`User "${user.id}" does not define an icon.`);
+		return "help";
+	}
+	return user.icon;
+};
 
 const getContentHoverHint = (msg: ChatMessage) => {
 	const numTexts = msg.textSnippets?.length ?? 0;
@@ -216,12 +233,6 @@ const getContentHoverHint = (msg: ChatMessage) => {
 	}`;
 	const when = dateToLocaleStr(msg.dateCreated);
 	return `${who} sent ${what} on ${when}`;
-};
-
-const getAssistantIcon = (assistantKey: string) => {
-	if (!AssistantConfigs[assistantKey]) return "send";
-	if (!AssistantConfigs[assistantKey].icon) return "help";
-	return AssistantConfigs[assistantKey].icon;
 };
 
 const getStamp = (msg: ChatMessage) => {

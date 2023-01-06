@@ -10,14 +10,6 @@ export const handleAssistantCfg = (cfg: Assistant, comp: any) => {
 	return handleAssistantMsg(msg, comp);
 }
 
-const handleAssistantId = async (nextKey: string, comp: any) => {
-	const nextMsg: ChatMessage = createMessageFromUserId(
-		nextKey,
-		comp
-	);
-	return handleAssistantMsg(nextMsg, comp);
-}
-
 export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 	const cfg = AssistantConfigs[msg.userId];
 	console.warn("*".repeat(40));
@@ -106,10 +98,15 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 			}
 			console.log("=> coordinator->next:", nextActors);
 			for (const nextKey of nextActors) {
+				const nextMsg: ChatMessage = createMessageFromUserId(
+					nextKey,
+					comp
+				);
+				msg.repliesIds[nextKey] = nextMsg.id;
 				if (thread.prefs.orderedResponses) {
-					await handleAssistantId(nextKey, comp);
+					await handleAssistantMsg(nextMsg, comp);
 				} else {
-					handleAssistantId(nextKey, comp);
+					handleAssistantMsg(nextMsg, comp);
 				}
 			}
 			break;
@@ -135,11 +132,11 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 					const prompt = `<result>${prompts[i]}</result>`
 					msg.textSnippets.push(prompt);
 
-					const nextMsg: ChatMessage | undefined = createMessageFromUserId(
+					const nextMsg: ChatMessage = createMessageFromUserId(
 						nextId,
 						comp,
 					);
-					if (!nextMsg) continue;
+					msg.repliesIds.push(nextMsg.id);
 					nextMsg.textSnippets.push(prompt);
 					await handleAssistantMsg(nextMsg, comp);
 				}

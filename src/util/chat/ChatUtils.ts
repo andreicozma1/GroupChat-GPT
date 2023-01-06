@@ -51,6 +51,7 @@ export const createMessageFromUserCfg = (userCfg: ChatUser, comp: any): ChatMess
 		imageUrls: [],
 		dateCreated: new Date(),
 		loading: true,
+		repliesIds: [],
 	};
 	msg = comp.pushMessage(msg);
 	return msg;

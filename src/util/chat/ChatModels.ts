@@ -30,12 +30,13 @@ export interface ChatMessage extends GenerationResult {
 	// TODO: Put dates in ChatMessageDates interface and keep track of edits
 	dateCreated: string | number | Date;
 	// TODO: Put this in ChatMessageFlags interface
-	loading?: boolean;
+	loading: boolean;
 	// TODO: There's probably a better way to do keep track of whether a message is a re-generation
 	// TODO: Alternatively, could also keep history of edits (editMessage function)
 	isCompRegen?: boolean;
 	isDeleted?: boolean;
 	isIgnored?: boolean;
+	repliesIds: string[];
 }
 
 // TODO: Make these configurable in UI in the future

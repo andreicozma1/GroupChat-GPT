@@ -107,6 +107,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 					comp
 				);
 				msg.followupMsgIds.push(nextMsg.id);
+				nextMsg.dateCreated = msg.dateCreated
 				followups.push({
 					msg: nextMsg,
 					cfgUserId: undefined,

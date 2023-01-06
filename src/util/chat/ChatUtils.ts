@@ -7,7 +7,7 @@ import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 import {parseDate} from "src/util/DateUtils";
 
 export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
-	let messages = thread.orderedKeysList.map((key) => thread.messageMap[key]);
+	let messages = Object.values(thread.messageMap)
 
 	const hasKeepKeywords = (msg: ChatMessage) => {
 		const keywords = ["[ERROR]", "[WARNING]", "[INFO]"];
@@ -45,7 +45,7 @@ export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
 	});
 	messages.sort((a, b) => {
 		// if isCompRegen is true, keep the same order
-		// if (a.isCompRegen || b.isCompRegen) return 0;
+		if (a.isCompRegen || b.isCompRegen) return 0;
 		// otherwise, keep loading messages at the bottom
 		if (a.loading && !b.loading) return 1;
 		if (!a.loading && b.loading) return -1;

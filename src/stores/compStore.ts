@@ -25,7 +25,6 @@ export interface GenerationResult {
 
 export const createThread = (): ChatThread => {
 	const res: ChatThread = {
-		orderedKeysList: [],
 		messageMap: {},
 		appVersion: getAppVersion(),
 		joinedUserIds: ["coordinator", "davinci", "dalle", "codex"],
@@ -86,7 +85,7 @@ export const useCompStore = defineStore("counter", {
 		},
 		clearThread() {
 			console.log("Clearing thread");
-			this.threads[this.currentThread].orderedKeysList = [];
+			this.threads[this.currentThread].messageMap = {}
 			this.updateCache();
 		},
 		getThreadVersion() {
@@ -246,7 +245,6 @@ export const useCompStore = defineStore("counter", {
 			}
 			// message.dateCreated = new Date();
 			this.getThread.messageMap[message.id] = message;
-			this.getThread.orderedKeysList.push(message.id);
 			this.updateCache();
 			return message;
 		},
@@ -256,9 +254,6 @@ export const useCompStore = defineStore("counter", {
 				return;
 			}
 			delete this.getThread.messageMap[messageId];
-			this.getThread.orderedKeysList = this.getThread.orderedKeysList.filter(
-				(id) => id !== messageId
-			);
 			this.updateCache();
 			smartNotify("Successfully deleted message.");
 		},

@@ -9,7 +9,6 @@ export interface ChatUser {
 
 export interface ChatThread {
 	messageMap: { [key: string]: ChatMessage };
-	orderedKeysList: string[];
 	appVersion?: string;
 	joinedUserIds: string[];
 	prefs: {

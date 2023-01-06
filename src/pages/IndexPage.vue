@@ -1,14 +1,14 @@
 <template>
     <div class="full-width">
         <ChatThread :scroll-area-style="scrollAreaStyle"/>
-        <ControlsBox ref="controlsCard"/>
+        <ChatThreadForm ref="controlsCard"/>
     </div>
 </template>
 
 <script lang="ts" setup>
 import {QCard} from "quasar";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import ControlsBox from "components/ControlsBox.vue";
+import ChatThreadForm from "components/ChatThreadForm.vue";
 import ChatThread from "components/ChatThread.vue";
 
 const controlsCard: Ref<QCard | null> = ref(null);

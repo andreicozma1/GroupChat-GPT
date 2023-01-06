@@ -29,7 +29,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 	// 	msg.imageUrls = [];
 	// }
 	msg.followupMsgIds.forEach((id: string) => {
-		comp.deleteMessage(id);
+		comp.deleteMessage(id, true);
 	})
 	msg.followupMsgIds = [];
 	comp.pushMessage(msg, true);
@@ -124,7 +124,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 				return t.trim();
 			});
 			msg.textSnippets = msg.textSnippets.filter((t: string) => t.length > 0);
-			comp.pushMessage(msg);
+			// comp.pushMessage(msg);
 
 			followupPrompts = followupPrompts.filter((t: string) => t.split(" ").length > 3);
 			if (followupPrompts.length > 0) {
@@ -137,6 +137,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 				}
 				for (let i = 0; i < followupPrompts.length; i++) {
 					const prompt = `<result>${followupPrompts[i]}</result>`
+					/*
 					// msg.textSnippets.push(prompt);
 					const nextMsg: ChatMessage = createMessageFromUserId(
 						msg.userId,
@@ -149,6 +150,21 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 					followups.push({
 						msg: nextMsg,
 						cfgUserId: followupPromptHelperId,
+					});
+					*/
+
+					msg.textSnippets.push(prompt);
+					const nextMsg: ChatMessage = createMessageFromUserId(
+						followupPromptHelperId,
+						comp,
+					);
+					msg.followupMsgIds.push(nextMsg.id);
+					// nextMsg.textSnippets.push(prompt);
+					nextMsg.dateCreated = msg.dateCreated
+					// comp.pushMessage(nextMsg);
+					followups.push({
+						msg: nextMsg,
+						cfgUserId: undefined,
 					});
 				}
 			}

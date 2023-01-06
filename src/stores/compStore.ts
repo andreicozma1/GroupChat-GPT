@@ -233,9 +233,12 @@ export const useCompStore = defineStore("counter", {
 			this.updateCache();
 			return message;
 		},
-		deleteMessage(messageId: string): void {
+		deleteMessage(messageId: string, silent = false): void {
 			if (!this.getThread.messageMap[messageId]) {
-				smartNotify("An error occurred while deleting the message.");
+				if (!silent) {
+					smartNotify("An error occurred while deleting the message.");
+				}
+				console.error(`An error occurred while deleting the message: ${messageId}`);
 				return;
 			}
 			delete this.getThread.messageMap[messageId];

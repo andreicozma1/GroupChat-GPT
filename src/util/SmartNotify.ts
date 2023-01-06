@@ -8,7 +8,6 @@ export const smartNotify = (message: string, caption?: string) => {
 
 	const typeMap = {
 		error: {
-			type: "negative",
 			keywords: [
 				"error",
 				"fail",
@@ -16,22 +15,28 @@ export const smartNotify = (message: string, caption?: string) => {
 				"not compatible",
 				"not supported",
 			],
+			color: "red-12",
+			textColor: "white",
 		},
 		warning: {
-			type: "warning",
 			keywords: ["warn"],
+			color: "orange-12",
+			textColor: "white",
 		},
 		info: {
-			type: "info",
 			keywords: ["info"],
+			color: "blue-4",
+			textColor: "white",
 		},
 		success: {
-			type: "positive",
 			keywords: ["success", "done"],
+			color: "green-4",
+			textColor: "white",
 		},
 	};
 
-	let type = "info";
+	let color = "grey-6";
+	let textColor = "white";
 	// look for keywords in message to determine type
 	// if no keywords found, default to info
 	for (const value of Object.values(typeMap)) {
@@ -39,13 +44,15 @@ export const smartNotify = (message: string, caption?: string) => {
 		const lowerKeywords = keywords.map((keyword) => keyword.toLowerCase());
 		const lowerMessage = message.toLowerCase();
 		if (lowerKeywords.some((keyword) => lowerMessage.includes(keyword))) {
-			type = value.type;
+			color = value.color;
+			textColor = value.textColor;
 			break;
 		}
 	}
 
 	Notify.create({
-		type: type,
+		color: color,
+		textColor: textColor,
 		message: message,
 		caption: caption,
 		timeout: msgTimeout,

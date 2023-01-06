@@ -7,18 +7,17 @@
              :style="getMsgStyle(msg)">
             <q-chat-message
                     :avatar="msg.userAvatarUrl"
-                    :bg-color="getBgColor(msg)"
+                    :bg-color="getMsgBgColor(msg)"
                     :name="msg.userName"
                     :sent="isSentByMe(msg)"
                     size="6"
                     v-bind="msg">
-                <div v-for="text in parseTexts(msg)" :key="text">
-                    <div v-for="line in getSplitText(text)"
-                         :key="line"
-                         @click="copyMessage(text)"
-                         v-html="sanitizeLine(line)"/>
+                <div v-for="textSnippet in parseTextSnippets(msg)"
+                     :key="textSnippet"
+                     @click="copyMessage(textSnippet)">
+                    <div v-html="sanitizeSnippet(textSnippet)"/>
                     <q-tooltip v-if="msg.dateCreated" :delay="750">
-                        {{ createContentHoverHint(msg) }}
+                        {{ getContentHoverHint(msg) }}
                     </q-tooltip>
                 </div>
 
@@ -63,10 +62,10 @@
 
                         <div class="text-caption text-blue-grey-10">
                             <q-item-label :lines="1">
-                                {{ createStamp(msg) }}
+                                {{ getStamp(msg) }}
                             </q-item-label>
                             <q-tooltip>
-                                {{ createStampHoverHint(msg) }}
+                                {{ getStampHoverHint(msg) }}
                             </q-tooltip>
                         </div>
                         <q-space></q-space>
@@ -154,29 +153,24 @@ const comp = useCompStore();
 const threadElem: any = ref(null);
 const threadMessages: Ref<ChatMessage[]> = ref([]);
 
-const getAssistantIcon = (assistantKey: string) => {
-	if (!AssistantConfigs[assistantKey]) return "send";
-	if (!AssistantConfigs[assistantKey].icon) return "help";
-	return AssistantConfigs[assistantKey].icon;
-};
-
-function hasKeepKeywords(msg: ChatMessage) {
-	const keywords = ["[ERROR]", "[WARNING]", "[INFO]"];
-	return msg.textSnippets.some((line: string) => {
-		return keywords.some((keyword: string) => line.includes(keyword));
-	});
-}
-
-function hasRemoveKeywords(msg: ChatMessage) {
-	const keywords = ["[DEBUG]"];
-	return msg.textSnippets.some((line: string) => {
-		return keywords.some((keyword: string) => line.includes(keyword));
-	});
-}
-
 const parseThreadMessages = (): ChatMessage[] => {
 	const thread: ChatThread = comp.getThread;
 	let messages: ChatMessage[] = getThreadMessages(thread);
+
+	const hasKeepKeywords = (msg: ChatMessage) => {
+		const keywords = ["[ERROR]", "[WARNING]", "[INFO]"];
+		return msg.textSnippets.some((line: string) => {
+			return keywords.some((keyword: string) => line.includes(keyword));
+		});
+	}
+
+	const hasRemoveKeywords = (msg: ChatMessage) => {
+		const keywords = ["[DEBUG]"];
+		return msg.textSnippets.some((line: string) => {
+			return keywords.some((keyword: string) => line.includes(keyword));
+		});
+	}
+
 	/************************************************************************
 	 ** FILTERING
 	 ************************************************************************/
@@ -213,17 +207,8 @@ const parseThreadMessages = (): ChatMessage[] => {
 	return messages;
 };
 
-const createStamp = (msg: ChatMessage) => {
-	// const what = isSentByMe(msg) ? "Sent" : "Received";
-	const on = dateToTimeAgo(msg.dateCreated);
-	// let res = `${what} ${on}`;
-	let res = `${on}`;
-	// if (msg.isCompRegen) res = `* ${res}`;
-	if (msg.cached) res = `${res} (cached)`;
-	return res;
-};
 
-const createContentHoverHint = (msg: ChatMessage) => {
+const getContentHoverHint = (msg: ChatMessage) => {
 	const numTexts = msg.textSnippets?.length ?? 0;
 	const numImages = msg.imageUrls?.length ?? 0;
 	const who = isSentByMe(msg) ? "You" : msg.userName;
@@ -234,7 +219,23 @@ const createContentHoverHint = (msg: ChatMessage) => {
 	return `${who} sent ${what} on ${when}`;
 };
 
-const createStampHoverHint = (msg: ChatMessage) => {
+const getAssistantIcon = (assistantKey: string) => {
+	if (!AssistantConfigs[assistantKey]) return "send";
+	if (!AssistantConfigs[assistantKey].icon) return "help";
+	return AssistantConfigs[assistantKey].icon;
+};
+
+const getStamp = (msg: ChatMessage) => {
+	// const what = isSentByMe(msg) ? "Sent" : "Received";
+	const on = dateToTimeAgo(msg.dateCreated);
+	// let res = `${what} ${on}`;
+	let res = `${on}`;
+	// if (msg.isCompRegen) res = `* ${res}`;
+	if (msg.cached) res = `${res} (cached)`;
+	return res;
+};
+
+const getStampHoverHint = (msg: ChatMessage) => {
 	const when = dateToLocaleStr(msg.dateCreated);
 	const what = isSentByMe(msg) ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
@@ -245,48 +246,17 @@ const createStampHoverHint = (msg: ChatMessage) => {
 	return res;
 };
 
-const parseTexts = (msg: ChatMessage) => {
-	const texts = msg.textSnippets;
+
+const parseTextSnippets = (msg: ChatMessage) => {
+	let texts = msg.textSnippets;
 	if ((!texts || texts.length === 0) && !msg.loading) return [""];
+	texts = texts.flatMap((text: string) => {
+		return text.split("\n");
+	});
 	return texts;
 };
 
-const isSentByMe = (msg: ChatMessage) => {
-	return msg.userName === ConfigUserBase.name;
-};
-
-const getScrollAreaStyle = computed(() => {
-	const propStyle = props.scrollAreaStyle ? props.scrollAreaStyle : {};
-	const defaults = {
-		position: "absolute",
-		left: "0px",
-		right: "0px",
-		top: "50px",
-		bottom: "0px",
-		paddingLeft: "5vw",
-		paddingRight: "5vw",
-		paddingBottom: "2vh",
-	};
-	return {
-		...defaults,
-		...propStyle,
-	};
-});
-
-const scrollToBottom = (duration?: number) => {
-	if (threadElem.value) {
-		duration = duration ?? 750;
-		// scroll to bottom. The element is q-scroll-area
-		const size = threadElem.value.getScroll().verticalSize;
-		threadElem.value.setScrollPosition("vertical", size, duration);
-	}
-};
-
-const getSplitText = (text: string) => {
-	return text.split("\n");
-};
-
-const sanitizeLine = (line: string) => {
+const sanitizeSnippet = (line: string) => {
 	const tagsReplMap: { [key: string]: string } = {
 		prompt: "b",
 		image: "b",
@@ -308,17 +278,15 @@ const copyMessage = (text: string) => {
 	});
 };
 
+const ignoreMessage = (msg: ChatMessage) => {
+	console.warn("=> ignore:", {...msg});
+	msg.isIgnored = msg.isIgnored === undefined ? true : !msg.isIgnored;
+};
+
 const editMessage = (msg: ChatMessage) => {
 	smartNotify(`Message editing is not yet implemented`);
 	console.warn("=> edit:", {...msg});
 	// comp.editMessage(msg);
-};
-
-const regenMessage = (msg: ChatMessage) => {
-	console.warn("=> regen:", {...msg});
-	console.warn("msg:", {...msg});
-	console.warn("ctxIds:", msg.result?.contextIds);
-	handleAssistantMsg(msg, comp);
 };
 
 const canRegenMessage = (msg: ChatMessage) => {
@@ -326,6 +294,13 @@ const canRegenMessage = (msg: ChatMessage) => {
 	const msgIds = msg.result?.contextIds;
 	if (msgIds) return msgIds.length > 0;
 	return false;
+};
+
+const regenMessage = (msg: ChatMessage) => {
+	console.warn("=> regen:", {...msg});
+	console.warn("msg:", {...msg});
+	console.warn("ctxIds:", msg.result?.contextIds);
+	handleAssistantMsg(msg, comp);
 };
 
 const deleteMessage = (msg: ChatMessage) => {
@@ -339,10 +314,6 @@ const deleteMessage = (msg: ChatMessage) => {
 	msg.isDeleted = true;
 };
 
-const ignoreMessage = (msg: ChatMessage) => {
-	console.warn("=> ignore:", {...msg});
-	msg.isIgnored = msg.isIgnored === undefined ? true : !msg.isIgnored;
-};
 
 const restoreMessage = (msg: ChatMessage) => {
 	console.warn("=> restore:", {...msg});
@@ -361,11 +332,6 @@ const getMsgStyle = (msg: ChatMessage) => {
 			// borderRadius: "15px",
 		};
 	return {};
-};
-
-const getBgColor = (msg: ChatMessage) => {
-	if (msg.isDeleted) return "red-2";
-	return isSentByMe(msg) ? null : getSeededQColor(msg.userName, 1, 2);
 };
 
 const loadThread = () => {
@@ -391,6 +357,43 @@ const loadThread = () => {
 		smartNotify(`An error occurred while loading saved chat thread`, caption);
 	}
 };
+
+
+const isSentByMe = (msg: ChatMessage) => {
+	return msg.userName === ConfigUserBase.name;
+};
+
+const getMsgBgColor = (msg: ChatMessage) => {
+	if (msg.isDeleted) return "red-2";
+	return isSentByMe(msg) ? null : getSeededQColor(msg.userName, 1, 2);
+};
+
+const scrollToBottom = (duration?: number) => {
+	if (threadElem.value) {
+		duration = duration ?? 750;
+		// scroll to bottom. The element is q-scroll-area
+		const size = threadElem.value.getScroll().verticalSize;
+		threadElem.value.setScrollPosition("vertical", size, duration);
+	}
+};
+
+const getScrollAreaStyle = computed(() => {
+	const propStyle = props.scrollAreaStyle ? props.scrollAreaStyle : {};
+	const defaults = {
+		position: "absolute",
+		left: "0px",
+		right: "0px",
+		top: "50px",
+		bottom: "0px",
+		paddingLeft: "5vw",
+		paddingRight: "5vw",
+		paddingBottom: "2vh",
+	};
+	return {
+		...defaults,
+		...propStyle,
+	};
+});
 
 watch(
 	() => props.scrollAreaStyle,

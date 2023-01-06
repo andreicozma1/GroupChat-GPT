@@ -247,11 +247,11 @@ const getStampHoverHint = (msg: ChatMessage) => {
 
 
 const parseTextSnippets = (msg: ChatMessage) => {
-	let texts = msg.textSnippets;
+	const texts = msg.textSnippets;
 	if ((!texts || texts.length === 0) && !msg.loading) return [""];
-	texts = texts.flatMap((text: string) => {
-		return text.split("\n");
-	});
+	// texts = texts.flatMap((text: string) => {
+	// 	return text.split("\n");
+	// });
 	return texts;
 };
 

@@ -16,7 +16,7 @@
                      :key="textSnippet"
                      @click="copyClipboard(textSnippet)">
                     <div v-html="sanitizeSnippet(textSnippet)"/>
-                    <q-tooltip v-if="msg.dateCreated" :delay="750">
+                    <q-tooltip :delay="750">
                         {{ getContentHoverHint(msg) }}
                     </q-tooltip>
                 </div>
@@ -24,7 +24,6 @@
                 <div v-if="msg.imageUrls.length > 0">
                     <q-card v-for="imageUrl in msg.imageUrls"
                             :key="imageUrl"
-                            :title="imageUrl"
                             class="bg-grey-1"
                             flat>
                         <q-card-section class="q-pa-none">

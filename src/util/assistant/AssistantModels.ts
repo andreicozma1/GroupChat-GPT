@@ -11,6 +11,7 @@ export interface Assistant extends ChatUser {
 	 - TODO: Move these into a separate interface (promptConfig)
 	 ******************************************************************************************************************/
 	promptStyle: any;
+	promptHelper?: string;
 	traits?: PromptTraits;
 	rules?: PromptRules;
 	examples?: string[]; // Order: Human, AI, Human, AI, etc.

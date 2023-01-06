@@ -372,9 +372,7 @@ watch(
 	}
 );
 //
-watch(() => Object.keys(comp.getThread.messageMap), () => {
-	loadThread();
-});
+watch(comp.getThread, () => loadThread());
 //
 // watch(
 // 	() => comp.getThread.prefs?.shownUsers,

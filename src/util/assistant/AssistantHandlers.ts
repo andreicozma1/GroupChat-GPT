@@ -127,13 +127,12 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 			if (followupPrompts.length > 0) {
 				console.log("promptText", followupPrompts);
 				// TODO: better way to handle this dynamically instead of hard-coding
-				const nextId = `${msg.userId}_gen`;
 				for (let i = 0; i < followupPrompts.length; i++) {
 					const prompt = `<result>${followupPrompts[i]}</result>`
 					msg.textSnippets.push(prompt);
 
 					const nextMsg: ChatMessage = createMessageFromUserId(
-						nextId,
+						msg.userId,
 						comp,
 					);
 					msg.followUpsIds.push(nextMsg.id);

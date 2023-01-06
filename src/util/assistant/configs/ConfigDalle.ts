@@ -29,7 +29,7 @@ export const ConfigDalle: Assistant = {
 		"Surprise me! Also, give it an astronaut suit and make it float in deep space.",
 		"Coming right ahead! <prompt>A picture of a cat with white fur and blue eyes, wearing an astronaut suit, floating in deep space, cyberpunk style.</prompt>",
 	],
-	allowPromptFollowUps: true,
+	promptHelper: "dalle_gen",
 };
 
 export const ConfigDalleGen: Assistant = {
@@ -45,4 +45,4 @@ export const ConfigDalleGen: Assistant = {
 		always: ["Only responds to DALL-E's prompts."],
 	},
 	isAvailable: false,
-};
+}

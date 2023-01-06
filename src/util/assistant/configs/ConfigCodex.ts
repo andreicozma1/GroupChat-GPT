@@ -28,6 +28,7 @@ export const ConfigCodex: Assistant = {
 		"<prompt>A Python program that adds numbers together.\nThe numbers to add will be 5 and 6.</prompt>",
 	],
 	allowPromptFollowUps: true,
+	promptHelper: "codex_gen",
 };
 
 export const ConfigCodexGen: Assistant = {
@@ -51,4 +52,4 @@ export const ConfigCodexGen: Assistant = {
 		"```\ndef multiply(a, b):\n\treturn a * b\n\nprint(multiply(5, 6))\n```",
 	],
 	isAvailable: false,
-};
+}

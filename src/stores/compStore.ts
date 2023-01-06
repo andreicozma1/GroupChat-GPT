@@ -1,7 +1,6 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
-import {getMessageHistory} from "src/util/chat/ChatUtils";
 import {makeApiRequest} from "src/util/OpenAi";
 import {getAppVersion} from "src/util/Utils";
 import {Ref, ref} from "vue";
@@ -140,27 +139,14 @@ export const useCompStore = defineStore("counter", {
 		},
 		async generate(
 			actor: Assistant,
-			msgHistIds?: string[]
+			msgHist: ChatMessage[],
+			ignoreCache?: boolean
 		): Promise<GenerationResult> {
+			ignoreCache = ignoreCache ?? false;
 			console.warn("-".repeat(20));
 
 			console.warn(`=> generate (${actor.id}):`, actor);
-			let ignoreCache = actor.shouldIgnoreCache === undefined ? false : actor.shouldIgnoreCache;
-			let msgHist;
-			if (!msgHistIds) {
-				// First-time generation
-				msgHist = getMessageHistory({
-					thread: this.getThread,
-					includeSelf: true,
-					includeActors: undefined,
-					excludeActors: [AssistantConfigs.coordinator],
-					maxLength: 10,
-				});
-			} else {
-				// Re-generation from specified context
-				msgHist = msgHistIds.map((id) => this.getThread.messageMap[id]);
-				ignoreCache = true;
-			}
+
 			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
 			msgHist = msgHist.filter((m: ChatMessage) => !m.isIgnored);
 			console.warn("=> msgHist:");

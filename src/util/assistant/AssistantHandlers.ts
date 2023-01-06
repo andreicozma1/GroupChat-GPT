@@ -1,7 +1,7 @@
 import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
 import {GenerationResult} from "stores/compStore";
-import {createMessageFromUserCfg, createMessageFromUserId} from "src/util/chat/ChatUtils";
+import {createMessageFromUserCfg, createMessageFromUserId, getMessageHistory} from "src/util/chat/ChatUtils";
 import {ConfigCoordinator} from "src/util/assistant/configs/ConfigCoordinator";
 import {Assistant} from "src/util/assistant/AssistantModels";
 
@@ -34,10 +34,29 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 	msg.followupMsgIds = [];
 	comp.pushMessage(msg, true);
 
+	const msgHistIds = msg.result?.contextIds
+	let ignoreCache = cfg.shouldIgnoreCache === undefined ? false : cfg.shouldIgnoreCache;
+	let msgHist;
+	if (!msgHistIds) {
+		// First-time generation
+		msgHist = getMessageHistory({
+			thread: comp.getThread,
+			includeSelf: true,
+			includeActors: undefined,
+			excludeActors: [AssistantConfigs.coordinator],
+			maxLength: 10,
+			maxDate: msg.dateCreated,
+		});
+	} else {
+		// Re-generation from specified context
+		msgHist = msgHistIds.map((id) => comp.getThread.messageMap[id]);
+		ignoreCache = true;
+	}
 
 	const res: GenerationResult = await comp.generate(
 		cfg,
-		msg.result?.contextIds
+		msgHist,
+		ignoreCache
 	);
 	console.log("=> res:", res);
 	msg.result = res.result;
@@ -50,35 +69,9 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 		return;
 	}
 
-	// if (msg.isCompRegen) {
-	// 	console.warn("=> Regen");
-	// 	msg.textSnippets = [];
-	// 	msg.imageUrls = [];
-	// }
-
-	if (res?.textSnippets) {
-		msg.textSnippets = res.textSnippets
-	}
-	if (res?.imageUrls) {
-		msg.imageUrls = res.imageUrls
-	}
+	if (res?.textSnippets) msg.textSnippets = res.textSnippets
+	if (res?.imageUrls) msg.imageUrls = res.imageUrls
 	comp.pushMessage(msg);
-
-	// const totalLength = msg.textSnippets.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
-	// const sleepTime = totalLength * 25
-	// console.log(`sleepTime: ${sleepTime}`)
-	// await sleep(sleepTime)
-
-	// comp.pushMessage(msg);
-
-	// const requiredFollowUps = cfg?.allowPromptFollowUps
-	// 	? cfg.allowPromptFollowUps
-	// 	: false;
-	//
-	// if (!requiredFollowUps) {
-	// 	console.warn("=> No follow-ups");
-	// 	return;
-	// }
 
 	const followupActors = msg.textSnippets
 		.flatMap((t: string) => t.toLowerCase().split("\n"))
@@ -96,7 +89,6 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 	const thread: ChatThread = comp.getThread
 	const followups = []
 
-
 	switch (cfg.id) {
 		case ConfigCoordinator.id:
 			if (followupActors.length === 0) {
@@ -111,7 +103,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 					nextKey,
 					comp
 				);
-				// msg.followupMsgIds.push(nextMsg.id);
+				msg.followupMsgIds.push(nextMsg.id);
 				followups.push({
 					msg: nextMsg,
 					cfgUserId: undefined,
@@ -128,7 +120,6 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 				return t.trim();
 			});
 			msg.textSnippets = msg.textSnippets.filter((t: string) => t.length > 0);
-			// msg.textSnippets = msg.textSnippets.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
 			comp.pushMessage(msg);
 
 			followupPrompts = followupPrompts.filter((t: string) => t.split(" ").length > 3);
@@ -149,6 +140,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 					);
 					msg.followupMsgIds.push(nextMsg.id);
 					nextMsg.textSnippets.push(prompt);
+					nextMsg.dateCreated = msg.dateCreated
 					comp.pushMessage(nextMsg);
 					followups.push({
 						msg: nextMsg,
@@ -167,33 +159,3 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 		}
 	}
 };
-// export const handleCoordinator = async (
-// 	comp: any,
-// 	orderedResponses?: boolean
-// ) => {
-// 	orderedResponses = orderedResponses === undefined ? true : orderedResponses;
-// 	const cfg: Assistant = AssistantConfigs.coordinator;
-// 	const msg: ChatMessage = buildMessage(cfg, comp);
-//
-// 	const res: GenerationResult = await comp.generate(cfg);
-// 	console.log(res);
-// 	msg.result = res.result;
-// 	msg.cached = res.cached;
-//
-// 	if (res.errorMsg) {
-// 		msg.textSnippets.push("[ERROR]\n" + res.errorMsg);
-// 		comp.pushMessage(msg);
-// 		return;
-// 	}
-// 	if (!res.textSnippets) {
-// 		msg.textSnippets.push("Error: No text in result]");
-// 		comp.pushMessage(msg);
-// 		return;
-// 	}
-//
-// 	msg.textSnippets = res.textSnippets
-// 		? [...res.textSnippets]
-// 		: ["An error occurred"];
-// 	comp.pushMessage(msg);
-//
-// };

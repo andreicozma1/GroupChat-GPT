@@ -60,6 +60,8 @@ export const getMessageHistory = (
 ): ChatMessage[] => {
 	let hist = getThreadMessages(config.thread);
 	hist = hist.filter((m: ChatMessage) => {
+		if (config.maxDate < m.dateCreated) return false;
+
 		if (m.userId === ConfigUserBase.id) {
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;

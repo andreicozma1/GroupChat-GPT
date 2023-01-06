@@ -44,4 +44,5 @@ export interface ChatMessageHistConfig {
 	includeActors?: Assistant[];
 	excludeActors?: Assistant[];
 	maxLength?: number;
+	maxDate: string | number | Date;
 }

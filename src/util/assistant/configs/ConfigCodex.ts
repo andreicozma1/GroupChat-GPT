@@ -1,5 +1,5 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {createAssistantPrompt, createPromptCodexGen,} from "src/util/prompt/Prompts";
+import {createAssistantPrompt, createPromptCodexGen,} from "src/util/prompt/AssistantPrompts";
 import {createCodeBlock, createExamplePrompt} from "src/util/assistant/AssistantUtils";
 
 
@@ -30,7 +30,7 @@ export const ConfigCodex: Assistant = {
 		"Hey Codex, write a Python function that adds any numbers together.",
 		// ------------------------------------------------------------
 		"Sure, I can do that.\n" +
-		"Do you want it to run an example and print the result? If so, what should the numbers be?",
+		"Do you want it to run an example and print the result? If so, what should the numbers be?\n" +
 		createExamplePrompt(
 			"Language: Python",
 			"Instructions:",
@@ -94,7 +94,7 @@ export const ConfigCodexGen: Assistant = {
 		"\n" +
 		createCodeBlock("python",
 			"result = multiply(5, 6)",
-			"print(result)"),
+			"print(result)")
 		// ------------------------------------------------------------
 	],
 	isAvailable: false,

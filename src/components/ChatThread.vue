@@ -230,7 +230,7 @@ const getStampHoverHint = (msg: ChatMessage) => {
 
 const parseTextSnippets = (msg: ChatMessage) => {
 	const texts = msg.textSnippets;
-	if ((!texts || texts.length === 0) && !msg.loading) return [""];
+	if ((!texts || texts.length === 0) && !msg.loading) return [];
 	return texts;
 };
 

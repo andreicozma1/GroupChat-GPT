@@ -1,5 +1,5 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {createAssistantPrompt, createPromptDalleGen,} from "src/util/prompt/Prompts";
+import {createAssistantPrompt, createPromptDalleGen,} from "src/util/prompt/AssistantPrompts";
 import {createExamplePrompt} from "src/util/assistant/AssistantUtils";
 
 export const ConfigDalle: Assistant = {
@@ -25,19 +25,19 @@ export const ConfigDalle: Assistant = {
 		"Sure! Here is a picture of a cat.\n" +
 		"Do you want to see a specific color or breed? Like a black cat or a tabby?\n" +
 		"Also, should the cat be sitting, standing, or perhaps playing with a ball of yarn?\n" +
-		"Let me know if there is anything else you want to add.\n",
+		"Let me know if there is anything else you want to add.\n" +
 		createExamplePrompt("A picture of a cat."),
 		// ------------------------------------------------------------
 		"Tabby, sitting on a chair. Also, give it a cowboy hat.",
 		// ------------------------------------------------------------
 		"Sure, I can do that.\n" +
 		"Do you have any specific artistic styles in mind? Like a cartoon, oil painting, or realistic style?\n" +
-		"I can also try to imitate a specific artist.\n",
+		"I can also try to imitate a specific artist.\n" +
 		createExamplePrompt("A picture of a tabby cat, sitting on a chair, wearing a cowboy hat."),
 		// ------------------------------------------------------------
 		"Surprise me!",
 		// ------------------------------------------------------------
-		"How about a cartoon style?\n",
+		"How about a cartoon style?\n" +
 		createExamplePrompt("A picture of a tabby cat, sitting on a chair, wearing a cowboy hat, cartoon style."),
 	],
 	followupPromptHelperId: "dalle_gen",

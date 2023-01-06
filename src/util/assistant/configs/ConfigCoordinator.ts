@@ -1,5 +1,5 @@
 import {Assistant} from "src/util/assistant/AssistantModels";
-import {createAssistantPrompt} from "src/util/prompt/Prompts";
+import {createAssistantPrompt} from "src/util/prompt/AssistantPrompts";
 
 export const ConfigCoordinator: Assistant = {
 	id: "coordinator",

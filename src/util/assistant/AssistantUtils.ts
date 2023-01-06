@@ -39,7 +39,7 @@ export const processKV = (
 	);
 	val = Array.isArray(val) ? val : [val];
 	val = val.map((s: string) => s.trim());
-	if (val.every((s: string) => s.length > 50)) {
+	if (val.some((s: string) => s.length > 50)) {
 		valJoinStr = "\n";
 		inline = false;
 		val = val.map((s: string) => `- ${s}`);
@@ -54,7 +54,7 @@ export const createExamplePrompt = (...message: string[]): string => {
 	for (let i = 0; i < message.length; i++) {
 		res += message[i] + "\n"
 	}
-	res += "</prompt>\n"
+	res += "</prompt>"
 	return res
 }
 

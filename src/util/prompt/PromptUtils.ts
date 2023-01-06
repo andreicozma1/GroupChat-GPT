@@ -44,16 +44,18 @@ export const promptMembers = (
 	return start + "\n" + info;
 };
 
-export const promptExamples = (ai: Assistant): string => {
+export const promptExamples = (ai: Assistant, promptHeader?: string, resultHeader?: string): string => {
 	if (!ai.examples || ai.examples.length == 0) return "";
+	promptHeader = promptHeader || ConfigUserBase.name;
+	resultHeader = resultHeader || ai.name;
 
 	const start = "### EXAMPLES ###";
 
 	let res = "";
 	for (let i = 0; i < ai.examples.length; i++) {
 		const msg = ai.examples[i];
-		const isHuman = i % 2 === 0;
-		const name = isHuman ? ConfigUserBase.name : ai.name;
+		const isPrompt = i % 2 === 0;
+		const name = isPrompt ? promptHeader : resultHeader;
 		res += `### ${name}:\n${msg}\n\n`;
 	}
 

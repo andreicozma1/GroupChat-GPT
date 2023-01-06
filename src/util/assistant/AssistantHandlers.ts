@@ -124,7 +124,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 				return t.trim();
 			});
 			msg.textSnippets = msg.textSnippets.filter((t: string) => t.length > 0);
-			// comp.pushMessage(msg);
+			comp.pushMessage(msg);
 
 			followupPrompts = followupPrompts.filter((t: string) => t.split(" ").length > 3);
 			if (followupPrompts.length > 0) {

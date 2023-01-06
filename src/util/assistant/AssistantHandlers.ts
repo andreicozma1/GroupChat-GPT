@@ -102,7 +102,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 					nextKey,
 					comp
 				);
-				msg.repliesIds.push(nextMsg.id);
+				msg.followUpsIds.push(nextMsg.id);
 				if (thread.prefs.orderedResponses) {
 					await handleAssistantMsg(nextMsg, comp);
 				} else {
@@ -136,7 +136,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 						nextId,
 						comp,
 					);
-					msg.repliesIds.push(nextMsg.id);
+					msg.followUpsIds.push(nextMsg.id);
 					nextMsg.textSnippets.push(prompt);
 					await handleAssistantMsg(nextMsg, comp);
 				}

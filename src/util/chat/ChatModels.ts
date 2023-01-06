@@ -36,7 +36,7 @@ export interface ChatMessage extends GenerationResult {
 	isCompRegen?: boolean;
 	isDeleted?: boolean;
 	isIgnored?: boolean;
-	repliesIds: string[];
+	followUpsIds: string[];
 }
 
 // TODO: Make these configurable in UI in the future

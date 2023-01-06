@@ -22,7 +22,7 @@ const userMsgValid = computed(() => {
 const isTyping = ref(false);
 const isTypingTimeout: Ref<any> = ref(null);
 
-const updateIC = () => {
+const updateScrollAreaStyle = () => {
 	setTimeout(() => {
 		let controlsHeight = 0;
 		if (controlsCard.value)
@@ -35,7 +35,7 @@ const updateIC = () => {
 };
 
 watch(userMsgStr, () => {
-	updateIC();
+	updateScrollAreaStyle();
 	// introduce a delay to detect if the user is typing.
 	// The coordinator will not be called until the user stops typing for a while.
 	isTyping.value = true;
@@ -47,6 +47,6 @@ watch(userMsgStr, () => {
 });
 
 onMounted(() => {
-	updateIC();
+	updateScrollAreaStyle();
 });
 </script>

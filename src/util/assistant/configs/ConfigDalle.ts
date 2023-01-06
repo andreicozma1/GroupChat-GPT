@@ -29,7 +29,7 @@ export const ConfigDalle: Assistant = {
 		"Surprise me! Also, give it an astronaut suit and make it float in deep space.",
 		"Coming right ahead! <prompt>A picture of a cat with white fur and blue eyes, wearing an astronaut suit, floating in deep space, cyberpunk style.</prompt>",
 	],
-	promptHelperId: "dalle_gen",
+	followupPromptHelperId: "dalle_gen",
 };
 
 export const ConfigDalleGen: Assistant = {

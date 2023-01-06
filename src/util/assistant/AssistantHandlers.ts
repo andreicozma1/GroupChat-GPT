@@ -102,7 +102,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 					nextKey,
 					comp
 				);
-				msg.followUpsIds.push(nextMsg.id);
+				msg.followupMsgIds.push(nextMsg.id);
 				if (thread.prefs.orderedResponses) {
 					await handleAssistantMsg(nextMsg, comp);
 				} else {
@@ -127,8 +127,8 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 			if (followupPrompts.length > 0) {
 				console.log("promptText", followupPrompts);
 				// TODO: better way to handle this dynamically instead of hard-coding
-				const promptHelperId = cfg.promptHelperId;
-				if (!promptHelperId) {
+				const followupPromptHelperId = cfg.followupPromptHelperId;
+				if (!followupPromptHelperId) {
 					console.error("Error: ${cfg.id} generated ${followupPrompts.length} prompts, but no promptHelperId was specified.");
 					break
 				}
@@ -137,10 +137,10 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 					msg.textSnippets.push(prompt);
 
 					const nextMsg: ChatMessage = createMessageFromUserId(
-						promptHelperId,
+						followupPromptHelperId,
 						comp,
 					);
-					msg.followUpsIds.push(nextMsg.id);
+					msg.followupMsgIds.push(nextMsg.id);
 					nextMsg.textSnippets.push(prompt);
 					await handleAssistantMsg(nextMsg, comp);
 				}

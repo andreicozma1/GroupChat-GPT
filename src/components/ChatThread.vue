@@ -14,7 +14,7 @@
                     v-bind="msg">
                 <div v-for="textSnippet in parseTextSnippets(msg)"
                      :key="textSnippet"
-                     @click="copyMessage(textSnippet)">
+                     @click="copyClipboard(textSnippet)">
                     <div v-html="sanitizeSnippet(textSnippet)"/>
                     <q-tooltip v-if="msg.dateCreated" :delay="750">
                         {{ getContentHoverHint(msg) }}
@@ -127,9 +127,8 @@
 </template>
 
 <script lang="ts" setup>
-import {copyToClipboard} from "quasar";
 import {getSeededQColor} from "src/util/Colors";
-import {getAppVersion} from "src/util/Utils";
+import {copyClipboard, getAppVersion} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
@@ -270,11 +269,6 @@ const sanitizeSnippet = (line: string) => {
 		if (oldTag in tagsReplMap) return `<${tagsReplMap[oldTag]}>`;
 		// remove all other tags
 		return "";
-	});
-};
-const copyMessage = (text: string) => {
-	copyToClipboard(text).then(() => {
-		smartNotify(`Copied message to clipboard`);
 	});
 };
 

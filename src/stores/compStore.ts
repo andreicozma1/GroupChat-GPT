@@ -175,6 +175,8 @@ export const useCompStore = defineStore("counter", {
 			const hash = prompt ? hashPrompt(prompt) : 0;
 			console.warn("=> prompt:");
 			console.log(prompt);
+			console.warn(`=> hash: ${hash}`);
+			console.warn(`=> ignoreCache: ${ignoreCache}`);
 			// if we already have a completion for this prompt, return it
 			if (!ignoreCache && this.completions[hash]) {
 				return {

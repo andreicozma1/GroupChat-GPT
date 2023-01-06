@@ -119,6 +119,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 			prompts = prompts.filter((t: string) => t.split(" ").length > 3);
 			if (prompts.length > 0) {
 				console.log("promptText", prompts);
+				// TODO: better way to handle this dynamically instead of hard-coding
 				const nextId = `${msg.userId}_gen`;
 				for (let i = 0; i < prompts.length; i++) {
 					const prompt = `<result>${prompts[i]}</result>`
@@ -135,7 +136,6 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 			}
 			break;
 	}
-
 };
 // export const handleCoordinator = async (
 // 	comp: any,

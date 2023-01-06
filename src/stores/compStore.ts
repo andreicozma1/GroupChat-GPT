@@ -30,8 +30,7 @@ export const createThread = (): ChatThread => {
 		joinedUserIds: ["coordinator", "davinci", "dalle", "codex"],
 		prefs: {
 			shownUsers: {},
-			showIgnoredMessages: true,
-			showDeletedMessages: false,
+			hideIgnoredMessages: false,
 			orderedResponses: true,
 		},
 	};

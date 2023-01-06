@@ -158,7 +158,7 @@ const parseThreadMessages = (): ChatMessage[] => {
 	 ** FILTERING
 	 ************************************************************************/
 	messages = messages.filter((msg: ChatMessage) => {
-		if (!comp.getThread.prefs.showIgnoredMessages && msg.isIgnored)
+		if (comp.getThread.prefs.hideIgnoredMessages && msg.isIgnored)
 			return false;
 		// remove messages from users that are hidden in thread settings
 		if (thread.prefs?.shownUsers) {

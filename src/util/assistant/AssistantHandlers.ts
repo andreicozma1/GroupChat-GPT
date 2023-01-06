@@ -10,11 +10,12 @@ export const handleAssistantCfg = (cfg: Assistant, comp: any) => {
 	return handleAssistantMsg(msg, comp);
 }
 
-export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
-	const cfg = AssistantConfigs[msg.userId];
+export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?: string) => {
+	cfgUserId = cfgUserId || msg.userId;
+	const cfg = AssistantConfigs[cfgUserId];
 	console.warn("*".repeat(40));
 
-	console.warn(`=> handleAssistantMsg (${msg.userId})`);
+	console.warn(`=> handleAssistantMsg (${cfg.id})`);
 	console.log("=> msg:", msg);
 
 	msg.isCompRegen = msg.result?.contextIds
@@ -137,12 +138,12 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 					msg.textSnippets.push(prompt);
 
 					const nextMsg: ChatMessage = createMessageFromUserId(
-						followupPromptHelperId,
+						msg.userId,
 						comp,
 					);
 					msg.followupMsgIds.push(nextMsg.id);
 					nextMsg.textSnippets.push(prompt);
-					await handleAssistantMsg(nextMsg, comp);
+					await handleAssistantMsg(nextMsg, comp, followupPromptHelperId);
 				}
 			}
 			break;

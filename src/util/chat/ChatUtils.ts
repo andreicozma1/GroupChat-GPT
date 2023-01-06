@@ -16,22 +16,12 @@ export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
 		});
 	}
 
-	const hasRemoveKeywords = (msg: ChatMessage) => {
-		const keywords = ["[DEBUG]"];
-		return msg.textSnippets.some((line: string) => {
-			return keywords.some((keyword: string) => line.includes(keyword));
-		});
-	}
-
 	/************************************************************************
 	 ** FILTERING
 	 ************************************************************************/
 	messages = messages.filter((msg: ChatMessage) => {
-		if (msg.isIgnored) return false;
 		// always keep messages with certain keywords
 		if (hasKeepKeywords(msg)) return true;
-		// always remove messages with certain keywords
-		if (hasRemoveKeywords(msg)) return false;
 		return true;
 	});
 	/************************************************************************
@@ -59,6 +49,7 @@ export const getMessageHistory = (
 ): ChatMessage[] => {
 	let hist = getThreadMessages(config.thread);
 	hist = hist.filter((m: ChatMessage) => {
+		if (m.isIgnored) return false;
 		if (m.userId === ConfigUserBase.id) {
 			if (config.includeSelf === undefined) return true;
 			return config.includeSelf;

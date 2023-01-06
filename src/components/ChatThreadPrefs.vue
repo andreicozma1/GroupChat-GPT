@@ -71,14 +71,14 @@
                                 <q-item dense>
                                     <q-checkbox
                                             v-if="comp.getThread.prefs"
-                                            v-model="comp.getThread.prefs.showIgnoredMessages"
-                                            label="Show Ignored Messages"
+                                            v-model="comp.getThread.prefs.hideIgnoredMessages"
+                                            label="Hide Ignored Messages"
                                             left-label
                                     />
                                     <q-checkbox
                                             v-else
                                             :model-value="undefined"
-                                            label="Show Ignored Messages"
+                                            label="Hide Ignored Messages"
                                             left-label
                                     >
                                         <q-tooltip>Could not load thread preferences</q-tooltip>

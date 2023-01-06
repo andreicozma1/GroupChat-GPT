@@ -33,14 +33,14 @@ export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
 		const bd = parseDate(b.dateCreated);
 		return ad.getTime() - bd.getTime();
 	});
-	messages.sort((a, b) => {
-		// if isCompRegen is true, keep the same order
-		if (a.isCompRegen || b.isCompRegen) return 0;
-		// otherwise, keep loading messages at the bottom
-		if (a.loading && !b.loading) return 1;
-		if (!a.loading && b.loading) return -1;
-		return 0;
-	});
+	// messages.sort((a, b) => {
+	// 	// if isCompRegen is true, keep the same order
+	// 	if (a.isCompRegen || b.isCompRegen) return 0;
+	// 	// otherwise, keep loading messages at the bottom
+	// 	if (a.loading && !b.loading) return 1;
+	// 	if (!a.loading && b.loading) return -1;
+	// 	return 0;
+	// });
 	return messages;
 };
 

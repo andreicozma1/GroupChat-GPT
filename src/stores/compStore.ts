@@ -37,8 +37,7 @@ export const createThread = (): ChatThread => {
 	// for each assistant, check defaultHidden
 	// and add to hiddenUsers if true
 	for (const assistant of res.joinedUserIds) {
-		res.prefs.shownUsers[assistant] =
-			!AssistantConfigs[assistant].defaultHidden ?? true;
+		res.prefs.shownUsers[assistant] = !AssistantConfigs[assistant].defaultHidden ?? true;
 	}
 	return res;
 };

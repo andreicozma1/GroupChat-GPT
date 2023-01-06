@@ -15,7 +15,9 @@
                 <div v-for="textSnippet in parseTextSnippets(msg)"
                      :key="textSnippet"
                      @click="copyClipboard(textSnippet)">
-                    <div v-html="sanitizeSnippet(textSnippet)"/>
+                    <div v-for="snip in sanitizeSnippet(textSnippet).split('\n')"
+                         :key="snip"
+                         v-html="snip"/>
                     <q-tooltip :delay="750">
                         {{ getContentHoverHint(msg) }}
                     </q-tooltip>
@@ -224,9 +226,6 @@ const getStampHoverHint = (msg: ChatMessage) => {
 const parseTextSnippets = (msg: ChatMessage) => {
 	const texts = msg.textSnippets;
 	if ((!texts || texts.length === 0) && !msg.loading) return [""];
-	// texts = texts.flatMap((text: string) => {
-	// 	return text.split("\n");
-	// });
 	return texts;
 };
 

@@ -41,7 +41,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 	if (res.errorMsg) {
 		console.error("=> res.errorMsg:", res.errorMsg);
 		msg.textSnippets.push("[ERROR]\n" + res.errorMsg);
-		comp.pushMessage(msg, false);
+		comp.pushMessage(msg);
 		return;
 	}
 
@@ -57,6 +57,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 	if (res?.imageUrls) {
 		msg.imageUrls = res.imageUrls
 	}
+	comp.pushMessage(msg);
 
 	// const totalLength = msg.textSnippets.reduce((a, b) => a + b.length, 0) + msg.images.reduce((a, b) => a + b.length, 0)
 	// const sleepTime = totalLength * 25
@@ -88,6 +89,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 		);
 
 	const thread: ChatThread = comp.getThread
+	const followups = []
 
 	switch (cfg.id) {
 		case ConfigCoordinator.id:
@@ -104,11 +106,10 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 					comp
 				);
 				msg.followupMsgIds.push(nextMsg.id);
-				if (thread.prefs.orderedResponses) {
-					await handleAssistantMsg(nextMsg, comp);
-				} else {
-					handleAssistantMsg(nextMsg, comp);
-				}
+				followups.push({
+					msg: nextMsg,
+					cfgUserId: undefined,
+				});
 			}
 			break;
 		default:
@@ -136,17 +137,27 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 				for (let i = 0; i < followupPrompts.length; i++) {
 					const prompt = `<result>${followupPrompts[i]}</result>`
 					msg.textSnippets.push(prompt);
-
 					const nextMsg: ChatMessage = createMessageFromUserId(
 						msg.userId,
 						comp,
 					);
 					msg.followupMsgIds.push(nextMsg.id);
 					nextMsg.textSnippets.push(prompt);
-					await handleAssistantMsg(nextMsg, comp, followupPromptHelperId);
+					followups.push({
+						msg: nextMsg,
+						cfgUserId: followupPromptHelperId,
+					});
 				}
 			}
 			break;
+	}
+	comp.pushMessage(msg);
+	for (const nextMsg of followups) {
+		if (thread.prefs.orderedResponses) {
+			await handleAssistantMsg(nextMsg.msg, comp, nextMsg.cfgUserId);
+		} else {
+			handleAssistantMsg(nextMsg.msg, comp, nextMsg.cfgUserId);
+		}
 	}
 };
 // export const handleCoordinator = async (

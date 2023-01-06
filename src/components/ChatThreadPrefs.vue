@@ -103,8 +103,7 @@ const getThreadUsers = (): ChatUser[] => {
 	return comp.getThread.joinedUserIds.map((id) => comp.getUser(id));
 };
 
-watch(
-	() => comp.getThread.prefs,
+watch(comp.getThread,
 	() => {
 		console.log("Thread prefs changed");
 		comp.updateCache();

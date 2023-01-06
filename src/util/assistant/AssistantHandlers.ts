@@ -73,14 +73,14 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 	// 	return;
 	// }
 
-	const nextActors = msg.textSnippets
+	const followupActors = msg.textSnippets
 		.flatMap((t: string) => t.toLowerCase().split("\n"))
 		.filter((t: string) => t.includes("respond"))
 		.flatMap((t: string) => t.split(":")[1].split(","))
 		.map((a: string) => a.trim().toLowerCase())
 		.filter((a: string) => a !== "none");
 
-	let prompts = msg.textSnippets
+	let followupPrompts = msg.textSnippets
 		.filter((t: string) => t.includes("<prompt>"))
 		.map((t: string) =>
 			t.split("<prompt>")[1].trim().split("</prompt>")[0].trim()
@@ -90,14 +90,14 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 
 	switch (cfg.id) {
 		case ConfigCoordinator.id:
-			if (nextActors.length === 0) {
+			if (followupActors.length === 0) {
 				console.warn("=> No follow-ups");
 				msg.textSnippets.push("[INFO] It appears that all assistants chose to ignore your message, lol.");
 				msg.textSnippets.push("You could try sending a message that is a little more interesting!");
 				return;
 			}
-			console.log("=> coordinator->next:", nextActors);
-			for (const nextKey of nextActors) {
+			console.log("=> coordinator->next:", followupActors);
+			for (const nextKey of followupActors) {
 				const nextMsg: ChatMessage = createMessageFromUserId(
 					nextKey,
 					comp
@@ -123,13 +123,13 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 			// msg.textSnippets = msg.textSnippets.map((t: string) => t.replace("<prompt>", "").replace("</prompt>", ""))
 			comp.pushMessage(msg);
 
-			prompts = prompts.filter((t: string) => t.split(" ").length > 3);
-			if (prompts.length > 0) {
-				console.log("promptText", prompts);
+			followupPrompts = followupPrompts.filter((t: string) => t.split(" ").length > 3);
+			if (followupPrompts.length > 0) {
+				console.log("promptText", followupPrompts);
 				// TODO: better way to handle this dynamically instead of hard-coding
 				const nextId = `${msg.userId}_gen`;
-				for (let i = 0; i < prompts.length; i++) {
-					const prompt = `<result>${prompts[i]}</result>`
+				for (let i = 0; i < followupPrompts.length; i++) {
+					const prompt = `<result>${followupPrompts[i]}</result>`
 					msg.textSnippets.push(prompt);
 
 					const nextMsg: ChatMessage = createMessageFromUserId(

@@ -50,6 +50,9 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 	} else {
 		// Re-generation from specified context
 		msgHist = msgHistIds.map((id) => comp.getThread.messageMap[id]);
+		// if there are any undefined messages, remove them
+		msgHist = msgHist.filter((m) => m !== undefined);
+		// TODO: This will end up with less messages than expected if there are any undefined messages
 		ignoreCache = true;
 	}
 

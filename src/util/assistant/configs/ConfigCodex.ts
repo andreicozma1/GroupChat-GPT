@@ -28,7 +28,7 @@ export const ConfigCodex: Assistant = {
 		"<prompt>A Python program that adds numbers together.\nThe numbers to add will be 5 and 6.</prompt>",
 	],
 	allowPromptFollowUps: true,
-	promptHelper: "codex_gen",
+	promptHelperId: "codex_gen",
 };
 
 export const ConfigCodexGen: Assistant = {

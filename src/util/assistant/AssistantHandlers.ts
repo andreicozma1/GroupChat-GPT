@@ -94,7 +94,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 				console.warn("=> No follow-ups");
 				msg.textSnippets.push("[INFO] It appears that all assistants chose to ignore your message, lol.");
 				msg.textSnippets.push("You could try sending a message that is a little more interesting!");
-				return;
+				break;
 			}
 			console.log("=> coordinator->next:", followupActors);
 			for (const nextKey of followupActors) {
@@ -127,12 +127,17 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any) => {
 			if (followupPrompts.length > 0) {
 				console.log("promptText", followupPrompts);
 				// TODO: better way to handle this dynamically instead of hard-coding
+				const promptHelperId = cfg.promptHelperId;
+				if (!promptHelperId) {
+					console.error("Error: ${cfg.id} generated ${followupPrompts.length} prompts, but no promptHelperId was specified.");
+					break
+				}
 				for (let i = 0; i < followupPrompts.length; i++) {
 					const prompt = `<result>${followupPrompts[i]}</result>`
 					msg.textSnippets.push(prompt);
 
 					const nextMsg: ChatMessage = createMessageFromUserId(
-						msg.userId,
+						promptHelperId,
 						comp,
 					);
 					msg.followUpsIds.push(nextMsg.id);

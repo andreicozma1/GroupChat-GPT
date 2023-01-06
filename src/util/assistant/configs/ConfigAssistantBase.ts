@@ -6,7 +6,9 @@ export const ConfigAssistantBase: Assistant = {
 	id: "generic",
 	name: "Generic AI",
 	icon: "chat",
-	promptStyle: createAssistantPrompt,
+	promptConfig: {
+		promptStyle: createAssistantPrompt,
+	},
 	apiConfig: {
 		apiReqType: "createCompletion",
 		apiReqOpts: "chatting",

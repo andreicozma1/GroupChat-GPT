@@ -1,5 +1,5 @@
 import {getAisAvailable, processKV} from "src/util/assistant/AssistantUtils";
-import {Assistant} from "src/util/assistant/AssistantModels";
+import {Assistant, PromptExamplesConfig} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 
@@ -44,19 +44,34 @@ export const promptMembers = (
 	return start + "\n" + info;
 };
 
-export const promptExamples = (ai: Assistant, promptHeader?: string, resultHeader?: string): string => {
+
+export const parseExamplesConfig = (ai: Assistant): PromptExamplesConfig => {
+	const conf: PromptExamplesConfig | undefined = ai.promptConfig.promptExamplesConfig;
+	return {
+		queryIdentifier: conf?.queryIdentifier || ConfigUserBase.name,
+		responseIdentifier: conf?.responseIdentifier || ai.name,
+		useWrapper: conf?.useHeader || false,
+		useHeader: conf?.useWrapper || true
+	}
+}
+
+export const promptExamples = (ai: Assistant): string => {
 	if (!ai.examples || ai.examples.length == 0) return "";
-	promptHeader = promptHeader || ConfigUserBase.name;
-	resultHeader = resultHeader || ai.name;
+	// promptHeader = promptHeader || ConfigUserBase.name;
+	// resultHeader = resultHeader || ai.name;
+	const conf = parseExamplesConfig(ai);
 
 	const start = "### EXAMPLES ###";
 
 	let res = "";
 	for (let i = 0; i < ai.examples.length; i++) {
-		const msg = ai.examples[i];
-		const isPrompt = i % 2 === 0;
-		const name = isPrompt ? promptHeader : resultHeader;
-		res += `### ${name}:\n${msg}\n\n`;
+		let msg = ai.examples[i];
+		const isQuery = i % 2 === 0;
+		const identifier = isQuery ? conf.queryIdentifier : conf.responseIdentifier;
+		// wrap in html tags based on identifier
+		if (conf.useWrapper) msg = `<${identifier}>${msg}</${identifier}>`;
+		if (conf.useHeader) msg = `### ${identifier}:\n${msg}`;
+		res += msg + "\n\n";
 	}
 
 	return start + "\n" + res;

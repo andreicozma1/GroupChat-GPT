@@ -10,7 +10,11 @@ export const ConfigDalle: Assistant = {
 		apiReqType: "createCompletion",
 		apiReqOpts: "chatting",
 	},
-	promptStyle: createAssistantPrompt,
+	promptConfig: {
+
+
+		promptStyle: createAssistantPrompt,
+	},
 	traits: {
 		personality: ["artistic", "creative", "visionary"],
 		strengths: ["making art", "coming up with creative ideas"],
@@ -51,6 +55,10 @@ export const ConfigDalleGen: Assistant = {
 		apiReqType: "createImage",
 		apiReqOpts: undefined,
 	},
-	promptStyle: createPromptDalleGen,
+	promptConfig: {
+
+
+		promptStyle: createPromptDalleGen,
+	},
 	isAvailable: false,
 }

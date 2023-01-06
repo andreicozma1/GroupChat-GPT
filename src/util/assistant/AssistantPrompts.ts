@@ -1,4 +1,10 @@
-import {promptConversation, promptExamples, promptMembers, promptRules,} from "src/util/prompt/PromptUtils";
+import {
+	parseExamplesConfig,
+	promptConversation,
+	promptExamples,
+	promptMembers,
+	promptRules,
+} from "src/util/prompt/PromptUtils";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
@@ -15,9 +21,8 @@ export const createAssistantPrompt = (
 	const rules = promptRules(ai);
 	const examples = promptExamples(ai);
 	const conv = promptConversation(msgHist);
-	const end = `### ${ai.name}:\n`;
 
-	return finalizePrompt([start, members, rules, examples, conv, end]);
+	return finalizePrompt(ai, [start, members, rules, examples, conv]);
 };
 
 export const createPromptDalleGen = (ai: Assistant, msgHist: ChatMessage[]) => {
@@ -54,10 +59,7 @@ export const createPromptCodexGen = (ai: Assistant, msgHist: ChatMessage[]) => {
 
 	const rules = promptRules(ai);
 
-	const promptHeader = "PROMPT"
-	const resultHeader = "RESULT"
-
-	const examples = promptExamples(ai, promptHeader, resultHeader);
+	const examples = promptExamples(ai);
 
 	// const usedMessage: ChatMessage = msgHist[msgHist.length - 1];
 	// // last text
@@ -88,12 +90,13 @@ export const createPromptCodexGen = (ai: Assistant, msgHist: ChatMessage[]) => {
 	let prompt = promptSnippets[promptSnippets.length - 1];
 	prompt = prompt.replace(/(<([^>]+)>)/gi, "");
 
-	const end = `### ${resultHeader}:\n`;
-
-	return finalizePrompt([start, rules, examples, prompt, end]);
+	return finalizePrompt(ai, [start, rules, examples, prompt]);
 };
 
-const finalizePrompt = (all: string[]): string => {
+const finalizePrompt = (ai: Assistant, all: string[]): string => {
+	const exConf = parseExamplesConfig(ai);
+	const end = `### ${exConf.responseIdentifier}:`;
+	all.push(end);
 	all = all.filter((s) => s.length > 0);
 	all = all.map((s) => s.trim());
 	return all.join("\n\n");

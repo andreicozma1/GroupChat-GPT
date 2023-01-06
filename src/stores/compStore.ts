@@ -157,7 +157,7 @@ export const useCompStore = defineStore("counter", {
 			}
 			let prompt = undefined
 			try {
-				prompt = actor.promptStyle(actor, msgHist);
+				prompt = actor.promptConfig.promptStyle(actor, msgHist);
 			} catch (e) {
 				console.error("Error in promptStyle:");
 				console.error(e);

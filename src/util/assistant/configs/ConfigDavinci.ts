@@ -9,7 +9,9 @@ export const ConfigDavinci: Assistant = {
 		apiReqType: "createCompletion",
 		apiReqOpts: "chatting",
 	},
-	promptStyle: createAssistantPrompt,
+	promptConfig: {
+		promptStyle: createAssistantPrompt,
+	},
 	traits: {
 		personality: ["helpful"],
 		strengths: ["providing general information"],

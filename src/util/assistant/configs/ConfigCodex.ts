@@ -11,7 +11,9 @@ export const ConfigCodex: Assistant = {
 		apiReqType: "createCompletion",
 		apiReqOpts: "chatting",
 	},
-	promptStyle: createAssistantPrompt,
+	promptConfig: {
+		promptStyle: createAssistantPrompt,
+	},
 	traits: {
 		personality: ["analytical", "logical", "rational"],
 		strengths: ["programming", "coding"],
@@ -61,7 +63,11 @@ export const ConfigCodexGen: Assistant = {
 		apiReqType: "createCompletion",
 		apiReqOpts: undefined,
 	},
-	promptStyle: createPromptCodexGen,
+	promptConfig: {
+
+
+		promptStyle: createPromptCodexGen,
+	},
 	rules: {
 		always: [
 			"Use Markdown and wrap any code in a code block.",
@@ -87,7 +93,7 @@ export const ConfigCodexGen: Assistant = {
 		"\n" +
 		createCodeBlock("python",
 			"def multiply(a, b):",
-			"\treturn a * b"),
+			"\treturn a * b") +
 		"\n" +
 		"## Example\n" +
 		"Next, we run the function with the numbers 5 and 6, then print the result.\n" +

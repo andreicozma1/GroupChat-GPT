@@ -9,7 +9,9 @@ export const ConfigCoordinator: Assistant = {
 		apiReqType: "createCompletion",
 		apiReqOpts: "coordinator",
 	},
-	promptStyle: createAssistantPrompt,
+	promptConfig: {
+		promptStyle: createAssistantPrompt,
+	},
 	rules: {
 		always: [
 			"Only respond with the exact names of the assistant(s) that should respond to the user's message.",

@@ -1,6 +1,13 @@
 import {PromptRules, PromptTraits} from "src/util/prompt/PromptModels";
 import {ChatUser} from "src/util/chat/ChatModels";
 
+export interface PromptExamplesConfig {
+	queryIdentifier?: string;
+	responseIdentifier?: string;
+	useWrapper?: boolean;
+	useHeader?: boolean;
+}
+
 export interface Assistant extends ChatUser {
 	apiConfig: {
 		apiReqType: string;
@@ -10,7 +17,10 @@ export interface Assistant extends ChatUser {
 	 ### Prompt Configuration
 	 - TODO: Move these into a separate interface (promptConfig)
 	 ******************************************************************************************************************/
-	promptStyle: any;
+	promptConfig: {
+		promptStyle: any;
+		promptExamplesConfig?: PromptExamplesConfig;
+	}
 	followupPromptHelperId?: string;
 	traits?: PromptTraits;
 	rules?: PromptRules;

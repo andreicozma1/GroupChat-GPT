@@ -19,7 +19,11 @@ export const smartNotify = (message: string, caption?: string) => {
 			textColor: "white",
 		},
 		warning: {
-			keywords: ["warn"],
+			keywords: [
+				"warn",
+				"not implemented",
+				"not yet implemented",
+			],
 			color: "orange-12",
 			textColor: "white",
 		},

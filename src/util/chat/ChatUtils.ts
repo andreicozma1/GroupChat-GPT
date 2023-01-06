@@ -27,14 +27,12 @@ export const getMessageHistory = (
 		}
 		return true;
 	});
-	// const hist_zero_len = hist.filter((m) => m.textSnippets.length === 0);
-	// if (hist_zero_len.length > 0) {
-	// 	hist = hist.filter((m) => m.textSnippets.length > 0);
-	// }
-	hist = hist.map((m) => {
-		m.textSnippets = m.textSnippets.filter((t: string) => t.trim().length > 0);
-		return m;
-	});
+	hist = hist.filter((m: ChatMessage) => !m.loading);
+	hist = hist.filter((m) => m.textSnippets.length > 0);
+	// hist = hist.map((m) => {
+	// 	m.textSnippets = m.textSnippets.filter((t: string) => t.trim().length > 0);
+	// 	return m;
+	// });
 	if (config.maxLength !== undefined) hist = hist.slice(-config.maxLength);
 	return hist;
 };

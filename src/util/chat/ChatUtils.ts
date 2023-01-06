@@ -29,10 +29,21 @@ export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
 	 ************************************************************************/
 	// sort by dateCreated
 	messages.sort((a, b) => {
-		const ad = parseDate(a.dateCreated);
-		const bd = parseDate(b.dateCreated);
-		return ad.getTime() - bd.getTime();
+		const ad = parseDate(a.dateCreated).getTime();
+		const bd = parseDate(b.dateCreated).getTime();
+		return ad - bd;
 	});
+	// // secondary sort by parent message
+	// messages.sort((a, b) => {
+	// 	const aFollowsB = b.followupMsgIds.includes(a.id);
+	// 	const bFollowsA = a.followupMsgIds.includes(b.id);
+	// 	// const aIsParent = aFollowsB && !bFollowsA;
+	// 	// const bIsParent = bFollowsA && !aFollowsB;
+	// 	if (aFollowsB) return 1;
+	// 	if (bFollowsA) return -1;
+	// 	return 0
+	// });
+
 	// messages.sort((a, b) => {
 	// 	// if isCompRegen is true, keep the same order
 	// 	if (a.isCompRegen || b.isCompRegen) return 0;
@@ -62,7 +73,6 @@ export const getMessageHistory = (
 		}
 		return true;
 	});
-	hist = hist.filter((m: ChatMessage) => !m.loading);
 	hist = hist.filter((m) => m.textSnippets.length > 0);
 	// hist = hist.map((m) => {
 	// 	m.textSnippets = m.textSnippets.filter((t: string) => t.trim().length > 0);

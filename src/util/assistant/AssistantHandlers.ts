@@ -28,7 +28,12 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 	// 	msg.textSnippets = [];
 	// 	msg.imageUrls = [];
 	// }
+	msg.followupMsgIds.forEach((id: string) => {
+		comp.deleteMessage(id);
+	})
+	msg.followupMsgIds = [];
 	comp.pushMessage(msg, true);
+
 
 	const res: GenerationResult = await comp.generate(
 		cfg,
@@ -91,6 +96,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 	const thread: ChatThread = comp.getThread
 	const followups = []
 
+
 	switch (cfg.id) {
 		case ConfigCoordinator.id:
 			if (followupActors.length === 0) {
@@ -105,7 +111,7 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 					nextKey,
 					comp
 				);
-				msg.followupMsgIds.push(nextMsg.id);
+				// msg.followupMsgIds.push(nextMsg.id);
 				followups.push({
 					msg: nextMsg,
 					cfgUserId: undefined,
@@ -136,13 +142,14 @@ export const handleAssistantMsg = async (msg: ChatMessage, comp: any, cfgUserId?
 				}
 				for (let i = 0; i < followupPrompts.length; i++) {
 					const prompt = `<result>${followupPrompts[i]}</result>`
-					msg.textSnippets.push(prompt);
+					// msg.textSnippets.push(prompt);
 					const nextMsg: ChatMessage = createMessageFromUserId(
 						msg.userId,
 						comp,
 					);
 					msg.followupMsgIds.push(nextMsg.id);
 					nextMsg.textSnippets.push(prompt);
+					comp.pushMessage(nextMsg);
 					followups.push({
 						msg: nextMsg,
 						cfgUserId: followupPromptHelperId,

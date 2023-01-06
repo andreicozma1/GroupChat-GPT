@@ -11,6 +11,7 @@
                     :name="getUserName(msg)"
                     :sent="isSentByMe(msg)"
                     size="6"
+                    @click="onClickMsg(msg)"
                     v-bind="msg">
                 <div v-for="textSnippet in parseTextSnippets(msg)"
                      :key="textSnippet"
@@ -169,6 +170,10 @@ const parseThreadMessages = (): ChatMessage[] => {
 		return true;
 	});
 	return messages;
+};
+
+const onClickMsg = (msg: ChatMessage) => {
+	console.log({...msg});
 };
 
 const getUserName = (msg: ChatMessage): string => {

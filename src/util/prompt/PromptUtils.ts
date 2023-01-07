@@ -1,7 +1,7 @@
 import {getAisAvailable, processKV} from "src/util/assistant/AssistantUtils";
-import {Assistant, PromptExamplesConfig} from "src/util/assistant/AssistantModels";
+import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
-import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
+import {parsePromptConfig} from "src/util/prompt/PromptConfig";
 
 const getAssistantTraits = (
 	ai: Assistant,
@@ -9,11 +9,11 @@ const getAssistantTraits = (
 	tag?: string
 ): string => {
 	const id = useKey ? ai.id : ai.name;
-	let res = `* ${id}`;
+	let res = `# ${id}`;
 	if (tag) res += ` (${tag})`;
 	res += ":\n";
-	if (ai.traits) {
-		res += Object.entries(ai.traits)
+	if (ai.promptConfig.traits) {
+		res += Object.entries(ai.promptConfig.traits)
 			.map(([k, v]) =>
 				processKV(k, v, {
 					keyStartChar: "-",
@@ -31,7 +31,7 @@ export const promptMembers = (
 	const available = getAisAvailable();
 	if (!available || available.length === 0) return "";
 
-	const start = "### CHAT MEMBERS ###";
+	const start = "=== CHAT MEMBERS ===";
 
 	const info = available
 		.map((ai) => {
@@ -44,48 +44,15 @@ export const promptMembers = (
 	return start + "\n" + info;
 };
 
-
-export const parseExamplesConfig = (ai: Assistant): PromptExamplesConfig => {
-	const conf: PromptExamplesConfig | undefined = ai.promptConfig.promptExamplesConfig;
-	return {
-		queryIdentifier: conf?.queryIdentifier || ConfigUserBase.name,
-		responseIdentifier: conf?.responseIdentifier || ai.name,
-		useWrapper: conf?.useHeader || false,
-		useHeader: conf?.useWrapper || true
-	}
-}
-
-export const promptExamples = (ai: Assistant): string => {
-	if (!ai.examples || ai.examples.length == 0) return "";
-	// promptHeader = promptHeader || ConfigUserBase.name;
-	// resultHeader = resultHeader || ai.name;
-	const conf = parseExamplesConfig(ai);
-
-	const start = "### EXAMPLES ###";
-
-	let res = "";
-	for (let i = 0; i < ai.examples.length; i++) {
-		let msg = ai.examples[i];
-		const isQuery = i % 2 === 0;
-		const identifier = isQuery ? conf.queryIdentifier : conf.responseIdentifier;
-		// wrap in html tags based on identifier
-		if (conf.useWrapper) msg = `<${identifier}>${msg}</${identifier}>`;
-		if (conf.useHeader) msg = `### ${identifier}:\n${msg}`;
-		res += msg + "\n\n";
-	}
-
-	return start + "\n" + res;
-};
-
 export const promptRules = (ai: Assistant): string => {
-	if (!ai.rules) return "";
+	if (!ai.promptConfig.rules) return "";
 
-	const start = "### RULES ###";
+	const start = "=== RULES ===";
 
-	const rules = Object.entries(ai.rules)
+	const rules = Object.entries(ai.promptConfig.rules)
 		.map(([k, v]) =>
 			processKV(k, v, {
-				keyStartChar: "*",
+				keyStartChar: "#",
 			})
 		)
 		.join("\n");
@@ -93,16 +60,42 @@ export const promptRules = (ai: Assistant): string => {
 	return start + "\n" + rules;
 };
 
-export const promptConversation = (msgHist: ChatMessage[]): string => {
-	const start = "### CONVERSATION ###";
+export const promptExamples = (ai: Assistant): string => {
+	if (!ai.promptConfig.examples || ai.promptConfig.examples.length == 0) return "";
+	// promptHeader = promptHeader || ConfigUserBase.name;
+	// resultHeader = resultHeader || ai.name;
+	const conf = parsePromptConfig(ai);
+	const start = "=== EXAMPLES ===";
 
-	const conv = msgHist
-		.map((m) => {
-			const v = m.textSnippets.map((s: string) => s.trim());
-			const r = [`### ${m.userName}:`, ...v];
-			return r.join("\n");
-		})
-		.join("\n\n");
+	const res = []
+	for (let i = 0; i < ai.promptConfig.examples.length; i++) {
+		let msg = ai.promptConfig.examples[i].trim();
+		const isQuery = i % 2 === 0;
+		if (isQuery && conf.exampleQueryWrapTag) msg = `<${conf.exampleQueryWrapTag}>\n${msg}\n</${conf.exampleQueryWrapTag}>`;
+		if (!isQuery && conf.exampleResponseWrapTag) msg = `<${conf.exampleResponseWrapTag}>\n${msg}\n</${conf.exampleResponseWrapTag}>`;
+		const identifier = isQuery ? conf.exampleQueryId : conf.exampleResponseId;
+		if (conf.exampleUseHeader) msg = `### ${identifier}:\n${msg}`;
+		res.push(msg)
+	}
 
-	return start + "\n" + conv;
+	return start + "\n" + res.join("\n\n");
+};
+
+
+export const promptConversation = (ai: Assistant, msgHist: ChatMessage[]): string => {
+	const conf = parsePromptConfig(ai);
+	const start = "=== CONVERSATION ===";
+
+	const res = []
+	for (let i = 0; i < msgHist.length; i++) {
+		let msg = msgHist[i].textSnippets.map((s: string) => s.trim()).join("\n");
+		const isQuery = i % 2 === 0;
+		if (isQuery && conf.exampleQueryWrapTag) msg = `<${conf.exampleQueryWrapTag}>\n${msg}\n</${conf.exampleQueryWrapTag}>`;
+		if (!isQuery && conf.exampleResponseWrapTag) msg = `<${conf.exampleResponseWrapTag}>\n${msg}\n</${conf.exampleResponseWrapTag}>`;
+		const identifier = isQuery ? conf.exampleQueryId : conf.exampleResponseId;
+		if (conf.exampleUseHeader) msg = `### ${identifier}:\n${msg}`;
+		res.push(msg)
+	}
+
+	return start + "\n" + res.join("\n\n");
 };

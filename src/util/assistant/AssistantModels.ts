@@ -1,30 +1,15 @@
-import {PromptRules, PromptTraits} from "src/util/prompt/PromptModels";
+import {PromptConfig} from "src/util/prompt/PromptModels";
 import {ChatUser} from "src/util/chat/ChatModels";
 
-export interface PromptExamplesConfig {
-	queryIdentifier?: string;
-	responseIdentifier?: string;
-	useWrapper?: boolean;
-	useHeader?: boolean;
-}
-
 export interface Assistant extends ChatUser {
-	apiConfig: {
-		apiReqType: string;
-		apiReqOpts?: string;
-	};
+	apiReqConfig: string;
 	/*******************************************************************************************************************
 	 ### Prompt Configuration
 	 - TODO: Move these into a separate interface (promptConfig)
 	 ******************************************************************************************************************/
-	promptConfig: {
-		promptStyle: any;
-		promptExamplesConfig?: PromptExamplesConfig;
-	}
+	promptConfig: PromptConfig;
 	followupPromptHelperId?: string;
-	traits?: PromptTraits;
-	rules?: PromptRules;
-	examples?: string[]; // Order: Human, AI, Human, AI, etc.
+
 	/*******************************************************************************************************************
 	 ### Flags
 	 - TODO: Move these into a separate interface (flags)
@@ -46,4 +31,5 @@ export interface ProcessKVConfig {
 	keyStartChar?: string;
 	valJoinStr?: string;
 	inline?: boolean;
+	commaSepMinChars?: number;
 }

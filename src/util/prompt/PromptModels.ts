@@ -1,3 +1,15 @@
+export interface PromptConfig {
+	promptType: string;
+	traits?: PromptTraits;
+	rules?: PromptRules;
+	examples?: string[]; // Order: Human, AI, Human, AI, etc.
+	exampleQueryId?: string;
+	exampleResponseId?: string;
+	exampleQueryWrapTag?: string;
+	exampleResponseWrapTag?: string;
+	exampleUseHeader?: boolean;
+}
+
 export interface PromptTraits {
 	personality?: string | string[];
 	strengths?: string | string[];

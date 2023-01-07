@@ -31,6 +31,7 @@ export const processKV = (
 	const keyStartChar: string = config?.keyStartChar || "#";
 	let valJoinStr: string = config?.valJoinStr || ", ";
 	let inline: boolean = config?.inline || true;
+	const commaSepMinChars = config?.commaSepMinChars || 40;
 
 	key = key.replace(/_/g, " ");
 	key = key.replace(
@@ -39,7 +40,7 @@ export const processKV = (
 	);
 	val = Array.isArray(val) ? val : [val];
 	val = val.map((s: string) => s.trim());
-	if (val.some((s: string) => s.length > 50)) {
+	if (val.some((s: string) => s.length > commaSepMinChars)) {
 		valJoinStr = "\n";
 		inline = false;
 		val = val.map((s: string) => `- ${s}`);
@@ -64,5 +65,14 @@ export const createCodeBlock = (lang: string, ...lines: string[]): string => {
 		res += lines[i] + "\n"
 	}
 	res += "```\n"
+	return res
+}
+
+export const createMarkdown = (...lines: string[]): string => {
+	let res = ""
+	for (let i = 0; i < lines.length; i++) {
+		res += lines[i] + "\n"
+	}
+	res += "\n"
 	return res
 }

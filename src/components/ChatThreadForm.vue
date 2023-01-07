@@ -26,21 +26,32 @@
             <q-space/>
             <q-space/>
             <q-btn-group flat rounded>
-                <q-btn
-                        color="orange"
-                        icon-right="clear"
-                        label="Thread"
-                        no-caps
-                        outline
-                        @click="comp.clearThread"
+                <q-btn label="Clear Thread"
+                       @click="comp.clearThread"
+                       color="light-blue"
+                       icon-right="clear"
+                       no-caps
+                       size="sm"
+                       outline
+                       title="Clear all messages in the thread"
                 />
-                <q-btn
-                        color="red"
-                        icon-right="delete_forever"
-                        label="Cache"
-                        no-caps
-                        outline
-                        @click="comp.clearCache"
+                <q-btn label="Comp. Cache"
+                       @click="comp.clearCompCache"
+                       icon-right="cached"
+                       color="green"
+                       no-caps
+                       size="sm"
+                       outline
+                       title="Clear completion cache for assistant responses"
+                />
+                <q-btn label="Hard Reset"
+                       @click="comp.clearAllData"
+                       icon-right="delete_forever"
+                       color="red"
+                       no-caps
+                       size="sm"
+                       outline
+                       title="Remove all data from browser local storage"
                 />
             </q-btn-group>
         </q-card-actions>
@@ -116,7 +127,7 @@ const kbShortcuts = (e: KeyboardEvent) => {
 	// ctrl/cmd+shift+r clears cache
 	if (e.key.toLowerCase() === "r" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
 		e.preventDefault();
-		comp.clearCache();
+		comp.clearAllData();
 		return;
 	}
 	// enter sends userMsgStr

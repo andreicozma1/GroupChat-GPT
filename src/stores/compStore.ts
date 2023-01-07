@@ -7,7 +7,8 @@ import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage, ChatThread, ChatUser} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 import {smartNotify} from "src/util/SmartNotify";
-import {makeApiRequest} from "src/util/openai/OpenAiUtils";
+import {makeApiRequest} from "src/util/openai/ApiReq";
+import {AssistantPromptTypes} from "src/util/prompt/AssistantPrompts";
 
 export interface GenerationResult {
 	result?: {
@@ -73,11 +74,30 @@ export const useCompStore = defineStore("counter", {
 		updateCache() {
 			LocalStorage.set("completions", this.completions);
 			LocalStorage.set("threads", this.threads);
+			LocalStorage.set("users", this.users);
 		},
-		clearCache() {
-			console.log("Clearing cache");
+		clearAllData() {
+			console.log("Clearing all data");
 			// clear whole local storage and reload
 			LocalStorage.clear();
+			location.reload();
+		},
+		clearCompCache() {
+			console.log("Clearing completions");
+			// remove completions from local storage and reload
+			LocalStorage.remove("completions");
+			location.reload();
+		},
+		clearThreads() {
+			console.log("Clearing threads");
+			// remove threads from local storage and reload
+			LocalStorage.remove("threads");
+			location.reload();
+		},
+		clearUsers() {
+			console.log("Clearing users");
+			// remove users from local storage and reload
+			LocalStorage.remove("users");
 			location.reload();
 		},
 		clearThread() {
@@ -144,7 +164,6 @@ export const useCompStore = defineStore("counter", {
 		): Promise<GenerationResult> {
 			ignoreCache = ignoreCache ?? false;
 			console.warn("-".repeat(20));
-
 			console.warn(`=> generate (${actor.id}):`, actor);
 
 			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
@@ -153,11 +172,11 @@ export const useCompStore = defineStore("counter", {
 			for (let i = 0; i < msgHist.length; i++) {
 				console.log("----------------")
 				console.log(`msgHist[${i}] -> (${msgHist[i].textSnippets.length} texts & ${msgHist[i].imageUrls.length} images)`,
-					{...msgHist[i]}, [...msgHist[i].textSnippets]);
+					[...msgHist[i].textSnippets], {...msgHist[i]});
 			}
 			let prompt = undefined
 			try {
-				prompt = actor.promptConfig.promptStyle(actor, msgHist);
+				prompt = AssistantPromptTypes[actor.promptConfig.promptType](actor, msgHist);
 			} catch (e) {
 				console.error("Error in promptStyle:");
 				console.error(e);

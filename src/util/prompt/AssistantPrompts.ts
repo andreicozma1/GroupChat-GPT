@@ -1,28 +1,22 @@
-import {
-	parseExamplesConfig,
-	promptConversation,
-	promptExamples,
-	promptMembers,
-	promptRules,
-} from "src/util/prompt/PromptUtils";
+import {promptConversation, promptExamples, promptMembers, promptRules,} from "src/util/prompt/PromptUtils";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
+import {parsePromptConfig} from "src/util/prompt/PromptConfig";
 
 export const createAssistantPrompt = (
 	ai: Assistant,
 	msgHist: ChatMessage[]
 ): any => {
-	let start = "### AI GROUP CHAT ###\n";
-	start +=
-		"The following is a group-chat conversation between a human and several AI assistants.\n";
+	const start = "=== AI GROUP CHAT ===";
+	const desc = "The following is a group-chat conversation between a human and several AI assistants.";
 
 	const members = promptMembers(false, ai);
 	const rules = promptRules(ai);
 	const examples = promptExamples(ai);
-	const conv = promptConversation(msgHist);
+	const conv = promptConversation(ai, msgHist);
 
-	return finalizePrompt(ai, [start, members, rules, examples, conv]);
+	return finalizePrompt(ai, [start, desc, members, rules, examples, conv]);
 };
 
 export const createPromptDalleGen = (ai: Assistant, msgHist: ChatMessage[]) => {
@@ -94,10 +88,18 @@ export const createPromptCodexGen = (ai: Assistant, msgHist: ChatMessage[]) => {
 };
 
 const finalizePrompt = (ai: Assistant, all: string[]): string => {
-	const exConf = parseExamplesConfig(ai);
-	const end = `### ${exConf.responseIdentifier}:`;
-	all.push(end);
+	const exConf = parsePromptConfig(ai);
+	if (exConf.exampleUseHeader) {
+		const end = `### ${exConf.exampleResponseId}:`;
+		all.push(end);
+	}
 	all = all.filter((s) => s.length > 0);
 	all = all.map((s) => s.trim());
 	return all.join("\n\n");
 };
+
+export const AssistantPromptTypes: { [key: string]: any } = {
+	"createAssistantPrompt": createAssistantPrompt,
+	"createPromptDalleGen": createPromptDalleGen,
+	"createPromptCodexGen": createPromptCodexGen,
+}

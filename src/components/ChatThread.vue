@@ -16,7 +16,7 @@
                 <div v-for="textSnippet in parseTextSnippets(msg)"
                      :key="textSnippet"
                      @click="copyClipboard(textSnippet)">
-                    <div v-for="snip in sanitizeSnippet(textSnippet).split('\n')"
+                    <div v-for="snip in sanitizeTextSnippet(textSnippet).split('\n')"
                          :key="snip"
                          v-html="snip"/>
                     <q-tooltip :delay="750">
@@ -86,7 +86,7 @@
                             </q-tooltip>
                         </q-btn>
                         <q-btn v-if="!msg.isDeleted"
-                               :icon="msg.isIgnored ? 'visibility' : 'visibility_off'"
+                               :icon="msg.hideInPrompt ? 'visibility' : 'visibility_off'"
                                color="blue-grey-8"
                                dense
                                flat
@@ -94,7 +94,7 @@
                                size="xs"
                                @click="ignoreMessage(msg)">
                             <q-tooltip>
-                                {{ msg.isIgnored ? 'Use message' : 'Ignore message' }}
+                                {{ msg.hideInPrompt ? 'Use message' : 'Ignore message' }}
                             </q-tooltip>
                         </q-btn>
                         <q-btn :icon="msg.isDeleted ? 'delete_forever' : 'delete'"
@@ -160,32 +160,33 @@ const parseThreadMessages = (): ChatMessage[] => {
 	/************************************************************************
 	 ** FILTERING
 	 ************************************************************************/
-	messages = messages.filter((msg: ChatMessage) => {
-		if (comp.getThread.prefs.hideIgnoredMessages && msg.isIgnored)
+	messages = messages.filter((message: ChatMessage) => {
+		if (message.forceShow) return true;
+		if (comp.getThread.prefs.hideIgnoredMessages && message.hideInPrompt)
 			return false;
 		// remove messages from users that are hidden in thread settings
-		if (thread.prefs?.shownUsers) {
-			return thread.prefs.shownUsers[msg.userId] ?? true;
+		if (thread.prefs?.showMessagesFromUsers) {
+			return thread.prefs.showMessagesFromUsers[message.userId] ?? true;
 		}
 		return true;
 	});
 	return messages;
 };
 
-const onClickMsg = (msg: ChatMessage) => {
-	console.log({...msg});
+const onClickMsg = (message: ChatMessage) => {
+	console.log({...message});
 };
 
-const getUserName = (msg: ChatMessage): string => {
-	const user: ChatUser = comp.getUser(msg.userId);
+const getUserName = (message: ChatMessage): string => {
+	const user: ChatUser = comp.getUser(message.userId);
 	return `${user.name} (${user.id})`;
 };
 
-const getUserIcon = (msg: ChatMessage) => {
-	const user: ChatUser = comp.getUser(msg.userId);
+const getUserIcon = (message: ChatMessage) => {
+	const user: ChatUser = comp.getUser(message.userId);
 	if (!user) {
-		console.error(`User "${msg.userId}" not found.`);
-		smartNotify(`Error: User "${msg.userId}" not found.`);
+		console.error(`User "${message.userId}" not found.`);
+		smartNotify(`Error: User "${message.userId}" not found.`);
 		return "send";
 	}
 	if (!user.icon) {
@@ -195,32 +196,32 @@ const getUserIcon = (msg: ChatMessage) => {
 	return user.icon;
 };
 
-const getContentHoverHint = (msg: ChatMessage) => {
-	const numTexts = msg.textSnippets?.length ?? 0;
-	const numImages = msg.imageUrls?.length ?? 0;
-	const who = isSentByMe(msg) ? "You" : msg.userName;
+const getContentHoverHint = (message: ChatMessage) => {
+	const numTexts = message.textSnippets?.length ?? 0;
+	const numImages = message.imageUrls?.length ?? 0;
+	const who = isSentByMe(message) ? "You" : message.userName;
 	const what = `${numTexts} text and ${numImages} image${
 		numImages === 1 ? "" : "s"
 	}`;
-	const when = dateToLocaleStr(msg.dateCreated);
+	const when = dateToLocaleStr(message.dateCreated);
 	return `${who} sent ${what} on ${when}`;
 };
 
-const getStamp = (msg: ChatMessage) => {
+const getStamp = (message: ChatMessage) => {
 	// const what = isSentByMe(msg) ? "Sent" : "Received";
-	const on = dateToTimeAgo(msg.dateCreated);
+	const on = dateToTimeAgo(message.dateCreated);
 	// let res = `${what} ${on}`;
 	let res = `${on}`;
 	// if (msg.isCompRegen) res = `* ${res}`;
-	if (msg.cached) res = `${res} (cached)`;
+	if (message.cached) res = `${res} (cached)`;
 	return res;
 };
 
-const getStampHoverHint = (msg: ChatMessage) => {
-	const when = dateToLocaleStr(msg.dateCreated);
-	const what = isSentByMe(msg) ? "Sent" : "Received";
+const getStampHoverHint = (message: ChatMessage) => {
+	const when = dateToLocaleStr(message.dateCreated);
+	const what = isSentByMe(message) ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated = msg.result?.responseData?.created * 1000;
+	const dateGenerated = message.result?.responseData?.created * 1000;
 	if (dateGenerated) {
 		res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 	}
@@ -228,13 +229,13 @@ const getStampHoverHint = (msg: ChatMessage) => {
 };
 
 
-const parseTextSnippets = (msg: ChatMessage) => {
-	const texts = msg.textSnippets;
-	if ((!texts || texts.length === 0) && !msg.loading) return [];
+const parseTextSnippets = (message: ChatMessage) => {
+	const texts = message.textSnippets;
+	if ((!texts || texts.length === 0) && !message.loading) return [];
 	return texts;
 };
 
-const sanitizeSnippet = (line: string) => {
+const sanitizeTextSnippet = (textSnippet: string) => {
 	const tagsReplMap: { [key: string]: string } = {
 		prompt: "b",
 		image: "b",
@@ -243,7 +244,7 @@ const sanitizeSnippet = (line: string) => {
 	};
 	// replace special tags with valid html tags to distinguish them
 	const regex = /<\/?([a-z]+)[^>]*>/gi;
-	return line.replace(regex, (match, oldTag: string) => {
+	return textSnippet.replace(regex, (match, oldTag: string) => {
 		// replace tag with replacement if it exists
 		if (oldTag in tagsReplMap) return `<${tagsReplMap[oldTag]}>`;
 		// remove all other tags
@@ -251,55 +252,55 @@ const sanitizeSnippet = (line: string) => {
 	});
 };
 
-const ignoreMessage = (msg: ChatMessage) => {
-	console.warn("=> ignore:", {...msg});
-	msg.isIgnored = msg.isIgnored === undefined ? true : !msg.isIgnored;
+const ignoreMessage = (message: ChatMessage) => {
+	console.warn("=> ignore:", {...message});
+	message.hideInPrompt = message.hideInPrompt === undefined ? true : !message.hideInPrompt;
 };
 
-const editMessage = (msg: ChatMessage) => {
+const editMessage = (message: ChatMessage) => {
 	smartNotify(`Message editing is not yet implemented`);
-	console.warn("=> edit:", {...msg});
+	console.warn("=> edit:", {...message});
 	// comp.editMessage(msg);
 };
 
-const canRegenMessage = (msg: ChatMessage) => {
-	if (msg.isDeleted) return false;
-	const msgIds = msg.result?.contextIds;
+const canRegenMessage = (message: ChatMessage) => {
+	if (message.isDeleted) return false;
+	const msgIds = message.result?.contextIds;
 	if (msgIds) return msgIds.length > 0;
 	return false;
 };
 
-const regenMessage = (msg: ChatMessage) => {
-	console.warn("=> regen:", {...msg});
-	console.warn("msg:", {...msg});
-	console.warn("ctxIds:", msg.result?.contextIds);
-	handleAssistantMsg(msg, comp);
+const regenMessage = (message: ChatMessage) => {
+	console.warn("=> regen:", {...message});
+	console.warn("msg:", {...message});
+	console.warn("ctxIds:", message.result?.contextIds);
+	handleAssistantMsg(message, comp);
 };
 
-const deleteMessage = (msg: ChatMessage) => {
-	console.warn("=> delete:", {...msg});
+const deleteMessage = (message: ChatMessage) => {
+	console.warn("=> delete:", {...message});
 	// 2nd click - confirmation and delete
-	if (msg.isDeleted) {
-		comp.deleteMessage(msg.id);
+	if (message.isDeleted) {
+		comp.deleteMessage(message.id);
 		return;
 	}
 	// 1st click - will need 2nd click to confirm
-	msg.isDeleted = true;
+	message.isDeleted = true;
 };
 
 
-const restoreMessage = (msg: ChatMessage) => {
-	console.warn("=> restore:", {...msg});
-	msg.isDeleted = false;
+const restoreMessage = (message: ChatMessage) => {
+	console.warn("=> restore:", {...message});
+	message.isDeleted = false;
 };
 
-const getMsgStyle = (msg: ChatMessage) => {
-	if (msg.isIgnored)
+const getMsgStyle = (message: ChatMessage) => {
+	if (message.hideInPrompt)
 		return {
 			opacity: 0.5,
 			// textDecoration: "line-through",
 		};
-	if (msg.isDeleted)
+	if (message.isDeleted)
 		return {
 			outline: "2px dashed red",
 			// borderRadius: "15px",
@@ -332,13 +333,13 @@ const loadThread = () => {
 };
 
 
-const isSentByMe = (msg: ChatMessage) => {
-	return msg.userName === ConfigUserBase.name;
+const isSentByMe = (message: ChatMessage) => {
+	return message.userName === ConfigUserBase.name;
 };
 
-const getMsgBgColor = (msg: ChatMessage) => {
-	if (msg.isDeleted) return "red-2";
-	return isSentByMe(msg) ? null : getSeededQColor(msg.userName, 1, 2);
+const getMsgBgColor = (message: ChatMessage) => {
+	if (message.isDeleted) return "red-2";
+	return isSentByMe(message) ? null : getSeededQColor(message.userName, 1, 2);
 };
 
 const scrollToBottom = (duration?: number) => {

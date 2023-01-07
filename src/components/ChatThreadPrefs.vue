@@ -22,7 +22,7 @@
                                         <q-item-label>{{ member.name }}</q-item-label>
                                         <q-item-label caption>
                                             {{
-                                                comp.getThread.prefs.shownUsers[member.id]
+                                                comp.getThread.prefs.showMessagesFromUsers[member.id]
                                                         ? "Visible"
                                                         : "Hidden"
                                             }}
@@ -30,8 +30,8 @@
                                     </q-item-section>
                                     <q-item-section side>
                                         <q-checkbox
-                                                v-if="comp.getThread.prefs?.shownUsers"
-                                                v-model="comp.getThread.prefs.shownUsers[member.id]"
+                                                v-if="comp.getThread.prefs?.showMessagesFromUsers"
+                                                v-model="comp.getThread.prefs.showMessagesFromUsers[member.id]"
                                                 color="primary"
                                         />
                                         <q-checkbox v-else :model-value="undefined" color="primary">

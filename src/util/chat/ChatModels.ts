@@ -8,11 +8,11 @@ export interface ChatUser {
 }
 
 export interface ChatThread {
-	messageMap: { [key: string]: ChatMessage };
+	messageIdMap: { [key: string]: ChatMessage };
 	appVersion?: string;
 	joinedUserIds: string[];
 	prefs: {
-		shownUsers: { [key: string]: boolean };
+		showMessagesFromUsers: { [key: string]: boolean };
 		hideIgnoredMessages: boolean;
 		orderedResponses: boolean;
 	};
@@ -33,12 +33,13 @@ export interface ChatMessage extends GenerationResult {
 	// TODO: Alternatively, could also keep history of edits (editMessage function)
 	isCompRegen?: boolean;
 	isDeleted?: boolean;
-	isIgnored?: boolean;
+	hideInPrompt?: boolean;
 	followupMsgIds: string[];
+	forceShow?: boolean;
 }
 
 // TODO: Make these configurable in UI in the future
-export interface ChatMessageHistConfig {
+export interface ChatMessageHistoryConfig {
 	thread: ChatThread;
 	includeSelf?: boolean;
 	includeActors?: Assistant[];

@@ -25,11 +25,11 @@ export interface GenerationResult {
 
 export const createThread = (): ChatThread => {
 	const res: ChatThread = {
-		messageMap: {},
+		messageIdMap: {},
 		appVersion: getAppVersion(),
 		joinedUserIds: ["coordinator", "davinci", "dalle", "codex"],
 		prefs: {
-			shownUsers: {},
+			showMessagesFromUsers: {},
 			hideIgnoredMessages: false,
 			orderedResponses: true,
 		},
@@ -37,7 +37,7 @@ export const createThread = (): ChatThread => {
 	// for each assistant, check defaultHidden
 	// and add to hiddenUsers if true
 	for (const assistant of res.joinedUserIds) {
-		res.prefs.shownUsers[assistant] = !AssistantConfigs[assistant].defaultHidden ?? true;
+		res.prefs.showMessagesFromUsers[assistant] = !AssistantConfigs[assistant].defaultHidden ?? true;
 	}
 	return res;
 };
@@ -102,7 +102,7 @@ export const useCompStore = defineStore("counter", {
 		},
 		clearThread() {
 			console.log("Clearing thread");
-			this.threads[this.currentThread].messageMap = {}
+			this.threads[this.currentThread].messageIdMap = {}
 			this.updateCache();
 		},
 		getThreadVersion() {
@@ -167,7 +167,7 @@ export const useCompStore = defineStore("counter", {
 			console.warn(`=> generate (${actor.id}):`, actor);
 
 			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
-			msgHist = msgHist.filter((m: ChatMessage) => !m.isIgnored);
+			msgHist = msgHist.filter((m: ChatMessage) => !m.hideInPrompt);
 			console.warn("=> msgHist:");
 			for (let i = 0; i < msgHist.length; i++) {
 				console.log("----------------")
@@ -235,32 +235,32 @@ export const useCompStore = defineStore("counter", {
 		},
 		pushMessage(message: ChatMessage, loading?: boolean): ChatMessage {
 			// console.log("-------------------------------");
-			if (this.getThread.messageMap[message.id]) {
-				const existingMsg = this.getThread.messageMap[message.id];
+			if (this.getThread.messageIdMap[message.id]) {
+				const existingMsg = this.getThread.messageIdMap[message.id];
 				if (existingMsg) {
-					this.threads[this.currentThread].messageMap[message.id] = {
+					this.threads[this.currentThread].messageIdMap[message.id] = {
 						...existingMsg,
 						...message,
 						loading: loading ?? false,
 					};
 					this.updateCache();
-					return this.threads[this.currentThread].messageMap[message.id];
+					return this.threads[this.currentThread].messageIdMap[message.id];
 				}
 			}
 			// message.dateCreated = new Date();
-			this.getThread.messageMap[message.id] = message;
+			this.getThread.messageIdMap[message.id] = message;
 			this.updateCache();
 			return message;
 		},
 		deleteMessage(messageId: string, silent = false): void {
-			if (!this.getThread.messageMap[messageId]) {
+			if (!this.getThread.messageIdMap[messageId]) {
 				if (!silent) {
 					smartNotify("An error occurred while deleting the message.");
 				}
 				console.error(`An error occurred while deleting the message: ${messageId}`);
 				return;
 			}
-			delete this.getThread.messageMap[messageId];
+			delete this.getThread.messageIdMap[messageId];
 			this.updateCache();
 			smartNotify("Successfully deleted message.");
 		},

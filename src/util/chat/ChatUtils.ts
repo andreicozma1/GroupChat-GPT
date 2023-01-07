@@ -2,64 +2,49 @@ import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
 import {getRobohashUrl} from "src/util/ImageUtils";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {v4 as uuidv4} from "uuid";
-import {ChatMessage, ChatMessageHistConfig, ChatThread, ChatUser,} from "src/util/chat/ChatModels";
+import {ChatMessage, ChatMessageHistoryConfig, ChatThread, ChatUser,} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 import {parseDate} from "src/util/DateUtils";
 
 export const getThreadMessages = (thread: ChatThread): ChatMessage[] => {
-	let messages = Object.values(thread.messageMap)
+	let messages = Object.values(thread.messageIdMap)
 
-	const hasKeepKeywords = (msg: ChatMessage) => {
+	const shouldForceShow = (message: ChatMessage) => {
 		const keywords = ["[ERROR]", "[WARNING]", "[INFO]"];
-		return msg.textSnippets.some((line: string) => {
-			return keywords.some((keyword: string) => line.includes(keyword));
+		return message.textSnippets.some((snippet: string) => {
+			return keywords.some((keyword: string) => snippet.includes(keyword));
 		});
 	}
 
-	/************************************************************************
-	 ** FILTERING
-	 ************************************************************************/
-	messages = messages.filter((msg: ChatMessage) => {
+	messages = messages.map((message: ChatMessage) => {
 		// always keep messages with certain keywords
-		if (hasKeepKeywords(msg)) return true;
+		if (shouldForceShow(message)) {
+			message.forceShow = true;
+		}
+		return message;
+	})
+
+	messages = messages.filter((msg: ChatMessage) => {
+		if (msg.forceShow) {
+			return true;
+		}
 		return true;
 	});
-	/************************************************************************
-	 ** SORTING
-	 ************************************************************************/
+
 	// sort by dateCreated
 	messages.sort((a, b) => {
 		const ad = parseDate(a.dateCreated).getTime();
 		const bd = parseDate(b.dateCreated).getTime();
 		return ad - bd;
 	});
-	// // secondary sort by parent message
-	// messages.sort((a, b) => {
-	// 	const aFollowsB = b.followupMsgIds.includes(a.id);
-	// 	const bFollowsA = a.followupMsgIds.includes(b.id);
-	// 	// const aIsParent = aFollowsB && !bFollowsA;
-	// 	// const bIsParent = bFollowsA && !aFollowsB;
-	// 	if (aFollowsB) return 1;
-	// 	if (bFollowsA) return -1;
-	// 	return 0
-	// });
-
-	// messages.sort((a, b) => {
-	// 	// if isCompRegen is true, keep the same order
-	// 	if (a.isCompRegen || b.isCompRegen) return 0;
-	// 	// otherwise, keep loading messages at the bottom
-	// 	if (a.loading && !b.loading) return 1;
-	// 	if (!a.loading && b.loading) return -1;
-	// 	return 0;
-	// });
 	return messages;
 };
 
 export const getMessageHistory = (
-	config: ChatMessageHistConfig
+	config: ChatMessageHistoryConfig
 ): ChatMessage[] => {
-	let hist = getThreadMessages(config.thread);
-	hist = hist.filter((m: ChatMessage) => {
+	let history = getThreadMessages(config.thread);
+	history = history.filter((m: ChatMessage) => {
 		if (config.maxDate < m.dateCreated) return false;
 
 		if (m.userId === ConfigUserBase.id) {
@@ -75,18 +60,18 @@ export const getMessageHistory = (
 		}
 		return true;
 	});
-	hist = hist.filter((m) => m.textSnippets.length > 0);
+	history = history.filter((m) => m.textSnippets.length > 0);
 	// hist = hist.map((m) => {
 	// 	m.textSnippets = m.textSnippets.filter((t: string) => t.trim().length > 0);
 	// 	return m;
 	// });
-	if (config.maxLength !== undefined) hist = hist.slice(-config.maxLength);
-	return hist;
+	if (config.maxLength !== undefined) history = history.slice(-config.maxLength);
+	return history;
 };
 
-export const createMessageFromUserCfg = (userCfg: ChatUser, comp: any): ChatMessage => {
-	const assistantName: string = userCfg?.name || "Unknown User";
-	const assistantKey: string = userCfg?.id || "unknown";
+export const createMessageFromUserConfig = (chatUser: ChatUser, store: any): ChatMessage => {
+	const assistantName: string = chatUser?.name || "Unknown User";
+	const assistantKey: string = chatUser?.id || "unknown";
 	let msg: ChatMessage = {
 		id: uuidv4(),
 		userId: assistantKey,
@@ -98,12 +83,12 @@ export const createMessageFromUserCfg = (userCfg: ChatUser, comp: any): ChatMess
 		loading: true,
 		followupMsgIds: [],
 	};
-	msg = comp.pushMessage(msg);
+	msg = store.pushMessage(msg);
 	return msg;
 };
 
-export const createMessageFromUserId = (id: string, comp: any): ChatMessage => {
+export const createMessageFromUserId = (id: string, store: any): ChatMessage => {
 	id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
 	const cfg: Assistant = AssistantConfigs[id];
-	return createMessageFromUserCfg(cfg, comp);
+	return createMessageFromUserConfig(cfg, store);
 };

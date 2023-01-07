@@ -1,101 +1,95 @@
-import {getAisAvailable, processKV} from "src/util/assistant/AssistantUtils";
+import {getAvailableAssistants, processKV} from "src/util/assistant/AssistantUtils";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {parsePromptConfig} from "src/util/prompt/PromptConfig";
+import {PromptConfig} from "src/util/prompt/PromptModels";
 
-const getAssistantTraits = (
+const promptAssistantInfo = (
 	ai: Assistant,
-	useKey: boolean,
-	tag?: string
+	parenthesesTag?: string
 ): string => {
-	const id = useKey ? ai.id : ai.name;
-	let res = `# ${id}`;
-	if (tag) res += ` (${tag})`;
-	res += ":\n";
-	if (ai.promptConfig.traits) {
-		res += Object.entries(ai.promptConfig.traits)
-			.map(([k, v]) =>
-				processKV(k, v, {
-					keyStartChar: "-",
-				})
-			)
-			.join("\n");
-	}
-	return res;
+	parenthesesTag = parenthesesTag === undefined ? "" : ` (${parenthesesTag})`;
+	const header = `# ${ai.name}${parenthesesTag}`;
+
+	if (!ai.promptConfig.traits) return header;
+
+	const info: string = Object.entries(ai.promptConfig.traits)
+		.map(([k, v]) => {
+			return processKV(k, v, {keyStartChar: "-"})
+		})
+		.join("\n");
+
+	return [header, info].join("\n");
 };
 
-export const promptMembers = (
+export const promptMembersInfo = (
 	useKey: boolean,
-	currentAI?: Assistant
+	currentAssistant?: Assistant
 ): string => {
-	const available = getAisAvailable();
-	if (!available || available.length === 0) return "";
+	const availableAssistants: Assistant[] = getAvailableAssistants();
+	if (!availableAssistants || availableAssistants.length === 0) return "";
 
-	const start = "=== CHAT MEMBERS ===";
+	const header = "=== CHAT MEMBERS ===";
 
-	const info = available
-		.map((ai) => {
+	const info: string = availableAssistants
+		.map((assistant: Assistant) => {
 			let tag = undefined;
-			if (currentAI && currentAI.id === ai.id) tag = "You";
-			return getAssistantTraits(ai, useKey, tag);
+			if (currentAssistant && currentAssistant.id === assistant.id) tag = "You";
+			return promptAssistantInfo(assistant, tag);
 		})
 		.join("\n\n");
 
-	return start + "\n" + info;
+	return [header, info].join("\n");
 };
 
 export const promptRules = (ai: Assistant): string => {
 	if (!ai.promptConfig.rules) return "";
 
-	const start = "=== RULES ===";
+	const header = "=== RULES ===";
 
-	const rules = Object.entries(ai.promptConfig.rules)
-		.map(([k, v]) =>
-			processKV(k, v, {
-				keyStartChar: "#",
-			})
-		)
+	const rules: string = Object.entries(ai.promptConfig.rules)
+		.map(([k, v]) => {
+			return processKV(k, v, {keyStartChar: "#",})
+		})
 		.join("\n");
 
-	return start + "\n" + rules;
+	return [header, rules].join("\n");
 };
 
 export const promptExamples = (ai: Assistant): string => {
 	if (!ai.promptConfig.examples || ai.promptConfig.examples.length == 0) return "";
 	// promptHeader = promptHeader || ConfigUserBase.name;
 	// resultHeader = resultHeader || ai.name;
-	const conf = parsePromptConfig(ai);
-	const start = "=== EXAMPLES ===";
+	const config: PromptConfig = parsePromptConfig(ai);
+	const header = "=== EXAMPLES ===";
 
-	const res = []
-	for (let i = 0; i < ai.promptConfig.examples.length; i++) {
-		let msg = ai.promptConfig.examples[i].trim();
-		const isQuery = i % 2 === 0;
-		if (isQuery && conf.exampleQueryWrapTag) msg = `<${conf.exampleQueryWrapTag}>\n${msg}\n</${conf.exampleQueryWrapTag}>`;
-		if (!isQuery && conf.exampleResponseWrapTag) msg = `<${conf.exampleResponseWrapTag}>\n${msg}\n</${conf.exampleResponseWrapTag}>`;
-		const identifier = isQuery ? conf.exampleQueryId : conf.exampleResponseId;
-		if (conf.exampleUseHeader) msg = `### ${identifier}:\n${msg}`;
-		res.push(msg)
-	}
+	const examples: string = ai.promptConfig.examples.map((example: string, i) => {
+		let msgPrompt = example.trim();
+		const isQuery: boolean = i % 2 === 0;
+		if (isQuery && config.exampleQueryWrapTag) msgPrompt = `<${config.exampleQueryWrapTag}>\n${msgPrompt}\n</${config.exampleQueryWrapTag}>`;
+		if (!isQuery && config.exampleResponseWrapTag) msgPrompt = `<${config.exampleResponseWrapTag}>\n${msgPrompt}\n</${config.exampleResponseWrapTag}>`;
+		const identifier = isQuery ? config.exampleQueryId : config.exampleResponseId;
+		if (config.exampleUseHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
+		return msgPrompt;
+	}).join("\n\n");
 
-	return start + "\n" + res.join("\n\n");
+	return [header, examples].join("\n");
 };
 
 
-export const promptConversation = (ai: Assistant, msgHist: ChatMessage[]): string => {
-	const conf = parsePromptConfig(ai);
-	const start = "=== CONVERSATION ===";
+export const promptConversation = (assistant: Assistant, messages: ChatMessage[]): string => {
+	const config: PromptConfig = parsePromptConfig(assistant);
+	const header = "=== CONVERSATION ===";
 
-	const res = []
-	for (let i = 0; i < msgHist.length; i++) {
-		let msg = msgHist[i].textSnippets.map((s: string) => s.trim()).join("\n");
+	const res: string = messages.map((msg: ChatMessage, i) => {
+		let msgPrompt = msg.textSnippets.map((s: string) => s.trim()).join("\n");
 		const isQuery = i % 2 === 0;
-		if (isQuery && conf.exampleQueryWrapTag) msg = `<${conf.exampleQueryWrapTag}>\n${msg}\n</${conf.exampleQueryWrapTag}>`;
-		if (!isQuery && conf.exampleResponseWrapTag) msg = `<${conf.exampleResponseWrapTag}>\n${msg}\n</${conf.exampleResponseWrapTag}>`;
-		const identifier = isQuery ? conf.exampleQueryId : conf.exampleResponseId;
-		if (conf.exampleUseHeader) msg = `### ${identifier}:\n${msg}`;
-		res.push(msg)
-	}
+		if (isQuery && config.exampleQueryWrapTag) msgPrompt = `<${config.exampleQueryWrapTag}>\n${msgPrompt}\n</${config.exampleQueryWrapTag}>`;
+		if (!isQuery && config.exampleResponseWrapTag) msgPrompt = `<${config.exampleResponseWrapTag}>\n${msgPrompt}\n</${config.exampleResponseWrapTag}>`;
+		const identifier = isQuery ? config.exampleQueryId : config.exampleResponseId;
+		if (config.exampleUseHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
+		return msgPrompt;
+	}).join("\n\n");
 
-	return start + "\n" + res.join("\n\n");
+	return [header, res].join("\n");
 };

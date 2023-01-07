@@ -61,7 +61,7 @@
 import {useCompStore} from "stores/compStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
-import {createMessageFromUserCfg} from "src/util/chat/ChatUtils";
+import {createMessageFromUserConfig} from "src/util/chat/ChatUtils";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
 import {handleAssistantCfg} from "src/util/assistant/AssistantHandlers";
@@ -87,7 +87,7 @@ const sendMessage = () => {
 	console.warn("=".repeat(60));
 	console.warn("=> sendMessage:");
 	if (userMsgObj.value === null) {
-		userMsgObj.value = createMessageFromUserCfg(ConfigUserBase, comp);
+		userMsgObj.value = createMessageFromUserConfig(ConfigUserBase, comp);
 		comp.pushMessage(userMsgObj.value);
 	}
 	userMsgObj.value.textSnippets.push(userMsgStr.value);

@@ -1,6 +1,6 @@
 export interface PromptConfig {
 	promptType: string;
-	traits?: PromptTraits;
+	traits: PromptTraits;
 	rules?: PromptRules;
 	examples?: string[]; // Order: Human, AI, Human, AI, etc.
 	exampleQueryId?: string;

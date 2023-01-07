@@ -1,4 +1,4 @@
-import {promptConversation, promptExamples, promptMembers, promptRules,} from "src/util/prompt/PromptUtils";
+import {promptConversation, promptExamples, promptMembersInfo, promptRules,} from "src/util/prompt/PromptUtils";
 import {Assistant} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
@@ -11,7 +11,7 @@ export const createAssistantPrompt = (
 	const start = "=== AI GROUP CHAT ===";
 	const desc = "The following is a group-chat conversation between a human and several AI assistants.";
 
-	const members = promptMembers(false, ai);
+	const members = promptMembersInfo(false, ai);
 	const rules = promptRules(ai);
 	const examples = promptExamples(ai);
 	const conv = promptConversation(ai, msgHist);

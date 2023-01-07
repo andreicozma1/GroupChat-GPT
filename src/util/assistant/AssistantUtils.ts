@@ -1,7 +1,7 @@
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
 import {Assistant, ProcessKVConfig} from "src/util/assistant/AssistantModels";
 
-export const getAisAvailable = (): Assistant[] => {
+export const getAvailableAssistants = (): Assistant[] => {
 	return Object.values(AssistantConfigs).filter((a) => {
 		if (a.isAvailable === undefined) return true;
 		return a.isAvailable;
@@ -9,7 +9,7 @@ export const getAisAvailable = (): Assistant[] => {
 };
 
 export const getAisAvailableExcept = (actor: Assistant): Assistant[] => {
-	let res = getAisAvailable();
+	let res = getAvailableAssistants();
 	res = res.filter((a) => a.id !== actor.id);
 	return res;
 };
@@ -33,13 +33,17 @@ export const processKV = (
 	let inline: boolean = config?.inline || true;
 	const commaSepMinChars = config?.commaSepMinChars || 40;
 
+	// remove all underscores
 	key = key.replace(/_/g, " ");
+	// capitalize first letter
 	key = key.replace(
 		/\w\S*/g,
 		(txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
 	);
+	// if val is not an array, make it a one element array
 	val = Array.isArray(val) ? val : [val];
 	val = val.map((s: string) => s.trim());
+	val = val.filter((s: string) => s.length > 0);
 	if (val.some((s: string) => s.length > commaSepMinChars)) {
 		valJoinStr = "\n";
 		inline = false;

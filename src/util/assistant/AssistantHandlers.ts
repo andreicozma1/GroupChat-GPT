@@ -1,12 +1,12 @@
 import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
 import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
 import {GenerationResult} from "stores/compStore";
-import {createMessageFromUserCfg, createMessageFromUserId, getMessageHistory} from "src/util/chat/ChatUtils";
+import {createMessageFromUserConfig, createMessageFromUserId, getMessageHistory} from "src/util/chat/ChatUtils";
 import {ConfigCoordinator} from "src/util/assistant/configs/ConfigCoordinator";
 import {Assistant} from "src/util/assistant/AssistantModels";
 
 export const handleAssistantCfg = (cfg: Assistant, comp: any) => {
-	const msg = createMessageFromUserCfg(cfg, comp);
+	const msg = createMessageFromUserConfig(cfg, comp);
 	return handleAssistantMsg(msg, comp);
 }
 

@@ -61,10 +61,7 @@ export const getMessageHistory = (
 		return true;
 	});
 	history = history.filter((m) => m.textSnippets.length > 0);
-	// hist = hist.map((m) => {
-	// 	m.textSnippets = m.textSnippets.filter((t: string) => t.trim().length > 0);
-	// 	return m;
-	// });
+
 	if (config.maxLength !== undefined) history = history.slice(-config.maxLength);
 	return history;
 };

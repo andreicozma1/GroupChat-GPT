@@ -21,7 +21,7 @@ interface CachedResponse {
 
 export interface PromptResponse {
 	prompt?: Prompt;
-	result?: CachedResponse;
+	response?: CachedResponse;
 	// TODO: Put these in a separate MessageContent interface and keep track of history
 	textSnippets: string[];
 	imageUrls: string[];
@@ -128,7 +128,7 @@ export const useCompStore = defineStore("counter", {
 					prompt: prompt,
 					textSnippets: text,
 					imageUrls: images,
-					result: cache,
+					response: cache,
 				};
 			}
 		}
@@ -239,7 +239,7 @@ export const useCompStore = defineStore("counter", {
 				}
 				return {
 					errorMsg: errorMsg,
-					result: {
+					response: {
 						contextIds: contextIds,
 						responseData: undefined,
 					},
@@ -298,8 +298,8 @@ export const useCompStore = defineStore("counter", {
 			console.warn(`=> handleUserMessage (${cfg.id})`);
 			console.log("=> msg:", message);
 
-			message.isCompRegen = message.result?.contextIds
-				? message.result.contextIds.length > 0
+			message.isCompRegen = message.response?.contextIds
+				? message.response.contextIds.length > 0
 				: false;
 			console.log("=> msg.isCompRegen:", message.isCompRegen);
 
@@ -314,7 +314,7 @@ export const useCompStore = defineStore("counter", {
 			message.followupMsgIds = [];
 			comp.pushMessage(message, true);
 
-			const msgHistIds = message.result?.contextIds
+			const msgHistIds = message.response?.contextIds
 			let ignoreCache = cfg.shouldIgnoreCache === undefined ? false : cfg.shouldIgnoreCache;
 			let msgHist;
 			if (!msgHistIds) {
@@ -339,7 +339,7 @@ export const useCompStore = defineStore("counter", {
 				ignoreCache
 			);
 			console.log("=> res:", res);
-			message.result = res.result;
+			message.response = res.response;
 			message.cached = res.cached;
 
 			if (res.errorMsg) {

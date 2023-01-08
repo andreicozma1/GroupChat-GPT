@@ -222,7 +222,7 @@ const getStampHoverHint = (message: ChatMessage) => {
 	const when = dateToLocaleStr(message.dateCreated);
 	const what = isSentByMe(message) ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated = message.result.responseData?.created * 1000;
+	const dateGenerated = message.response.responseData?.created * 1000;
 	if (dateGenerated) {
 		res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 	}
@@ -266,7 +266,7 @@ const editMessage = (message: ChatMessage) => {
 
 const canRegenMessage = (message: ChatMessage) => {
 	if (message.isDeleted) return false;
-	const msgIds = message.result.contextIds;
+	const msgIds = message.response.contextIds;
 	if (msgIds) return msgIds.length > 0;
 	return false;
 };
@@ -274,7 +274,7 @@ const canRegenMessage = (message: ChatMessage) => {
 const regenMessage = (message: ChatMessage) => {
 	console.warn("=> regen:", {...message});
 	console.warn("msg:", {...message});
-	console.warn("ctxIds:", message.result.contextIds);
+	console.warn("ctxIds:", message.response.contextIds);
 	comp.handleUserMessage(message, comp);
 };
 

@@ -20,8 +20,8 @@ interface CachedResponse {
 }
 
 export interface PromptResponse {
-	prompt: Prompt;
-	result: CachedResponse;
+	prompt?: Prompt;
+	result?: CachedResponse;
 	// TODO: Put these in a separate MessageContent interface and keep track of history
 	textSnippets: string[];
 	imageUrls: string[];
@@ -298,7 +298,7 @@ export const useCompStore = defineStore("counter", {
 			console.warn(`=> handleUserMessage (${cfg.id})`);
 			console.log("=> msg:", message);
 
-			message.isCompRegen = message.result.contextIds
+			message.isCompRegen = message.result?.contextIds
 				? message.result.contextIds.length > 0
 				: false;
 			console.log("=> msg.isCompRegen:", message.isCompRegen);
@@ -314,7 +314,7 @@ export const useCompStore = defineStore("counter", {
 			message.followupMsgIds = [];
 			comp.pushMessage(message, true);
 
-			const msgHistIds = message.result.contextIds
+			const msgHistIds = message.result?.contextIds
 			let ignoreCache = cfg.shouldIgnoreCache === undefined ? false : cfg.shouldIgnoreCache;
 			let msgHist;
 			if (!msgHistIds) {

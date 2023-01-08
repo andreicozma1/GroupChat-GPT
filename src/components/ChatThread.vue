@@ -331,7 +331,6 @@ const loadThread = () => {
 	}
 };
 
-
 const isSentByMe = (message: ChatMessage) => {
 	return message.userName === ConfigUser.name;
 };

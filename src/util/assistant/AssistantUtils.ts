@@ -1,26 +1,5 @@
-import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
-import {Assistant, ProcessKVConfig} from "src/util/assistant/AssistantModels";
+import {ProcessKVConfig} from "src/util/assistant/AssistantModels";
 
-export const getAvailableAssistants = (): Assistant[] => {
-	return Object.values(AssistantConfigs).filter((a) => {
-		if (a.isAvailable === undefined) return true;
-		return a.isAvailable;
-	});
-};
-
-export const getAisAvailableExcept = (actor: Assistant): Assistant[] => {
-	let res = getAvailableAssistants();
-	res = res.filter((a) => a.id !== actor.id);
-	return res;
-};
-
-export const getAiIds = (actors: Assistant[]): string[] => {
-	return actors.map((a) => a.id);
-};
-
-export const getAiNames = (actors: Assistant[]): string[] => {
-	return actors.map((a) => a.name);
-};
 
 // TODO: Find better name for these and move them to a separate file
 export const processKV = (

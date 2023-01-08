@@ -22,7 +22,7 @@
                                         <q-item-label>{{ member.name }}</q-item-label>
                                         <q-item-label caption>
                                             {{
-                                                comp.getThread.prefs.showMessagesFromUsers[member.id]
+                                                comp.getThread.prefs.hiddenUserIds[member.id]
                                                         ? "Visible"
                                                         : "Hidden"
                                             }}
@@ -30,8 +30,8 @@
                                     </q-item-section>
                                     <q-item-section side>
                                         <q-checkbox
-                                                v-if="comp.getThread.prefs?.showMessagesFromUsers"
-                                                v-model="comp.getThread.prefs.showMessagesFromUsers[member.id]"
+                                                v-if="comp.getThread.prefs?.hiddenUserIds"
+                                                v-model="comp.getThread.prefs.hiddenUserIds[member.id]"
                                                 color="primary"
                                         />
                                         <q-checkbox v-else :model-value="undefined" color="primary">
@@ -95,13 +95,13 @@
 <script lang="ts" setup>
 import {useCompStore} from "stores/compStore";
 import {watch} from "vue";
-import {ChatUser} from "src/util/chat/ChatModels";
+import {ChatUser} from "src/util/assistant/AssistantModels";
 
 const comp = useCompStore();
 
 const getThreadUsers = (): ChatUser[] => {
-	return comp.getThread.joinedUserIds.map((id) => comp.getUser(id));
+	return comp.getThread.joinedUserIds.map((id) => comp.getUserConfig(id));
 };
 
-watch(comp.getThread, () => comp.updateCache());
+watch(comp.getThread, () => comp.saveData());
 </script>

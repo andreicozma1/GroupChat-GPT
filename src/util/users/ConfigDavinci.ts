@@ -1,6 +1,6 @@
-import {Assistant} from "src/util/assistant/AssistantModels";
+import {ChatUser} from "src/util/assistant/AssistantModels";
 
-export const ConfigDavinci: Assistant = {
+export const ConfigDavinci: ChatUser = {
 	id: "davinci",
 	name: "Davinci",
 	icon: "chat",

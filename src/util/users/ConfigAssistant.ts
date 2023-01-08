@@ -1,7 +1,7 @@
-import {Assistant} from "src/util/assistant/AssistantModels";
+import {ChatUser} from "src/util/assistant/AssistantModels";
 
 // TODO: Use this generic config in the prompt creation functions
-export const ConfigAssistantBase: Assistant = {
+export const ConfigAssistant: ChatUser = {
 	id: "generic",
 	name: "Generic AI",
 	icon: "chat",

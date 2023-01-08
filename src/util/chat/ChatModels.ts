@@ -1,24 +1,17 @@
-import {Assistant} from "src/util/assistant/AssistantModels";
-import {GenerationResult} from "stores/compStore";
-
-export interface ChatUser {
-	id: string;
-	name: string;
-	icon: string;
-}
+import {PromptResponse} from "stores/compStore";
 
 export interface ChatThread {
 	messageIdMap: { [key: string]: ChatMessage };
 	appVersion?: string;
 	joinedUserIds: string[];
 	prefs: {
-		showMessagesFromUsers: { [key: string]: boolean };
+		hiddenUserIds: string[];
 		hideIgnoredMessages: boolean;
 		orderedResponses: boolean;
 	};
 }
 
-export interface ChatMessage extends GenerationResult {
+export interface ChatMessage extends PromptResponse {
 	id: string;
 	// TODO: Put these in a separate User interface
 	userId: string;
@@ -35,15 +28,12 @@ export interface ChatMessage extends GenerationResult {
 	isDeleted?: boolean;
 	hideInPrompt?: boolean;
 	followupMsgIds: string[];
-	forceShow?: boolean;
 }
 
 // TODO: Make these configurable in UI in the future
 export interface ChatMessageHistoryConfig {
-	thread: ChatThread;
-	includeSelf?: boolean;
-	includeActors?: Assistant[];
-	excludeActors?: Assistant[];
-	maxLength?: number;
-	maxDate: string | number | Date;
+	forceShowKeywords?: string[];
+	hiddenUserIds?: string[];
+	maxLength?: number; // if 0 or undefined, no limit
+	maxDate?: string | number | Date; // if undefined, no limit
 }

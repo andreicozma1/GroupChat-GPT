@@ -133,12 +133,12 @@ import {getSeededQColor} from "src/util/Colors";
 import {copyClipboard, getAppVersion} from "src/util/Utils";
 import {useCompStore} from "stores/compStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import {getThreadMessages} from "src/util/chat/ChatUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
-import {ChatMessage, ChatThread, ChatUser} from "src/util/chat/ChatModels";
-import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
-import {handleAssistantMsg} from "src/util/assistant/AssistantHandlers";
+import {getMessageHistory} from "src/util/chat/ChatUtils";
+import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
+import {ConfigUser} from "src/util/users/ConfigUser";
+import {ChatUser} from "src/util/assistant/AssistantModels";
 
 const props = defineProps({
 	scrollAreaStyle: {
@@ -155,19 +155,20 @@ const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 const parseThreadMessages = (): ChatMessage[] => {
 	const thread: ChatThread = comp.getThread;
-	let messages: ChatMessage[] = getThreadMessages(thread);
+	let messages: ChatMessage[] = getMessageHistory(comp, {
+		forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
+		hiddenUserIds: thread.prefs?.hiddenUserIds,
+		maxLength: undefined,
+		maxDate: undefined,
+	});
 
 	/************************************************************************
 	 ** FILTERING
 	 ************************************************************************/
 	messages = messages.filter((message: ChatMessage) => {
-		if (message.forceShow) return true;
 		if (comp.getThread.prefs.hideIgnoredMessages && message.hideInPrompt)
 			return false;
 		// remove messages from users that are hidden in thread settings
-		if (thread.prefs?.showMessagesFromUsers) {
-			return thread.prefs.showMessagesFromUsers[message.userId] ?? true;
-		}
 		return true;
 	});
 	return messages;
@@ -178,12 +179,12 @@ const onClickMsg = (message: ChatMessage) => {
 };
 
 const getUserName = (message: ChatMessage): string => {
-	const user: ChatUser = comp.getUser(message.userId);
+	const user: ChatUser = comp.getUserConfig(message.userId);
 	return `${user.name} (${user.id})`;
 };
 
 const getUserIcon = (message: ChatMessage) => {
-	const user: ChatUser = comp.getUser(message.userId);
+	const user: ChatUser = comp.getUserConfig(message.userId);
 	if (!user) {
 		console.error(`User "${message.userId}" not found.`);
 		smartNotify(`Error: User "${message.userId}" not found.`);
@@ -221,7 +222,7 @@ const getStampHoverHint = (message: ChatMessage) => {
 	const when = dateToLocaleStr(message.dateCreated);
 	const what = isSentByMe(message) ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated = message.result?.responseData?.created * 1000;
+	const dateGenerated = message.result.responseData?.created * 1000;
 	if (dateGenerated) {
 		res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 	}
@@ -265,7 +266,7 @@ const editMessage = (message: ChatMessage) => {
 
 const canRegenMessage = (message: ChatMessage) => {
 	if (message.isDeleted) return false;
-	const msgIds = message.result?.contextIds;
+	const msgIds = message.result.contextIds;
 	if (msgIds) return msgIds.length > 0;
 	return false;
 };
@@ -273,8 +274,8 @@ const canRegenMessage = (message: ChatMessage) => {
 const regenMessage = (message: ChatMessage) => {
 	console.warn("=> regen:", {...message});
 	console.warn("msg:", {...message});
-	console.warn("ctxIds:", message.result?.contextIds);
-	handleAssistantMsg(message, comp);
+	console.warn("ctxIds:", message.result.contextIds);
+	comp.handleUserMessage(message, comp);
 };
 
 const deleteMessage = (message: ChatMessage) => {
@@ -314,27 +315,25 @@ const loadThread = () => {
 		scrollToBottom(1000);
 	} catch (err: any) {
 		console.error("Error loading chat thread", err);
-		const threadVer = comp.getThread?.appVersion?.trim() ?? "unknown";
+		const threadVer = comp.getThread?.appVersion?.trim()
 		const appVer = getAppVersion();
 		console.log("Thread version:", threadVer);
 		console.log("App version:", appVer);
 		console.log(threadVer === appVer);
-		let caption: string;
-		if (threadVer !== appVer) {
-			caption = `Saved content from version ${threadVer}`;
+		let caption: string
+		if (threadVer && threadVer !== appVer) {
+			caption = `Chat thread version (${threadVer}) does not match app version (${appVer}). `;
 		} else {
-			caption = `Saved content`;
+			caption = "";
 		}
-		caption += ` may not be compatible with version ${getAppVersion()} of the app.`;
-		caption += "\n";
-		caption += "Please try again with a new thread or clear the cache.";
-		smartNotify(`An error occurred while loading saved chat thread`, caption);
+		caption += "If you recently updated the app, you may need to clear local storage, or create a new thread."
+		smartNotify(`Error loading a previously saved chat thread.`, caption);
 	}
 };
 
 
 const isSentByMe = (message: ChatMessage) => {
-	return message.userName === ConfigUserBase.name;
+	return message.userName === ConfigUser.name;
 };
 
 const getMsgBgColor = (message: ChatMessage) => {

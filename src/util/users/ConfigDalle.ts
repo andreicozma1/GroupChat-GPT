@@ -1,7 +1,7 @@
-import {Assistant} from "src/util/assistant/AssistantModels";
+import {ChatUser} from "src/util/assistant/AssistantModels";
 import {createExamplePrompt} from "src/util/assistant/AssistantUtils";
 
-export const ConfigDalle: Assistant = {
+export const ConfigDalle: ChatUser = {
 	id: "dalle",
 	name: "DALL-E",
 	icon: "chat",
@@ -39,7 +39,7 @@ export const ConfigDalle: Assistant = {
 	followupPromptHelperId: "dalle_gen",
 };
 
-export const ConfigDalleGen: Assistant = {
+export const ConfigDalleGen: ChatUser = {
 	id: "dalle_gen",
 	name: "DALL-E",
 	icon: "image",

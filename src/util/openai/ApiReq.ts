@@ -1,5 +1,5 @@
 import {CreateCompletionRequest, CreateImageRequest} from "openai/api";
-import {Assistant} from "src/util/assistant/AssistantModels";
+import {ChatUser} from "src/util/assistant/AssistantModels";
 import {openaiApi} from "src/util/openai/OpenAiUtils";
 
 export type ApiOptsValidTypes = CreateCompletionRequest | CreateImageRequest;
@@ -45,6 +45,15 @@ export const ApiReqMap: ApiReqConfigs = {
 		},
 	},
 	defaults: {
+		human: {
+			parent: "createCompletion",
+			opts: {
+				max_tokens: 250,
+				temperature: 0.75,
+				frequency_penalty: 0.0,
+				presence_penalty: 0.6,
+			}
+		},
 		coordinator: {
 			parent: "createCompletion",
 			opts: {
@@ -75,7 +84,7 @@ export const ApiReqMap: ApiReqConfigs = {
 	custom: {},
 };
 
-export const makeApiRequest = async (ai: Assistant, prompt: string) => {
+export const makeApiRequest = async (ai: ChatUser, prompt: string) => {
 	const apiConfigKey = ai.apiReqConfig;
 	console.warn("=> makeApiRequest:", apiConfigKey);
 	// Recursively build the final config

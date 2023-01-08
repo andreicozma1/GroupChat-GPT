@@ -1,6 +1,6 @@
-import {Assistant} from "src/util/assistant/AssistantModels";
+import {ChatUser} from "src/util/assistant/AssistantModels";
 
-export const ConfigCoordinator: Assistant = {
+export const ConfigCoordinator: ChatUser = {
 	id: "coordinator",
 	name: "Coordinator",
 	icon: "question_answer",

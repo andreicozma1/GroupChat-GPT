@@ -36,7 +36,7 @@ Well, this application is a step towards that world.
 - Assistant Traits, Characteristics, and Rules
     - Subject to tweaks and changes so read through the following files instead:
     - [/src/util/assistant/configs](./src/util/assistant/configs)
-    - [/src/util/assistant/AssistantPrompts.ts](./src/util/assistant/AssistantPrompts.ts)
+    - [/src/util/assistant/Prompt.ts](./src/util/assistant/AssistantPrompts.ts)
 - DALL-E can be asked to generate images.
     - If necessary, DALL-E it will try to gather information from you from which to generate a prompt for the DALL-E
       API.

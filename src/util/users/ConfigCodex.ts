@@ -1,7 +1,7 @@
-import {Assistant} from "src/util/assistant/AssistantModels";
+import {ChatUser} from "src/util/assistant/AssistantModels";
 import {createCodeBlock, createExamplePrompt, createMarkdown} from "src/util/assistant/AssistantUtils";
 
-export const ConfigCodex: Assistant = {
+export const ConfigCodex: ChatUser = {
 	id: "codex",
 	name: "Codex",
 	icon: "chat",
@@ -48,7 +48,7 @@ export const ConfigCodex: Assistant = {
 	followupPromptHelperId: "codex_gen",
 };
 
-export const ConfigCodexGen: Assistant = {
+export const ConfigCodexGen: ChatUser = {
 	id: "codex_gen",
 	name: "Codex",
 	icon: "code",

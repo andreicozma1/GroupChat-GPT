@@ -63,9 +63,6 @@ import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
 import {createMessageFromUserConfig} from "src/util/chat/ChatUtils";
 import {ChatMessage} from "src/util/chat/ChatModels";
-import {ConfigUserBase} from "src/util/chat/ConfigUserBase";
-import {handleAssistantCfg} from "src/util/assistant/AssistantHandlers";
-import {AssistantConfigs} from "src/util/assistant/AssistantConfigs";
 
 const comp = useCompStore();
 
@@ -78,8 +75,8 @@ const userMsgValid = computed(() => {
 const userMsgObj: Ref<ChatMessage | null> = ref(null);
 
 const isTyping = ref(false);
-const isTypingTimeout: Ref<any> = ref(null);
-const responseTimeout: Ref<any> = ref(null);
+const isTypingTimeout: Ref = ref(null);
+const responseTimeout: Ref = ref(null);
 
 const sendMessage = () => {
 	if (!userMsgValid.value) return;
@@ -87,7 +84,7 @@ const sendMessage = () => {
 	console.warn("=".repeat(60));
 	console.warn("=> sendMessage:");
 	if (userMsgObj.value === null) {
-		userMsgObj.value = createMessageFromUserConfig(ConfigUserBase, comp);
+		userMsgObj.value = createMessageFromUserConfig(comp.getHumanUserConfig, comp);
 		comp.pushMessage(userMsgObj.value);
 	}
 	userMsgObj.value.textSnippets.push(userMsgStr.value);
@@ -98,7 +95,7 @@ const sendMessage = () => {
 		if (!isTyping.value) {
 			console.log("=> userMsgObj:", {...userMsgObj.value});
 			userMsgObj.value = null;
-			handleAssistantCfg(AssistantConfigs.coordinator, comp);
+			comp.handleAssistantCfg(comp.getUserConfig("coordinator"), comp);
 			clearInterval(responseTimeout.value);
 		}
 	}, 500);

@@ -22,20 +22,23 @@
                                         <q-item-label>{{ member.name }}</q-item-label>
                                         <q-item-label caption>
                                             {{
-                                                comp.getThread.prefs.hiddenUserIds[member.id]
-                                                        ? "Visible"
-                                                        : "Hidden"
+                                                isUserHidden(member)
+                                                        ? "Hidden"
+                                                        : "Visible"
                                             }}
                                         </q-item-label>
                                     </q-item-section>
                                     <q-item-section side>
                                         <q-checkbox
-                                                v-if="comp.getThread.prefs?.hiddenUserIds"
-                                                v-model="comp.getThread.prefs.hiddenUserIds[member.id]"
+                                                v-if="comp.getThread.prefs.hiddenUserIds"
+                                                :model-value="!isUserHidden(member)"
+                                                @update:model-value="toggleHiddenUser(member)"
                                                 color="primary"
                                         />
                                         <q-checkbox v-else :model-value="undefined" color="primary">
-                                            <q-tooltip>Could not load thread preferences</q-tooltip>
+                                            <q-tooltip>
+                                                Could not load user's hidden/visible state from thread preferences
+                                            </q-tooltip>
                                         </q-checkbox>
                                     </q-item-section>
                                 </q-item>
@@ -101,6 +104,19 @@ const comp = useCompStore();
 
 const getThreadUsers = (): ChatUser[] => {
 	return comp.getThread.joinedUserIds.map((id) => comp.getUserConfig(id));
+};
+
+const isUserHidden = (user: ChatUser): boolean => {
+	return comp.getThread.prefs.hiddenUserIds.includes(user.id);
+};
+
+const toggleHiddenUser = (user: ChatUser) => {
+	const userId = user.id;
+	if (isUserHidden(user)) {
+		comp.getThread.prefs.hiddenUserIds = comp.getThread.prefs.hiddenUserIds.filter((id) => id !== userId);
+	} else {
+		comp.getThread.prefs.hiddenUserIds.push(userId);
+	}
 };
 
 watch(comp.getThread, () => comp.saveData());

@@ -157,10 +157,11 @@ const parseThreadMessages = (): ChatMessage[] => {
 	const thread: ChatThread = comp.getThread;
 	let messages: ChatMessage[] = getMessageHistory(comp, {
 		forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
-		hiddenUserIds: thread.prefs?.hiddenUserIds,
+		hiddenUserIds: thread.prefs.hiddenUserIds,
 		maxLength: undefined,
 		maxDate: undefined,
 	});
+	console.log("parseThreadMessages", messages);
 
 	/************************************************************************
 	 ** FILTERING
@@ -171,6 +172,7 @@ const parseThreadMessages = (): ChatMessage[] => {
 		// remove messages from users that are hidden in thread settings
 		return true;
 	});
+	console.log("parseThreadMessages", messages);
 	return messages;
 };
 
@@ -222,10 +224,9 @@ const getStampHoverHint = (message: ChatMessage) => {
 	const when = dateToLocaleStr(message.dateCreated);
 	const what = isSentByMe(message) ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated = message.response.responseData?.created * 1000;
-	if (dateGenerated) {
-		res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
-	}
+	const dateGenerated = message.response?.responseData?.created * 1000;
+	if (dateGenerated) res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
+
 	return res;
 };
 
@@ -266,15 +267,15 @@ const editMessage = (message: ChatMessage) => {
 
 const canRegenMessage = (message: ChatMessage) => {
 	if (message.isDeleted) return false;
-	const msgIds = message.response.contextIds;
+	const msgIds = message.response?.contextIds;
 	if (msgIds) return msgIds.length > 0;
 	return false;
 };
 
 const regenMessage = (message: ChatMessage) => {
-	console.warn("=> regen:", {...message});
-	console.warn("msg:", {...message});
-	console.warn("ctxIds:", message.response.contextIds);
+	console.warn("*".repeat(40));
+	console.log("regenMessage->message:", {...message});
+	console.log("regenMessage->message.response?.contextIds:", message.response?.contextIds);
 	comp.handleUserMessage(message, comp);
 };
 

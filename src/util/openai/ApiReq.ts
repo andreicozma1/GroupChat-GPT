@@ -1,5 +1,4 @@
 import {CreateCompletionRequest, CreateImageRequest} from "openai/api";
-import {ChatUser} from "src/util/assistant/AssistantModels";
 import {openaiApi} from "src/util/openai/OpenAiUtils";
 
 export type ApiOptsValidTypes = CreateCompletionRequest | CreateImageRequest;
@@ -84,9 +83,8 @@ export const ApiReqMap: ApiReqConfigs = {
 	custom: {},
 };
 
-export const makeApiRequest = async (ai: ChatUser, prompt: string) => {
-	const apiConfigKey = ai.apiReqConfig;
-	console.warn("=> makeApiRequest:", apiConfigKey);
+export const makeApiRequest = async (apiReqConfig: string, prompt: string) => {
+	console.warn("makeApiRequest->apiReqConfig:", apiReqConfig)
 	// Recursively build the final config
 	const configs = {
 		...ApiReqMap.defaults,
@@ -95,18 +93,17 @@ export const makeApiRequest = async (ai: ChatUser, prompt: string) => {
 	// Start from the topmost parent and work our way down to the ai's config
 	let config: ApiReqConfigBase = ApiReqMap.base.createCompletion;
 	const sequence = [];
-	let current = ai.apiReqConfig
-	while (current) {
-		sequence.push(current);
-		if (configs[current]) {
-			current = configs[current].parent;
+	while (apiReqConfig) {
+		sequence.push(apiReqConfig);
+		if (configs[apiReqConfig]) {
+			apiReqConfig = configs[apiReqConfig].parent;
 			continue
 		}
-		if (ApiReqMap.base[current]) {
-			config = ApiReqMap.base[current];
+		if (ApiReqMap.base[apiReqConfig]) {
+			config = ApiReqMap.base[apiReqConfig];
 			break;
 		}
-		throw new Error(`Could not find parent config for ${current}`);
+		throw new Error(`Could not find parent config for ${apiReqConfig}`);
 	}
 	sequence.reverse();
 	console.log("=> sequence:", sequence);

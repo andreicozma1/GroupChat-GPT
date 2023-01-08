@@ -64,6 +64,7 @@ export const useCompStore = defineStore("counter", {
 			...(LocalStorage.getItem("users") || {}),
 		}) as Ref<Record<string, ChatUser>>,
 		threadsMap: ref({
+			main: createThread("user", undefined),
 			...(LocalStorage.getItem("threads") || {}),
 		}) as Ref<Record<string, ChatThread>>,
 		currentThread: "main",
@@ -84,9 +85,10 @@ export const useCompStore = defineStore("counter", {
 			const thread = state.threadsMap[state.currentThread];
 			if (!thread) {
 				smartNotify("Thread not found: " + state.currentThread);
-				this.threadsMap
+				throw new Error("Thread not found: " + state.currentThread);
 			}
-			return state.threadsMap[state.currentThread];
+			console.log("getThread:", state.currentThread, {...thread});
+			return thread;
 		},
 		getCachedResponses(state) {
 			return state.cachedResponses;
@@ -195,11 +197,12 @@ export const useCompStore = defineStore("counter", {
 		): Promise<PromptResponse> {
 			ignoreCache = ignoreCache ?? false;
 			console.warn("-".repeat(20));
-			console.warn(`=> generate (${actor.id}):`, actor);
+			console.log('generate->actor:', actor);
+			console.log("generate->ignoreCache:", ignoreCache);
 
-			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
 			msgHist = msgHist.filter((m: ChatMessage) => !m.hideInPrompt);
-			console.warn("=> msgHist:");
+			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
+			console.log("generate->contextIds:", contextIds);
 			for (let i = 0; i < msgHist.length; i++) {
 				console.log("----------------")
 				console.log(`msgHist[${i}] -> (${msgHist[i].textSnippets.length} texts & ${msgHist[i].imageUrls.length} images)`,
@@ -207,9 +210,9 @@ export const useCompStore = defineStore("counter", {
 			}
 
 			const prompt = new Prompt(actor.promptConfig, this.getUsersMap, msgHist);
-			console.warn("=> prompt:");
-			console.log(prompt);
-			console.warn(`=> ignoreCache: ${ignoreCache}`);
+			console.log("generate->prompt:", prompt)
+			console.log("generate->prompt.hash:", prompt.hash)
+			console.log("generate->prompt.text:", prompt.text)
 
 			// if we already have a completion for this prompt, return it
 
@@ -218,13 +221,11 @@ export const useCompStore = defineStore("counter", {
 			let completion;
 			let cached;
 			try {
-
-				if (prompt === undefined) throw new Error("Prompt was undefined");
 				if (!ignoreCache && this.getCachedResponseFromPrompt(prompt)) {
 					completion = this.getCachedResponseFromPrompt(prompt)
 					cached = true;
 				} else {
-					completion = await makeApiRequest(actor, prompt.text);
+					completion = await makeApiRequest(actor.apiReqConfig, prompt.text);
 					cached = false;
 				}
 			} catch (error: any) {
@@ -290,18 +291,19 @@ export const useCompStore = defineStore("counter", {
 			this.saveData();
 			smartNotify("Successfully deleted message.");
 		},
-		async handleUserMessage(message: ChatMessage, comp: any, cfgUserId?: string) {
-			cfgUserId = cfgUserId || message.userId;
-			const cfg = this.getUserConfig(cfgUserId);
+		async handleUserMessage(message: ChatMessage, comp: any, forceUserId?: string) {
+			forceUserId = forceUserId || message.userId;
+			const user: ChatUser = this.getUserConfig(forceUserId);
 			console.warn("*".repeat(40));
 
-			console.warn(`=> handleUserMessage (${cfg.id})`);
-			console.log("=> msg:", message);
+			console.log('handleUserMessage->cfg:', user);
+			console.log('handleUserMessage->forceUserId:', forceUserId);
+			console.log('handleUserMessage->message:', message);
 
 			message.isCompRegen = message.response?.contextIds
 				? message.response.contextIds.length > 0
 				: false;
-			console.log("=> msg.isCompRegen:", message.isCompRegen);
+			console.log('handleUserMessage->message.isCompRegen:', message.isCompRegen);
 
 			// if (msg.isCompRegen) {
 			// 	console.warn("=> Regen");
@@ -315,12 +317,12 @@ export const useCompStore = defineStore("counter", {
 			comp.pushMessage(message, true);
 
 			const msgHistIds = message.response?.contextIds
-			let ignoreCache = cfg.shouldIgnoreCache === undefined ? false : cfg.shouldIgnoreCache;
+			let ignoreCache = user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
 			let msgHist;
 			if (!msgHistIds) {
 				// First-time generation
 				msgHist = getMessageHistory(comp, {
-					hiddenUserIds: cfg.id !== ConfigCoordinator.id ? [ConfigCoordinator.id] : [],
+					hiddenUserIds: user.id !== ConfigCoordinator.id ? [ConfigCoordinator.id] : [],
 					maxLength: 10,
 					maxDate: message.dateCreated,
 				});
@@ -333,24 +335,24 @@ export const useCompStore = defineStore("counter", {
 				ignoreCache = true;
 			}
 
-			const res: PromptResponse = await comp.generate(
-				cfg,
+			const response: PromptResponse = await comp.generate(
+				user,
 				msgHist,
 				ignoreCache
 			);
-			console.log("=> res:", res);
-			message.response = res.response;
-			message.cached = res.cached;
+			console.log('handleUserMessage->response:', response);
+			message.response = response.response;
+			message.cached = response.cached;
 
-			if (res.errorMsg) {
-				console.error("=> res.errorMsg:", res.errorMsg);
-				message.textSnippets = ["[ERROR]" + "\n" + res.errorMsg]
+			if (response.errorMsg) {
+				console.error('Error generating response:', response.errorMsg);
+				message.textSnippets = ["[ERROR]" + "\n" + response.errorMsg]
 				comp.pushMessage(message);
 				return;
 			}
 
-			if (res?.textSnippets) message.textSnippets = res.textSnippets
-			if (res?.imageUrls) message.imageUrls = res.imageUrls
+			if (response?.textSnippets) message.textSnippets = response.textSnippets
+			if (response?.imageUrls) message.imageUrls = response.imageUrls
 			comp.pushMessage(message);
 
 			const followupActors = message.textSnippets
@@ -369,7 +371,7 @@ export const useCompStore = defineStore("counter", {
 			const thread: ChatThread = comp.getThread
 			const followups = []
 
-			switch (cfg.id) {
+			switch (user.id) {
 				case ConfigCoordinator.id:
 					if (followupActors.length === 0) {
 						console.warn("=> No follow-ups");
@@ -377,7 +379,7 @@ export const useCompStore = defineStore("counter", {
 						message.textSnippets.push("You could try sending a message that is a little more interesting!");
 						break;
 					}
-					console.log("=> coordinator->next:", followupActors);
+					console.log('handleUserMessage->followupActors:', followupActors);
 					for (const nextKey of followupActors) {
 						const nextMsg: ChatMessage = this.createMessageFromUserId(
 							nextKey,
@@ -405,11 +407,11 @@ export const useCompStore = defineStore("counter", {
 
 					followupPrompts = followupPrompts.filter((t: string) => t.split(" ").length > 3);
 					if (followupPrompts.length > 0) {
-						console.log("promptText", followupPrompts);
+						console.log("handleUserMessage->followupPrompts:", followupPrompts);
 						// TODO: better way to handle this dynamically instead of hard-coding
-						const followupPromptHelperId = cfg.followupPromptHelperId;
+						const followupPromptHelperId = user.followupPromptHelperId;
 						if (!followupPromptHelperId) {
-							console.error("Error: ${cfg.id} generated ${followupPrompts.length} prompts, but no promptHelperId was specified.");
+							console.error(`Error: ${user.id} generated ${followupPrompts.length} prompts, but no promptHelperId was specified.`);
 							break
 						}
 						for (let i = 0; i < followupPrompts.length; i++) {

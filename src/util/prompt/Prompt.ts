@@ -6,6 +6,14 @@ import {PromptConfig} from "src/util/prompt/PromptModels";
 import {ConfigUser} from "src/util/users/ConfigUser";
 
 
+function wrapInTags(tag: string, ...msgPrompt: string[]) {
+	return [
+		`<${tag}>`,
+		msgPrompt,
+		`</${tag}>`
+	].join("\n");
+}
+
 export class Prompt {
 
 	public currentUserName: string;
@@ -37,7 +45,8 @@ export class Prompt {
 		this.msgHist = msgHist;
 		// promptType if a function part of this class.
 		this.createTextPrompt = Object.getPrototypeOf(this)[this.config.promptType];
-		if (!this.createTextPrompt) {
+		console.log(Object.getPrototypeOf(this));
+		if (this.createTextPrompt === undefined) {
 			const promptTypeDefault = "createAssistantPrompt";
 			console.error(`Prompt type not found: ${this.config.promptType}. Defaulting to ${promptTypeDefault}`);
 			smartNotify(`Prompt type not found: ${this.config.promptType}. Defaulting to ${promptTypeDefault}`);
@@ -47,7 +56,7 @@ export class Prompt {
 		this.hash = Prompt.hashPrompt(this)
 	}
 
-	private createAssistantPrompt = (): any => {
+	public createAssistantPrompt(): string | undefined {
 		const start = "=== AI GROUP CHAT ===";
 		const desc = "The following is a group-chat conversation between a human and several AI assistants.";
 
@@ -57,9 +66,9 @@ export class Prompt {
 		const conv = this.promptConversation();
 
 		return this.finalizePrompt([start, desc, members, rules, examples, conv]);
-	};
+	}
 
-	private createPromptDalleGen = () => {
+	public createPromptDalleGen(): string | undefined {
 		// find the last message that contains a html tag in any of the text snippets
 		const usedMessages = this.getMessagesWithQueries();
 		if (usedMessages.length === 0) {
@@ -80,10 +89,10 @@ export class Prompt {
 		prompt = prompt.replace(/(<([^>]+)>)/gi, "");
 
 		return prompt;
-	};
+	}
 
 
-	private createPromptCodexGen = () => {
+	public createPromptCodexGen(): string | undefined {
 		const start = "### CODE GENERATION ###\n";
 
 		const rules = this.promptRules();
@@ -120,12 +129,9 @@ export class Prompt {
 		prompt = prompt.replace(/(<([^>]+)>)/gi, "");
 
 		return this.finalizePrompt([start, rules, examples, prompt]);
-	};
+	}
 
-	private promptAssistantInfo = (
-		ai: ChatUser,
-		parenthesesTag?: string
-	): string => {
+	private promptAssistantInfo(ai: ChatUser, parenthesesTag?: string): string {
 		parenthesesTag = parenthesesTag === undefined ? "" : ` (${parenthesesTag})`;
 		const header = `# ${ai.name}${parenthesesTag}`;
 
@@ -138,9 +144,9 @@ export class Prompt {
 			.join("\n");
 
 		return [header, info].join("\n");
-	};
+	}
 
-	private promptMembersInfo = (): string => {
+	private promptMembersInfo(): string {
 		const availableAssistants: ChatUser[] = Object.values(this.usersMap).filter((a: ChatUser): boolean => {
 			if (a.isAvailable === undefined) return true;
 			return a.isAvailable;
@@ -158,9 +164,9 @@ export class Prompt {
 			.join("\n\n");
 
 		return [header, info].join("\n");
-	};
+	}
 
-	private promptRules = (): string => {
+	private promptRules(): string {
 		if (!this.config.rules) return "";
 
 		const header = "=== RULES ===";
@@ -172,9 +178,9 @@ export class Prompt {
 			.join("\n");
 
 		return [header, rules].join("\n");
-	};
+	}
 
-	private promptExamples = (): string => {
+	private promptExamples(): string {
 		if (!this.config.examples || this.config.examples.length == 0) return "";
 		// promptHeader = promptHeader || ConfigUser.name;
 		// resultHeader = resultHeader || ai.name;
@@ -183,33 +189,41 @@ export class Prompt {
 		const examples: string = this.config.examples.map((example: string, i) => {
 			let msgPrompt = example.trim();
 			const isQuery: boolean = i % 2 === 0;
-			if (isQuery && this.config.exampleQueryWrapTag) msgPrompt = `<${this.config.exampleQueryWrapTag}>\n${msgPrompt}\n</${this.config.exampleQueryWrapTag}>`;
-			if (!isQuery && this.config.exampleResponseWrapTag) msgPrompt = `<${this.config.exampleResponseWrapTag}>\n${msgPrompt}\n</${this.config.exampleResponseWrapTag}>`;
+			if (isQuery && this.config.exampleQueryWrapTag) {
+				msgPrompt = wrapInTags(this.config.exampleQueryWrapTag, msgPrompt);
+			}
+			if (!isQuery && this.config.exampleResponseWrapTag) {
+				msgPrompt = wrapInTags(this.config.exampleResponseWrapTag, msgPrompt);
+			}
 			const identifier = isQuery ? this.config.exampleQueryId : this.config.exampleResponseId;
 			if (this.config.exampleUseHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");
 
 		return [header, examples].join("\n");
-	};
+	}
 
-	private promptConversation = (): string => {
+	private promptConversation(): string {
 		const header = "=== CONVERSATION ===";
 
 		const res: string = this.msgHist.map((msg: ChatMessage, i) => {
 			let msgPrompt = msg.textSnippets.map((s: string) => s.trim()).join("\n");
 			const isQuery = i % 2 === 0;
-			if (isQuery && this.config.exampleQueryWrapTag) msgPrompt = `<${this.config.exampleQueryWrapTag}>\n${msgPrompt}\n</${this.config.exampleQueryWrapTag}>`;
-			if (!isQuery && this.config.exampleResponseWrapTag) msgPrompt = `<${this.config.exampleResponseWrapTag}>\n${msgPrompt}\n</${this.config.exampleResponseWrapTag}>`;
+			if (isQuery && this.config.exampleQueryWrapTag) {
+				msgPrompt = wrapInTags(this.config.exampleQueryWrapTag, msgPrompt);
+			}
+			if (!isQuery && this.config.exampleResponseWrapTag) {
+				msgPrompt = wrapInTags(this.config.exampleResponseWrapTag, msgPrompt);
+			}
 			const identifier = isQuery ? this.config.exampleQueryId : this.config.exampleResponseId;
 			if (this.config.exampleUseHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");
 
 		return [header, res].join("\n");
-	};
+	}
 
-	private finalizePrompt = (all: string[]): string => {
+	private finalizePrompt(all: string[]): string {
 		if (this.config.exampleUseHeader) {
 			const end = `### ${this.config.exampleResponseId}:`;
 			all.push(end);
@@ -217,9 +231,9 @@ export class Prompt {
 		all = all.filter((s) => s.length > 0);
 		all = all.map((s) => s.trim());
 		return all.join("\n\n");
-	};
+	}
 
-	private getMessagesWithQueries() {
+	private getMessagesWithQueries(): ChatMessage[] {
 		return this.msgHist.filter((msg) => {
 			// based on regex
 			return msg.textSnippets.some((text: string) => {

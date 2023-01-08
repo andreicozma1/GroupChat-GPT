@@ -5,29 +5,45 @@ import {ChatMessage, ChatMessageHistoryConfig} from "src/util/chat/ChatModels";
 import {parseDate} from "src/util/DateUtils";
 
 
+function msgContainsKeywords(message: ChatMessage, keywords: string[]): boolean {
+	const text: string = message.textSnippets.join(" ").toLowerCase();
+	return keywords.some((keyword: string) => text.includes(keyword.toLowerCase()));
+}
+
 export const getMessageHistory = (comp: any, config: ChatMessageHistoryConfig): ChatMessage[] => {
 	let history: ChatMessage[] = Object.values(comp.getThread.messageIdMap)
+	console.log("getMessageHistory->original:", history);
 
-	if (config.maxLength) history = history.slice(-config.maxLength);
 	history = history.filter((message: ChatMessage) => {
 		return !(config.maxDate && config.maxDate < message.dateCreated);
 	})
+	console.log("getMessageHistory->maxDate:", history);
 
 	// use config.forceShowKeywords and config.hiddenUserIds
 	history = history.filter((message: ChatMessage) => {
-		if (config.hiddenUserIds && config.hiddenUserIds.includes(message.userId)) return false;
-		if (config.forceShowKeywords && config.forceShowKeywords.length > 0) {
-			const text = message.textSnippets.join(" ").toLowerCase();
-			return config.forceShowKeywords.some((keyword) => text.includes(keyword.toLowerCase()));
+		if (config.hiddenUserIds && config.hiddenUserIds.includes(message.userId)) {
+			console.log("getMessageHistory->hiddenUserIds:", message);
+			return false;
+		}
+		if (config.forceShowKeywords && msgContainsKeywords(message, config.forceShowKeywords)) {
+			console.log("getMessageHistory->forceShowKeywords", message);
+			return true;
 		}
 		return true;
 	})
+	console.log("getMessageHistory->filter:", history);
 
 	history.sort((a: ChatMessage, b: ChatMessage) => {
 		const ad = parseDate(a.dateCreated).getTime();
 		const bd = parseDate(b.dateCreated).getTime();
 		return ad - bd;
 	});
+	console.log("getMessageHistory->sort:", history);
+
+	if (config.maxLength) {
+		history = history.slice(-config.maxLength);
+		console.log("getMessageHistory->maxLength:", history);
+	}
 	return history;
 };
 

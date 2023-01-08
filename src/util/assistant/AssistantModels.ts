@@ -59,21 +59,20 @@ export class ChatUserHuman extends ChatUser {
 export class ChatUserAssistant extends ChatUser {
 	constructor(id: string, name: string) {
 		super(id, name, ChatUserTypes.ASSISTANT);
-		this.name = name;
-		this.promptConfig.exampleQueryHeader = "User"
+		this.apiReqConfig = ApiRequestConfigTypes.CONVERSATION;
 		this.promptConfig.responseHeader = this.name;
 		this.promptConfig.traits = {
-			personality: ["friendly", "polite"],
+			personality: ["friendly", "polite", "truthful"],
 			strengths: ["making conversation", "answering questions"],
-			weaknesses: ["talking about my feelings"],
+			weaknesses: [],
 			abilities: [],
 		}
 		this.promptConfig.rules = {
 			always: [
-				"follow the user's instructions, requests, and answer their questions if appropriate to do so.",
+				"Follow instructions, requests, and answer questions if appropriate to do so.",
 			],
 			never: [
-				"respond to other assistant's questions, but may acknowledge their presence and offer insight into the conversation",
+				"Respond to other assistant's questions.",
 			],
 		}
 	}
@@ -89,7 +88,7 @@ export class ChatUserDavinci extends ChatUserAssistant {
 
 export class ChatUserDalle extends ChatUserAssistant {
 	constructor() {
-		super("dalle", "Dalle");
+		super("dalle", "DALL-E");
 		this.promptConfig.traits?.personality?.push("artistic", "creative", "visionary");
 		this.promptConfig.traits?.strengths?.push("making art", "coming up with creative ideas");
 		this.followupPromptHelperId = "dalle_gen";
@@ -132,7 +131,7 @@ export class ChatUserDalle extends ChatUserAssistant {
 
 export class ChatUserDalleGen extends ChatUser {
 	constructor() {
-		super("dalle_gen", "Dalle", ChatUserTypes.ASSISTANT);
+		super("dalle_gen", "DALL-E", ChatUserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.DALLE_GEN;
 		this.promptConfig.promptType = "createPromptDalleGen";
 		this.showInMembersInfo = false;
@@ -143,14 +142,14 @@ export class ChatUserCoordinator extends ChatUserAssistant {
 	constructor() {
 		super("coordinator", "Coordinator");
 		this.apiReqConfig = ApiRequestConfigTypes.COORDINATOR
-		this.promptConfig.rules = {
-			always: [
-				"Only respond with the exact names of the assistant(s) that should respond to the user's message.",
-				"Separate assistant names with commas if more than one assistant should respond.",
-				"Take into careful consideration the assistant's personality, strengths, weaknesses, and abilities.",
-				"Maintain the logical flow and consistency of the conversation.",
-			],
-		};
+		this.promptConfig.rules?.always?.push(
+			"Only respond with the exact names of the assistant(s) that should respond to the user's message.",
+			"Separate assistant names with commas if more than one assistant should respond.",
+			"Take into careful consideration the assistant's traits including personality, strengths, weaknesses, and abilities.",
+			"Maintain the logical flow and consistency of the conversation.")
+		this.promptConfig.rules?.never?.push(
+			"Respond with None or N/A."
+		)
 		this.promptConfig.examples = [
 			"Hey Davinci",
 			"Ignore: DALL-E, Codex\nRespond: Davinci",

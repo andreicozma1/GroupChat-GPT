@@ -14,19 +14,17 @@ function wrapInTags(tag: string, ...msgPrompt: string[]) {
 
 export class Prompt {
 
-
 	public text: string;
 	public hash: string;
 	public createTextPrompt: () => string;
 
 	// create a constructor
 	constructor(
+		public threadName: string,
 		public user: ChatUser,
 		public usersMap: { [key: string]: ChatUser },
 		public msgHist: ChatMessage[],
 	) {
-		this.usersMap = usersMap;
-		this.msgHist = msgHist;
 		// promptType if a function part of this class.
 		this.createTextPrompt = Object.getPrototypeOf(this)[this.user.promptConfig.promptType];
 		console.log(Object.getPrototypeOf(this));
@@ -41,7 +39,7 @@ export class Prompt {
 	}
 
 	public createAssistantPrompt(): string | undefined {
-		const start = "=== AI GROUP CHAT ===";
+		const start = `=== AI GROUP CHAT: ${this.threadName} ===`
 		const desc = "The following is a group-chat conversation between a human and several AI assistants.";
 
 		const members = this.promptMembersInfo();
@@ -148,9 +146,11 @@ export class Prompt {
 				// else tag = user.type;
 				return this.promptAssistantInfo(user, tag);
 			})
-			.join("\n\n");
+			.join("\n");
 
-		return [header, info].join("\n");
+		const you = `# You are: ${this.user.name}`;
+
+		return [header, info, you].join("\n");
 	}
 
 	private promptRules(): string {
@@ -202,7 +202,7 @@ export class Prompt {
 			if (!isQuery && this.user.promptConfig.responseWrapTag) {
 				msgPrompt = wrapInTags(this.user.promptConfig.responseWrapTag, msgPrompt);
 			}
-			const identifier = isQuery ? msg.userName : this.user.promptConfig.responseHeader;
+			const identifier = isQuery ? `${msg.userName}'s Message` : this.user.promptConfig.responseHeader;
 			if (identifier) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");

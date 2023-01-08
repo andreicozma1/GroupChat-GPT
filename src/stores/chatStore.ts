@@ -259,7 +259,7 @@ export const useChatStore = defineStore("counter", {
 					[...msgHist[i].textSnippets], {...msgHist[i]});
 			}
 
-			const prompt = new Prompt(user, this.getUsersMap, msgHist);
+			const prompt = new Prompt(this.currentThreadName, user, this.getUsersMap, msgHist);
 			console.log("generate->prompt:", prompt)
 			console.log("generate->prompt.hash:", prompt.hash)
 			console.log("generate->prompt.text:")

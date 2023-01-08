@@ -21,6 +21,7 @@ export class Prompt {
 	// create a constructor
 	constructor(
 		public threadName: string,
+		public humanUserName: string,
 		public user: ChatUser,
 		public usersMap: { [key: string]: ChatUser },
 		public msgHist: ChatMessage[],
@@ -119,13 +120,15 @@ export class Prompt {
 
 		if (!ai.promptConfig.traits) return header;
 
-		const info: string = Object.entries(ai.promptConfig.traits)
+		const info = Object.entries(ai.promptConfig.traits)
 			.map(([k, v]) => {
-				return processKV(k, v, {keyStartChar: "-"})
+				const s = v.map((s: string) => s.trim()).join("");
+				if (s.length === 0) return undefined;
+				return processKV(k, v, {keyPrefix: "-"})
 			})
-			.join("\n");
+			.filter((s: string | undefined) => s !== undefined)
 
-		return [header, info].join("\n");
+		return [header, ...info].join("\n");
 	}
 
 	private promptMembersInfo(): string {
@@ -141,8 +144,6 @@ export class Prompt {
 			.map((user: ChatUser) => {
 				let tag = undefined;
 				if (this.user.id === user.id) tag = "You";
-				console.error(`Current user: ${this.user.id} - ${this.user.name}`);
-				console.error(`User: ${user.id} - ${user.name}`);
 				// else tag = user.type;
 				return this.promptAssistantInfo(user, tag);
 			})
@@ -157,13 +158,15 @@ export class Prompt {
 
 		const header = "=== RULES ===";
 
-		const rules: string = Object.entries(this.user.promptConfig.rules)
+		const rules = Object.entries(this.user.promptConfig.rules)
 			.map(([k, v]) => {
-				return processKV(k, v, {keyStartChar: "#",})
+				const s = v.map((s: string) => s.trim()).join("");
+				if (s.length === 0) return undefined;
+				return processKV(k, v, {keyPrefix: '#', valPrefix: k})
 			})
-			.join("\n");
+			.filter((s: string | undefined) => s !== undefined)
 
-		return [header, rules].join("\n");
+		return [header, ...rules].join("\n");
 	}
 
 	private promptExamples(): string {
@@ -181,7 +184,7 @@ export class Prompt {
 			if (!isQuery && this.user.promptConfig.responseWrapTag) {
 				msgPrompt = wrapInTags(this.user.promptConfig.responseWrapTag, msgPrompt);
 			}
-			const identifier = isQuery ? this.user.promptConfig.exampleQueryHeader : this.user.promptConfig.responseHeader;
+			const identifier = isQuery ? this.user.promptConfig.exampleQueryHeader ?? this.humanUserName : this.user.promptConfig.responseHeader;
 			if (identifier) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");
@@ -201,8 +204,7 @@ export class Prompt {
 			if (!isQuery && this.user.promptConfig.responseWrapTag) {
 				msgPrompt = wrapInTags(this.user.promptConfig.responseWrapTag, msgPrompt);
 			}
-			const identifier = isQuery ? msg.userName : this.user.promptConfig.responseHeader;
-			if (identifier) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
+			msgPrompt = `### ${msg.userName}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");
 

@@ -7,9 +7,10 @@ export const processKV = (
 	val: string | string[],
 	config?: ProcessKVConfig
 ): string => {
-	const keyStartChar: string = config?.keyStartChar || "#";
+	const keyStartChar: string = config?.keyPrefix || "#";
 	let valJoinStr: string = config?.valJoinStr || ", ";
 	let inline: boolean = config?.inline || true;
+	const valStart: string = config?.valPrefix || "";
 	const commaSepMinChars = config?.commaSepMinChars || 40;
 
 	// remove all underscores
@@ -26,7 +27,7 @@ export const processKV = (
 	if (val.some((s: string) => s.length > commaSepMinChars)) {
 		valJoinStr = "\n";
 		inline = false;
-		val = val.map((s: string) => `- ${s}`);
+		val = val.map((s: string) => `- ${valStart} ${s.toLowerCase()}`);
 	}
 	val = val.join(valJoinStr);
 

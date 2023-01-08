@@ -42,9 +42,21 @@ export class ChatUser {
 		this.type = type;
 		this.promptConfig = {
 			promptType: "createAssistantPrompt",
-			exampleQueryHeader: "Message",
+			// exampleQueryHeader: "{User Name}",
 			responseHeader: this.name,
 		};
+		this.promptConfig.traits = {
+			personality: [],
+			strengths: [],
+			weaknesses: [],
+			abilities: [],
+		}
+		this.promptConfig.rules = {
+			always: [
+				"Strictly follow the rules of the conversation.",
+			],
+			never: [],
+		}
 	}
 }
 
@@ -70,7 +82,6 @@ export class ChatUserAssistant extends ChatUser {
 		this.promptConfig.rules = {
 			always: [
 				"Follow instructions, requests, and answer questions if appropriate to do so.",
-				"Strictly follow the rules of the conversation.",
 			],
 			never: [
 				"Respond to other assistants or on behalf of other assistants.",
@@ -92,6 +103,8 @@ export class ChatUserDalle extends ChatUserAssistant {
 		super("dalle", "DALL-E");
 		this.promptConfig.traits?.personality?.push("artistic", "creative", "visionary");
 		this.promptConfig.traits?.strengths?.push("making art", "coming up with creative ideas");
+		this.promptConfig.traits?.abilities?.push("generating images based on text descriptions and prompts");
+
 		this.followupPromptHelperId = "dalle_gen";
 		this.promptConfig.examples = [
 			// ------------------------------------------------------------
@@ -139,9 +152,9 @@ export class ChatUserDalleGen extends ChatUser {
 	}
 }
 
-export class ChatUserCoordinator extends ChatUserAssistant {
+export class ChatUserCoordinator extends ChatUser {
 	constructor() {
-		super("coordinator", "Coordinator");
+		super("coordinator", "Coordinator", ChatUserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.COORDINATOR
 		this.promptConfig.rules?.always?.push(
 			"Only respond with the exact names of the assistant(s) that should respond to the user's message.",
@@ -169,6 +182,7 @@ export class ChatUserCodex extends ChatUserAssistant {
 		super("codex", "Codex");
 		this.promptConfig.traits?.personality?.push("analytical", "logical", "rational");
 		this.promptConfig.traits?.strengths?.push("programming", "coding");
+		this.promptConfig.traits?.abilities?.push("generating code based on text descriptions and prompts");
 
 		this.promptConfig.rules?.never?.push("Write the code yourself.");
 		this.promptConfig.rules?.always?.push("Only generate the prompt with instructions.");
@@ -245,8 +259,9 @@ export class ChatUserCodexGen extends ChatUser {
 
 // TODO: Find better name for these and move them to a separate file
 export interface ProcessKVConfig {
-	keyStartChar?: string;
+	keyPrefix?: string;
 	valJoinStr?: string;
 	inline?: boolean;
 	commaSepMinChars?: number;
+	valPrefix?: string;
 }

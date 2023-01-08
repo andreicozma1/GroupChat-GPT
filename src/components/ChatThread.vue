@@ -132,7 +132,7 @@
 import {getSeededQColor} from "src/util/Colors";
 import {copyClipboard, getAppVersion} from "src/util/Utils";
 import {useChatStore} from "stores/chatStore";
-import {computed, Ref, ref, watch, watchEffect} from "vue";
+import {computed, onMounted, Ref, ref, watch} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {getMessageHistory} from "src/util/chat/ChatUtils";
@@ -350,7 +350,7 @@ const parseThreadMessages = (): ChatMessage[] => {
 };
 
 
-watchEffect(() => {
+const loadThread = () => {
 	try {
 		threadMessages.value = parseThreadMessages();
 		scrollToBottom(1000);
@@ -370,18 +370,18 @@ watchEffect(() => {
 		caption += "If you recently updated the app, you may need to clear local storage, or create a new thread."
 		smartNotify(`Error loading a previously saved chat thread.`, caption);
 	}
-});
+};
 
 
 //
-// watch(store.getActiveThread, () => loadThread());
+watch(store.getActiveThread, () => loadThread());
 //
 // watch(
 // 	() => comp.getActiveThread.prefs?.shownUsers,
 // 	() => loadThread()
 // );
 
-// onMounted(() => {
-// 	loadThread();
-// });
+onMounted(() => {
+	loadThread();
+});
 </script>

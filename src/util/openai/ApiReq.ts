@@ -57,7 +57,7 @@ export const ApiRequestConfigsMap: ApiRequestConfigs = {
 		[ApiRequestConfigTypes.COORDINATOR]: {
 			parent: "createCompletion",
 			opts: {
-				temperature: 0.6,
+				temperature: 0.8,
 				max_tokens: 25,
 			}
 		},

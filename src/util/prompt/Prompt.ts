@@ -189,14 +189,14 @@ export class Prompt {
 		const examples: string = this.config.examples.map((example: string, i) => {
 			let msgPrompt = example.trim();
 			const isQuery: boolean = i % 2 === 0;
-			if (isQuery && this.config.exampleQueryWrapTag) {
-				msgPrompt = wrapInTags(this.config.exampleQueryWrapTag, msgPrompt);
+			if (isQuery && this.config.queryWrapTag) {
+				msgPrompt = wrapInTags(this.config.queryWrapTag, msgPrompt);
 			}
-			if (!isQuery && this.config.exampleResponseWrapTag) {
-				msgPrompt = wrapInTags(this.config.exampleResponseWrapTag, msgPrompt);
+			if (!isQuery && this.config.responseWrapTag) {
+				msgPrompt = wrapInTags(this.config.responseWrapTag, msgPrompt);
 			}
-			const identifier = isQuery ? this.config.exampleQueryId : this.config.exampleResponseId;
-			if (this.config.exampleUseHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
+			const identifier = isQuery ? this.config.queryHeader : this.config.responseHeader;
+			if (this.config.useHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");
 
@@ -209,14 +209,14 @@ export class Prompt {
 		const res: string = this.msgHist.map((msg: ChatMessage, i) => {
 			let msgPrompt = msg.textSnippets.map((s: string) => s.trim()).join("\n");
 			const isQuery = i % 2 === 0;
-			if (isQuery && this.config.exampleQueryWrapTag) {
-				msgPrompt = wrapInTags(this.config.exampleQueryWrapTag, msgPrompt);
+			if (isQuery && this.config.queryWrapTag) {
+				msgPrompt = wrapInTags(this.config.queryWrapTag, msgPrompt);
 			}
-			if (!isQuery && this.config.exampleResponseWrapTag) {
-				msgPrompt = wrapInTags(this.config.exampleResponseWrapTag, msgPrompt);
+			if (!isQuery && this.config.responseWrapTag) {
+				msgPrompt = wrapInTags(this.config.responseWrapTag, msgPrompt);
 			}
-			const identifier = isQuery ? this.config.exampleQueryId : this.config.exampleResponseId;
-			if (this.config.exampleUseHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
+			const identifier = isQuery ? this.config.queryHeader : this.config.responseHeader;
+			if (this.config.useHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");
 
@@ -224,8 +224,8 @@ export class Prompt {
 	}
 
 	private finalizePrompt(all: string[]): string {
-		if (this.config.exampleUseHeader) {
-			const end = `### ${this.config.exampleResponseId}:`;
+		if (this.config.useHeader) {
+			const end = `### ${this.config.responseHeader}:`;
 			all.push(end);
 		}
 		all = all.filter((s) => s.length > 0);
@@ -246,9 +246,9 @@ export class Prompt {
 		return {
 			...config,
 			promptType: "createAssistantPrompt",
-			exampleQueryId: config?.exampleQueryId ?? ConfigUser.name,
-			exampleResponseId: config?.exampleResponseId ?? currentUserName,
-			exampleUseHeader: config?.exampleUseHeader ?? true,
+			queryHeader: config?.queryHeader ?? ConfigUser.name,
+			responseHeader: config?.responseHeader ?? currentUserName,
+			useHeader: config?.useHeader ?? true,
 		}
 	}
 

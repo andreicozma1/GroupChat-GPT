@@ -55,10 +55,10 @@ export const ConfigCodexGen: ChatUser = {
 	apiReqConfig: "codex_gen",
 	promptConfig: {
 		promptType: "createPromptCodexGen",
-		exampleQueryId: "Instructions",
-		exampleUseHeader: false,
-		exampleQueryWrapTag: "instructions",
-		exampleResponseWrapTag: "markdown",
+		queryHeader: "Instructions",
+		useHeader: false,
+		queryWrapTag: "instructions",
+		responseWrapTag: "markdown",
 		rules: {
 			always: [
 				"Use Markdown and wrap any code in a code block.",

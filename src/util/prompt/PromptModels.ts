@@ -3,11 +3,11 @@ export interface PromptConfig {
 	traits?: PromptTraits;
 	rules?: PromptRules;
 	examples?: string[]; // Order: Human, AI, Human, AI, etc.
-	exampleQueryId?: string;
-	exampleResponseId?: string;
-	exampleQueryWrapTag?: string;
-	exampleResponseWrapTag?: string;
-	exampleUseHeader?: boolean;
+	queryHeader?: string;
+	responseHeader?: string;
+	queryWrapTag?: string;
+	responseWrapTag?: string;
+	useHeader?: boolean;
 }
 
 export interface PromptTraits {

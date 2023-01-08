@@ -11,40 +11,35 @@ function msgContainsKeywords(message: ChatMessage, keywords: string[]): boolean 
 }
 
 export const getMessageHistory = (comp: any, config: ChatMessageHistoryConfig): ChatMessage[] => {
-	let history: ChatMessage[] = Object.values(comp.getThread.messageIdMap)
-	console.log("getMessageHistory->original:", history);
-
-	history = history.filter((message: ChatMessage) => {
-		return !(config.maxDate && config.maxDate < message.dateCreated);
+	let messages: ChatMessage[] = Object.values(comp.getActiveThread.messageIdMap)
+	// filter out messages whose textSnippets stripped and joined are empty
+	// unless the message has an image
+	messages = messages.filter((message: ChatMessage) => {
+		const textSnippets: string = message.textSnippets.map((snippet: string) => snippet.trim()).join("")
+		const imageUrls: string = message.imageUrls.map((url: string) => url.trim()).join("")
+		if (textSnippets.length === 0 && imageUrls.length === 0) return false
+		return true
 	})
-	console.log("getMessageHistory->maxDate:", history);
-
-	// use config.forceShowKeywords and config.hiddenUserIds
-	history = history.filter((message: ChatMessage) => {
-		if (config.hiddenUserIds && config.hiddenUserIds.includes(message.userId)) {
-			console.log("getMessageHistory->hiddenUserIds:", message);
-			return false;
-		}
-		if (config.forceShowKeywords && msgContainsKeywords(message, config.forceShowKeywords)) {
-			console.log("getMessageHistory->forceShowKeywords", message);
-			return true;
-		}
-		return true;
-	})
-	console.log("getMessageHistory->filter:", history);
-
-	history.sort((a: ChatMessage, b: ChatMessage) => {
+	messages.sort((a: ChatMessage, b: ChatMessage) => {
 		const ad = parseDate(a.dateCreated).getTime();
 		const bd = parseDate(b.dateCreated).getTime();
 		return ad - bd;
 	});
-	console.log("getMessageHistory->sort:", history);
-
-	if (config.maxLength) {
-		history = history.slice(-config.maxLength);
-		console.log("getMessageHistory->maxLength:", history);
+	console.log("getMessageHistory->original:", messages);
+	if (config.maxMessages) {
+		messages = messages.slice(-config.maxMessages);
+		console.log("getMessageHistory->maxMessages:", messages);
 	}
-	return history;
+	messages = messages.filter((message: ChatMessage) => {
+		if (config.maxDate && config.maxDate < message.dateCreated) return false;
+		if (config.minDate && config.minDate > message.dateCreated) return false;
+		if (config.forceShowKeywords && msgContainsKeywords(message, config.forceShowKeywords)) return true;
+		if (config.hiddenUserIds && config.hiddenUserIds.includes(message.userId)) return false;
+		return true;
+	})
+
+	console.log("getMessageHistory->filter:", messages);
+	return messages;
 };
 
 export const createMessageFromUserConfig = (chatUser: ChatUser, store: any): ChatMessage => {

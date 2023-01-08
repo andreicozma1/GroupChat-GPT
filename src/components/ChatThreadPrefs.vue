@@ -1,10 +1,6 @@
 <template>
     <q-btn-dropdown flat icon="settings" label="Prefs" rounded size="12px">
         <q-card style="min-width: 320px">
-            <!--            <q-card-section class="q-pt-md q-pb-sm justify-center flex">-->
-            <!--               -->
-            <!--            </q-card-section>-->
-
             <q-card-section class="q-py-sm">
                 <q-list>
                     <q-expansion-item
@@ -30,7 +26,7 @@
                                     </q-item-section>
                                     <q-item-section side>
                                         <q-checkbox
-                                                v-if="comp.getThread.prefs.hiddenUserIds"
+                                                v-if="store.getActiveThread.prefs.hiddenUserIds"
                                                 :model-value="!isUserHidden(member)"
                                                 @update:model-value="toggleHiddenUser(member)"
                                                 color="primary"
@@ -56,8 +52,8 @@
                             <q-list separator>
                                 <q-item dense>
                                     <q-checkbox
-                                            v-if="comp.getThread.prefs"
-                                            v-model="comp.getThread.prefs.orderedResponses"
+                                            v-if="store.getActiveThread.prefs"
+                                            v-model="store.getActiveThread.prefs.orderedResponses"
                                             label="Ordered Responses"
                                             left-label
                                     />
@@ -73,8 +69,8 @@
 
                                 <q-item dense>
                                     <q-checkbox
-                                            v-if="comp.getThread.prefs"
-                                            v-model="comp.getThread.prefs.hideIgnoredMessages"
+                                            v-if="store.getActiveThread.prefs"
+                                            v-model="store.getActiveThread.prefs.dontShowMessagesHiddenInPrompts"
                                             label="Hide Ignored Messages"
                                             left-label
                                     />
@@ -96,28 +92,26 @@
     </q-btn-dropdown>
 </template>
 <script lang="ts" setup>
-import {useCompStore} from "stores/compStore";
-import {watch} from "vue";
+import {useChatStore} from "stores/chatStore";
 import {ChatUser} from "src/util/assistant/AssistantModels";
 
-const comp = useCompStore();
+const store = useChatStore();
 
 const getThreadUsers = (): ChatUser[] => {
-	return comp.getThread.joinedUserIds.map((id) => comp.getUserConfig(id));
+	return store.getActiveThread.joinedUserIds.map((id) => store.getUserConfig(id));
 };
 
 const isUserHidden = (user: ChatUser): boolean => {
-	return comp.getThread.prefs.hiddenUserIds.includes(user.id);
+	return store.getActiveThread.prefs.hiddenUserIds.includes(user.id);
 };
 
 const toggleHiddenUser = (user: ChatUser) => {
 	const userId = user.id;
 	if (isUserHidden(user)) {
-		comp.getThread.prefs.hiddenUserIds = comp.getThread.prefs.hiddenUserIds.filter((id) => id !== userId);
+		store.getActiveThread.prefs.hiddenUserIds = store.getActiveThread.prefs.hiddenUserIds.filter((id) => id !== userId);
 	} else {
-		comp.getThread.prefs.hiddenUserIds.push(userId);
+		store.getActiveThread.prefs.hiddenUserIds.push(userId);
 	}
 };
 
-watch(comp.getThread, () => comp.saveData());
 </script>

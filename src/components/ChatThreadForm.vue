@@ -27,7 +27,7 @@
             <q-space/>
             <q-btn-group flat rounded>
                 <q-btn label="Clear Thread"
-                       @click="comp.clearThread"
+                       @click="store.clearCurrentThreadMessages"
                        color="light-blue"
                        icon-right="clear"
                        no-caps
@@ -36,7 +36,7 @@
                        title="Clear all messages in the thread"
                 />
                 <q-btn label="Comp. Cache"
-                       @click="comp.clearCompCache"
+                       @click="store.clearCachedResponses"
                        icon-right="cached"
                        color="green"
                        no-caps
@@ -45,7 +45,7 @@
                        title="Clear completion cache for assistant responses"
                 />
                 <q-btn label="Hard Reset"
-                       @click="comp.clearAllData"
+                       @click="store.clearAllData"
                        icon-right="delete_forever"
                        color="red"
                        no-caps
@@ -58,13 +58,13 @@
     </q-card>
 </template>
 <script lang="ts" setup>
-import {useCompStore} from "stores/compStore";
+import {useChatStore} from "stores/chatStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
 import {createMessageFromUserConfig} from "src/util/chat/ChatUtils";
 import {ChatMessage} from "src/util/chat/ChatModels";
 
-const comp = useCompStore();
+const store = useChatStore();
 
 const userMsgEl: Ref<QInput | null> = ref(null);
 const userMsgStr = ref("");
@@ -84,8 +84,8 @@ const sendMessage = () => {
 	console.warn("=".repeat(60));
 	console.warn("=> sendMessage:");
 	if (userMsgObj.value === null) {
-		userMsgObj.value = createMessageFromUserConfig(comp.getHumanUserConfig, comp);
-		comp.pushMessage(userMsgObj.value);
+		userMsgObj.value = createMessageFromUserConfig(store.getHumanUserConfig, store);
+		store.pushMessage(userMsgObj.value);
 	}
 	userMsgObj.value.textSnippets.push(userMsgStr.value);
 	userMsgStr.value = "";
@@ -95,7 +95,7 @@ const sendMessage = () => {
 		if (!isTyping.value) {
 			console.log("=> userMsgObj:", {...userMsgObj.value});
 			userMsgObj.value = null;
-			comp.handleAssistantCfg(comp.getUserConfig("coordinator"), comp);
+			store.handleAssistantCfg(store.getUserConfig("coordinator"), store);
 			clearInterval(responseTimeout.value);
 		}
 	}, 500);
@@ -118,13 +118,13 @@ const kbShortcuts = (e: KeyboardEvent) => {
 	// ctrl/cmd+shift+x clears thread
 	if (e.key.toLowerCase() === "x" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
 		e.preventDefault();
-		comp.clearThread();
+		store.clearCurrentThreadMessages();
 		return;
 	}
 	// ctrl/cmd+shift+r clears cache
 	if (e.key.toLowerCase() === "r" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
 		e.preventDefault();
-		comp.clearAllData();
+		store.clearAllData();
 		return;
 	}
 	// enter sends userMsgStr

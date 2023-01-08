@@ -3,24 +3,34 @@ import {openaiApi} from "src/util/openai/OpenAiUtils";
 
 export type ApiOptsValidTypes = CreateCompletionRequest | CreateImageRequest;
 
-export interface ApiReqConfigBase {
+interface IApiRequestConfigBase {
 	func: any;
 	opts: ApiOptsValidTypes;
 }
 
-export interface ApiReqConfigVariant {
+interface IApiRequestConfigVariant {
 	parent: string;
 	opts?: any;
 }
 
-export interface ApiReqConfigs {
-	base: { [key: string]: ApiReqConfigBase };
-	defaults: { [key: string]: ApiReqConfigVariant };
-	custom: { [key: string]: ApiReqConfigVariant };
+interface ApiRequestConfigs {
+	base: { [key: string]: IApiRequestConfigBase };
+	defaults: { [key: string]: IApiRequestConfigVariant };
+	custom: { [key: string]: IApiRequestConfigVariant };
+}
+
+export enum ApiRequestConfigTypes {
+	COORDINATOR = "coordinator",
+	ASSISTANT = "assistant",
+	CONVERSATION = "conversation",
+	HUMAN = "human",
+
+	CODEX_GEN = "codex_gen",
+	DALLE_GEN = "dalle_gen",
 }
 
 // TODO: Move this into a store
-export const ApiReqMap: ApiReqConfigs = {
+export const ApiRequestConfigsMap: ApiRequestConfigs = {
 	base: {
 		createCompletion: {
 			func: (opts: CreateCompletionRequest) => openaiApi.createCompletion(opts),
@@ -44,39 +54,39 @@ export const ApiReqMap: ApiReqConfigs = {
 		},
 	},
 	defaults: {
-		human: {
-			parent: "createCompletion",
-			opts: {
-				max_tokens: 250,
-				temperature: 0.75,
-				frequency_penalty: 0.0,
-				presence_penalty: 0.6,
-			}
-		},
-		coordinator: {
+		[ApiRequestConfigTypes.COORDINATOR]: {
 			parent: "createCompletion",
 			opts: {
 				temperature: 0.6,
 				max_tokens: 25,
 			}
 		},
-		assistant: {
+		[ApiRequestConfigTypes.ASSISTANT]: {
 			parent: "createCompletion",
 			opts: {
 				max_tokens: 250,
 				temperature: 0.75,
 				frequency_penalty: 0.0,
+				presence_penalty: 0.0,
+			}
+		},
+		[ApiRequestConfigTypes.CONVERSATION]: {
+			parent: ApiRequestConfigTypes.ASSISTANT,
+			opts: {
 				presence_penalty: 0.6,
 			}
 		},
-		codex_gen: {
+		[ApiRequestConfigTypes.HUMAN]: {
+			parent: ApiRequestConfigTypes.CONVERSATION,
+		},
+		[ApiRequestConfigTypes.CODEX_GEN]: {
 			parent: "createCompletion",
 			opts: {
 				model: "code-davinci-002",
 				max_tokens: 500,
 			}
 		},
-		dalle_gen: {
+		[ApiRequestConfigTypes.DALLE_GEN]: {
 			parent: "createImage",
 		},
 	},
@@ -87,11 +97,11 @@ export const makeApiRequest = async (apiReqConfig: string, prompt: string) => {
 	console.warn("makeApiRequest->apiReqConfig:", apiReqConfig)
 	// Recursively build the final config
 	const configs = {
-		...ApiReqMap.defaults,
-		...ApiReqMap.custom,
+		...ApiRequestConfigsMap.defaults,
+		...ApiRequestConfigsMap.custom,
 	};
 	// Start from the topmost parent and work our way down to the ai's config
-	let config: ApiReqConfigBase = ApiReqMap.base.createCompletion;
+	let config: IApiRequestConfigBase = ApiRequestConfigsMap.base.createCompletion;
 	const sequence = [];
 	while (apiReqConfig) {
 		sequence.push(apiReqConfig);
@@ -99,8 +109,8 @@ export const makeApiRequest = async (apiReqConfig: string, prompt: string) => {
 			apiReqConfig = configs[apiReqConfig].parent;
 			continue
 		}
-		if (ApiReqMap.base[apiReqConfig]) {
-			config = ApiReqMap.base[apiReqConfig];
+		if (ApiRequestConfigsMap.base[apiReqConfig]) {
+			config = ApiRequestConfigsMap.base[apiReqConfig];
 			break;
 		}
 		throw new Error(`Could not find parent config for ${apiReqConfig}`);
@@ -108,7 +118,7 @@ export const makeApiRequest = async (apiReqConfig: string, prompt: string) => {
 	sequence.reverse();
 	console.log("=> sequence:", sequence);
 	sequence.forEach((c) => {
-		const cfg = configs[c] || ApiReqMap.base[c];
+		const cfg = configs[c] || ApiRequestConfigsMap.base[c];
 		console.log("=> config:", c, cfg);
 		config.opts = {
 			...config.opts,

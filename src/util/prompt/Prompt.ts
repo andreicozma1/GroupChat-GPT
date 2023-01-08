@@ -2,8 +2,6 @@ import {ChatUser} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {processKV} from "src/util/assistant/AssistantUtils";
-import {PromptConfig} from "src/util/prompt/PromptModels";
-import {ConfigUser} from "src/util/users/ConfigUser";
 
 
 function wrapInTags(tag: string, ...msgPrompt: string[]) {
@@ -16,8 +14,6 @@ function wrapInTags(tag: string, ...msgPrompt: string[]) {
 
 export class Prompt {
 
-	public currentUserName: string;
-	public currentUserId: string;
 
 	public text: string;
 	public hash: string;
@@ -25,31 +21,19 @@ export class Prompt {
 
 	// create a constructor
 	constructor(
-		public config: PromptConfig,
+		public user: ChatUser,
 		public usersMap: { [key: string]: ChatUser },
 		public msgHist: ChatMessage[],
 	) {
-		const lastMessage: ChatMessage = msgHist[msgHist.length - 1];
-		if (lastMessage) {
-			this.currentUserName = lastMessage.userName
-			this.currentUserId = lastMessage.userId
-		} else {
-			this.currentUserName = "Unknown";
-			this.currentUserId = "Unknown";
-			console.error(`No messages found in message history`);
-			smartNotify(`No messages found in message history`);
-		}
-		this.config = Prompt.parseConfig(config, this.currentUserName);
-
 		this.usersMap = usersMap;
 		this.msgHist = msgHist;
 		// promptType if a function part of this class.
-		this.createTextPrompt = Object.getPrototypeOf(this)[this.config.promptType];
+		this.createTextPrompt = Object.getPrototypeOf(this)[this.user.promptConfig.promptType];
 		console.log(Object.getPrototypeOf(this));
 		if (this.createTextPrompt === undefined) {
 			const promptTypeDefault = "createAssistantPrompt";
-			console.error(`Prompt type not found: ${this.config.promptType}. Defaulting to ${promptTypeDefault}`);
-			smartNotify(`Prompt type not found: ${this.config.promptType}. Defaulting to ${promptTypeDefault}`);
+			console.error(`Prompt type not found: ${this.user.promptConfig.promptType}. Defaulting to ${promptTypeDefault}`);
+			smartNotify(`Prompt type not found: ${this.user.promptConfig.promptType}. Defaulting to ${promptTypeDefault}`);
 			this.createTextPrompt = Object.getPrototypeOf(this)[promptTypeDefault];
 		}
 		this.text = this.createTextPrompt();
@@ -65,7 +49,7 @@ export class Prompt {
 		const examples = this.promptExamples();
 		const conv = this.promptConversation();
 
-		return this.finalizePrompt([start, desc, members, rules, examples, conv]);
+		return this.finalizePrompt(start, desc, members, rules, examples, conv);
 	}
 
 	public createPromptDalleGen(): string | undefined {
@@ -128,12 +112,12 @@ export class Prompt {
 		let prompt = promptSnippets[promptSnippets.length - 1];
 		prompt = prompt.replace(/(<([^>]+)>)/gi, "");
 
-		return this.finalizePrompt([start, rules, examples, prompt]);
+		return this.finalizePrompt(start, rules, examples, prompt);
 	}
 
 	private promptAssistantInfo(ai: ChatUser, parenthesesTag?: string): string {
 		parenthesesTag = parenthesesTag === undefined ? "" : ` (${parenthesesTag})`;
-		const header = `# ${ai.name}${parenthesesTag}`;
+		const header = `# ${ai.name}${parenthesesTag}:`;
 
 		if (!ai.promptConfig.traits) return header;
 
@@ -148,18 +132,21 @@ export class Prompt {
 
 	private promptMembersInfo(): string {
 		const availableAssistants: ChatUser[] = Object.values(this.usersMap).filter((a: ChatUser): boolean => {
-			if (a.isAvailable === undefined) return true;
-			return a.isAvailable;
+			if (a.showInMembersInfo === undefined) return true;
+			return a.showInMembersInfo;
 		});
 		if (!availableAssistants || availableAssistants.length === 0) return "";
 
 		const header = "=== CHAT MEMBERS ===";
 
 		const info: string = availableAssistants
-			.map((assistant: ChatUser) => {
+			.map((user: ChatUser) => {
 				let tag = undefined;
-				if (this.currentUserId === assistant.id) tag = "You";
-				return this.promptAssistantInfo(assistant, tag);
+				if (this.user.id === user.id) tag = "You";
+				console.error(`Current user: ${this.user.id} - ${this.user.name}`);
+				console.error(`User: ${user.id} - ${user.name}`);
+				// else tag = user.type;
+				return this.promptAssistantInfo(user, tag);
 			})
 			.join("\n\n");
 
@@ -167,11 +154,11 @@ export class Prompt {
 	}
 
 	private promptRules(): string {
-		if (!this.config.rules) return "";
+		if (!this.user.promptConfig.rules) return "";
 
 		const header = "=== RULES ===";
 
-		const rules: string = Object.entries(this.config.rules)
+		const rules: string = Object.entries(this.user.promptConfig.rules)
 			.map(([k, v]) => {
 				return processKV(k, v, {keyStartChar: "#",})
 			})
@@ -181,22 +168,22 @@ export class Prompt {
 	}
 
 	private promptExamples(): string {
-		if (!this.config.examples || this.config.examples.length == 0) return "";
+		if (!this.user.promptConfig.examples || this.user.promptConfig.examples.length == 0) return "";
 		// promptHeader = promptHeader || ConfigUser.name;
 		// resultHeader = resultHeader || ai.name;
 		const header = "=== EXAMPLES ===";
 
-		const examples: string = this.config.examples.map((example: string, i) => {
+		const examples: string = this.user.promptConfig.examples.map((example: string, i) => {
 			let msgPrompt = example.trim();
 			const isQuery: boolean = i % 2 === 0;
-			if (isQuery && this.config.queryWrapTag) {
-				msgPrompt = wrapInTags(this.config.queryWrapTag, msgPrompt);
+			if (isQuery && this.user.promptConfig.queryWrapTag) {
+				msgPrompt = wrapInTags(this.user.promptConfig.queryWrapTag, msgPrompt);
 			}
-			if (!isQuery && this.config.responseWrapTag) {
-				msgPrompt = wrapInTags(this.config.responseWrapTag, msgPrompt);
+			if (!isQuery && this.user.promptConfig.responseWrapTag) {
+				msgPrompt = wrapInTags(this.user.promptConfig.responseWrapTag, msgPrompt);
 			}
-			const identifier = isQuery ? this.config.queryHeader : this.config.responseHeader;
-			if (this.config.useHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
+			const identifier = isQuery ? this.user.promptConfig.exampleQueryHeader : this.user.promptConfig.responseHeader;
+			if (identifier) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");
 
@@ -209,28 +196,25 @@ export class Prompt {
 		const res: string = this.msgHist.map((msg: ChatMessage, i) => {
 			let msgPrompt = msg.textSnippets.map((s: string) => s.trim()).join("\n");
 			const isQuery = i % 2 === 0;
-			if (isQuery && this.config.queryWrapTag) {
-				msgPrompt = wrapInTags(this.config.queryWrapTag, msgPrompt);
+			if (isQuery && this.user.promptConfig.queryWrapTag) {
+				msgPrompt = wrapInTags(this.user.promptConfig.queryWrapTag, msgPrompt);
 			}
-			if (!isQuery && this.config.responseWrapTag) {
-				msgPrompt = wrapInTags(this.config.responseWrapTag, msgPrompt);
+			if (!isQuery && this.user.promptConfig.responseWrapTag) {
+				msgPrompt = wrapInTags(this.user.promptConfig.responseWrapTag, msgPrompt);
 			}
-			const identifier = isQuery ? this.config.queryHeader : this.config.responseHeader;
-			if (this.config.useHeader) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
+			const identifier = isQuery ? msg.userName : this.user.promptConfig.responseHeader;
+			if (identifier) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");
 
 		return [header, res].join("\n");
 	}
 
-	private finalizePrompt(all: string[]): string {
-		if (this.config.useHeader) {
-			const end = `### ${this.config.responseHeader}:`;
-			all.push(end);
-		}
-		all = all.filter((s) => s.length > 0);
-		all = all.map((s) => s.trim());
-		return all.join("\n\n");
+	private finalizePrompt(...promptParts: string[]): string {
+		if (this.user.promptConfig.responseHeader) promptParts.push(`### ${this.user.promptConfig.responseHeader}:`);
+		promptParts = promptParts.filter((s) => s.length > 0);
+		promptParts = promptParts.map((s) => s.trim());
+		return promptParts.join("\n\n");
 	}
 
 	private getMessagesWithQueries(): ChatMessage[] {
@@ -242,15 +226,6 @@ export class Prompt {
 		});
 	}
 
-	public static parseConfig = (config: PromptConfig, currentUserName: string): PromptConfig => {
-		return {
-			...config,
-			promptType: "createAssistantPrompt",
-			queryHeader: config?.queryHeader ?? ConfigUser.name,
-			responseHeader: config?.responseHeader ?? currentUserName,
-			useHeader: config?.useHeader ?? true,
-		}
-	}
 
 	public static hashPrompt = (prompt: Prompt | string): string => {
 		const hashStr = "undefined";

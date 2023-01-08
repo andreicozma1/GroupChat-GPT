@@ -1,18 +1,28 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {getAppVersion} from "src/util/Utils";
-import {Ref, ref} from "vue";
-import {ChatUser} from "src/util/assistant/AssistantModels";
-import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
+import {
+	ChatUser,
+	ChatUserCodex,
+	ChatUserCodexGen,
+	ChatUserCoordinator,
+	ChatUserDalle,
+	ChatUserDalleGen,
+	ChatUserDavinci,
+	ChatUserHuman,
+} from "src/util/assistant/AssistantModels";
+import {ChatMessage, ChatThread, ChatThreadPrefs, ChatUserTypes} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
 import {createMessageFromUserConfig, getMessageHistory} from "src/util/chat/ChatUtils";
-import {ConfigUser} from "src/util/users/ConfigUser";
-import {ConfigDavinci} from "src/util/users/ConfigDavinci";
-import {ConfigCoordinator} from "src/util/users/ConfigCoordinator";
-import {ConfigDalle, ConfigDalleGen} from "src/util/users/ConfigDalle";
-import {ConfigCodex, ConfigCodexGen} from "src/util/users/ConfigCodex";
 import {Prompt} from "src/util/prompt/Prompt";
+
+const localStorageKey = "data";
+const defaultUserId = "humanUser"
+const defaultUserName = "Human"
+const defaultThreadId = "general"
+const defaultThreadName = "General"
+const defaultAssistants = ["davinci", "dalle", "codex"]
 
 interface CachedResponse {
 	contextIds: string[];
@@ -30,65 +40,102 @@ export interface PromptResponse {
 	cached?: boolean;
 }
 
-function createThread(humanUserId: string, joinedUserIds: string[] | undefined): ChatThread {
-	joinedUserIds = joinedUserIds ?? ["davinci", "dalle", "codex"]
-	if (joinedUserIds.length > 1) {
-		joinedUserIds.push(ConfigCoordinator.id);
+
+const DefaultThread = {
+	messageIdMap: {},
+	appVersion: getAppVersion(),
+	joinedUserIds: [],
+	prefs: {
+		hiddenUserIds: [],
+		dontShowMessagesHiddenInPrompts: false,
+		orderedResponses: true,
 	}
-	joinedUserIds.push(humanUserId);
-	joinedUserIds = Array.from(new Set(joinedUserIds));
-	return {
-		messageIdMap: {},
-		appVersion: getAppVersion(),
-		joinedUserIds: joinedUserIds,
-		prefs: {
-			hiddenUserIds: [],
-			hideIgnoredMessages: false,
-			orderedResponses: true,
-		},
-	};
 }
 
-export const useCompStore = defineStore("counter", {
-	state: () => ({
-		usersMap: ref({
-			user: ConfigUser,
-			coordinator: ConfigCoordinator,
-			davinci: ConfigDavinci,
+
+// interface ChatStoreState {
+// 	usersMap: Ref<Record<string, ChatUser>>;
+// 	threadsMap: Ref<Record<string, ChatThread>>;
+// 	humanUserId: Ref<string>;
+// 	currentThread: Ref<string>;
+// 	cachedResponses: Ref<Record<string, CachedResponse>>;
+// }
+interface ChatStoreState {
+	usersMap: Record<string, ChatUser>;
+	threadsMap: Record<string, ChatThread>;
+	humanUserId: string;
+	humanUserName: string;
+	currentThreadId: string;
+	currentThreadName: string;
+	cachedResponses: Record<string, CachedResponse>;
+}
+
+export const useChatStore = defineStore("counter", {
+	state: (): ChatStoreState => ({
+		usersMap: {
+			coordinator: new ChatUserCoordinator(),
+			davinci: new ChatUserDavinci(),
 			// DALL-E
-			dalle: ConfigDalle,
-			dalle_gen: ConfigDalleGen,
+			dalle: new ChatUserDalle(),
+			dalle_gen: new ChatUserDalleGen(),
 			// Codex
-			codex: ConfigCodex,
-			codex_gen: ConfigCodexGen,
-			...(LocalStorage.getItem("users") || {}),
-		}) as Ref<Record<string, ChatUser>>,
-		threadsMap: ref({
-			main: createThread("user", undefined),
-			...(LocalStorage.getItem("threads") || {}),
-		}) as Ref<Record<string, ChatThread>>,
-		currentThread: "main",
-		humanUserId: "user",
-		cachedResponses: LocalStorage.getItem("cachedResponses") || {},
+			codex: new ChatUserCodex(),
+			codex_gen: new ChatUserCodexGen(),
+		},
+		threadsMap: {},
+		humanUserId: defaultUserId,
+		humanUserName: defaultUserName,
+		currentThreadId: defaultThreadId,
+		currentThreadName: defaultThreadName,
+		cachedResponses: {},
+		...LocalStorage.getItem(localStorageKey),
 	}),
 	getters: {
 		getUsersMap(state): Record<string, ChatUser> {
 			return state.usersMap;
 		},
 		getUserConfig(): (key: string) => ChatUser {
-			return (key: string) => this.getUsersMap[key];
+			return (key: string) => {
+				if (key === this.humanUserId && !this.getUsersMap[key]) {
+					this.getUsersMap[key] = new ChatUserHuman(this.humanUserId, this.humanUserName);
+				}
+				return this.getUsersMap[key];
+			}
 		},
 		getHumanUserConfig(): ChatUser {
+			console.log(this.getUsersMap)
+			console.log(this.getUserConfig(this.humanUserId))
+			console.log(this.humanUserId)
 			return this.getUserConfig(this.humanUserId);
 		},
-		getThread(state): ChatThread {
-			const thread = state.threadsMap[state.currentThread];
+		getActiveThread(state): ChatThread {
+			let needsSave = false
+			let thread = state.threadsMap[state.currentThreadId];
 			if (!thread) {
-				smartNotify("Thread not found: " + state.currentThread);
-				throw new Error("Thread not found: " + state.currentThread);
+				smartNotify("Creating new thread");
+				thread = {...DefaultThread};
+				needsSave = true;
 			}
-			console.log("getThread:", state.currentThread, {...thread});
-			return thread;
+
+			// if the human isnt in the thread, add them
+			if (!thread.joinedUserIds.includes(this.humanUserId)) {
+				smartNotify("Joining thread: " + state.currentThreadId);
+				thread.joinedUserIds.push(this.humanUserId);
+				needsSave = true;
+			}
+			// if the number of assistants in the thread is 0, add the default assistants
+			const users = thread.joinedUserIds.map(id => this.getUserConfig(id))
+			const assistants = users.filter((user: ChatUser) => user.type === ChatUserTypes.ASSISTANT);
+
+			if (assistants.length === 0) {
+				smartNotify(`Adding default assistants: ${defaultAssistants.join(", ")}`);
+				thread.joinedUserIds.push(...defaultAssistants);
+				needsSave = true;
+			}
+			thread.joinedUserIds = Array.from(new Set(thread.joinedUserIds));
+			console.log("getThread:", state.currentThreadId, {...thread});
+			this.threadsMap[state.currentThreadId] = thread;
+			return this.threadsMap[state.currentThreadId]
 		},
 		getCachedResponses(state) {
 			return state.cachedResponses;
@@ -137,53 +184,56 @@ export const useCompStore = defineStore("counter", {
 	},
 	actions: {
 		saveData() {
-			LocalStorage.set("cachedResponses", this.cachedResponses);
-			LocalStorage.set("threads", this.threadsMap);
-			LocalStorage.set("users", this.usersMap);
+			smartNotify("Saving data...");
+			LocalStorage.set(localStorageKey, this.$state);
 		},
 		clearAllData() {
-			console.log("Clearing all data");
 			// clear whole local storage and reload
+			smartNotify("Clearing all app data...");
 			LocalStorage.clear();
 			location.reload();
 		},
-		clearCompCache() {
-			console.log("Clearing completions");
-			// remove completions from local storage and reload
-			LocalStorage.remove("cachedResponses");
-			location.reload();
-		},
-		clearThreads() {
-			console.log("Clearing threads");
-			// remove threads from local storage and reload
-			LocalStorage.remove("threads");
-			location.reload();
-		},
-		clearUsers() {
-			console.log("Clearing users");
-			// remove users from local storage and reload
-			LocalStorage.remove("users");
-			location.reload();
-		},
-		clearThread() {
-			console.log("Clearing thread");
-			this.threadsMap[this.currentThread].messageIdMap = {}
+		clearCurrentThreadMessages() {
+			smartNotify(`Clearing thread messages: ${this.currentThreadId}`);
+			this.threadsMap[this.currentThreadId].messageIdMap = {}
 			this.saveData();
 		},
-		getThreadVersion() {
-			return this.threadsMap[this.currentThread].appVersion;
-		},
-		createThread(id: string, joinedUserIds?: string[]): ChatThread {
-			const thread = createThread(this.getHumanUserConfig.id, joinedUserIds);
-			thread.prefs.hiddenUserIds = thread.joinedUserIds.filter((id) => {
-				const assistantConf: ChatUser = this.getUserConfig(id);
-				if (!assistantConf) return true;
-				return assistantConf.defaultHidden ?? false;
-			}),
-				this.threadsMap[id] = thread;
-			this.currentThread = id;
+		clearCachedResponses() {
+			smartNotify(`Clearing cached responses`);
+			this.cachedResponses = {};
 			this.saveData();
-			return thread;
+		},
+		resetCurrentThreadPrefs() {
+			smartNotify(`Resetting thread prefs: ${this.currentThreadId}`);
+			this.threadsMap[this.currentThreadId].prefs = {...DefaultThread.prefs} as ChatThreadPrefs;
+			this.saveData();
+		},
+		resetCurrentThread() {
+			smartNotify(`Resetting thread: ${this.currentThreadId}`);
+			this.threadsMap[this.currentThreadId] = {...DefaultThread} as ChatThread;
+			this.saveData();
+		},
+		resetAllThreads() {
+			smartNotify(`Resetting all threads`);
+			this.threadsMap = {}
+			this.currentThreadId = defaultThreadId;
+			this.saveData();
+		},
+		resetAllUsers() {
+			smartNotify(`Resetting all users`);
+			this.usersMap = {
+				coordinator: new ChatUserCoordinator(),
+				davinci: new ChatUserDavinci(),
+				// DALL-E
+				dalle: new ChatUserDalle(),
+				dalle_gen: new ChatUserDalleGen(),
+				// Codex
+				codex: new ChatUserCodex(),
+				codex_gen: new ChatUserCodexGen(),
+			}
+			this.humanUserId = defaultUserId;
+			this.humanUserName = defaultUserName;
+			this.saveData();
 		},
 		createMessageFromUserId(id: string, store: any): ChatMessage {
 			id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
@@ -191,13 +241,13 @@ export const useCompStore = defineStore("counter", {
 			return createMessageFromUserConfig(cfg, store);
 		},
 		async generate(
-			actor: ChatUser,
+			user: ChatUser,
 			msgHist: ChatMessage[],
 			ignoreCache?: boolean
 		): Promise<PromptResponse> {
 			ignoreCache = ignoreCache ?? false;
 			console.warn("-".repeat(20));
-			console.log('generate->actor:', actor);
+			console.log('generate->actor:', user);
 			console.log("generate->ignoreCache:", ignoreCache);
 
 			msgHist = msgHist.filter((m: ChatMessage) => !m.hideInPrompt);
@@ -209,10 +259,11 @@ export const useCompStore = defineStore("counter", {
 					[...msgHist[i].textSnippets], {...msgHist[i]});
 			}
 
-			const prompt = new Prompt(actor.promptConfig, this.getUsersMap, msgHist);
+			const prompt = new Prompt(user, this.getUsersMap, msgHist);
 			console.log("generate->prompt:", prompt)
 			console.log("generate->prompt.hash:", prompt.hash)
-			console.log("generate->prompt.text:", prompt.text)
+			console.log("generate->prompt.text:")
+			console.log(prompt.text)
 
 			// if we already have a completion for this prompt, return it
 
@@ -225,7 +276,7 @@ export const useCompStore = defineStore("counter", {
 					completion = this.getCachedResponseFromPrompt(prompt)
 					cached = true;
 				} else {
-					completion = await makeApiRequest(actor.apiReqConfig, prompt.text);
+					completion = await makeApiRequest(user.apiReqConfig, prompt.text);
 					cached = false;
 				}
 			} catch (error: any) {
@@ -253,7 +304,6 @@ export const useCompStore = defineStore("counter", {
 				contextIds: contextIds,
 				responseData: completion.data,
 			};
-			this.saveData();
 
 			return {
 				...this.getPromptResponse(prompt),
@@ -262,38 +312,44 @@ export const useCompStore = defineStore("counter", {
 		},
 		pushMessage(message: ChatMessage, loading?: boolean): ChatMessage {
 			// console.log("-------------------------------");
-			if (this.getThread.messageIdMap[message.id]) {
-				const existingMsg = this.getThread.messageIdMap[message.id];
-				if (existingMsg) {
-					this.threadsMap[this.currentThread].messageIdMap[message.id] = {
-						...existingMsg,
-						...message,
-						loading: loading ?? false,
-					};
-					this.saveData();
-					return this.threadsMap[this.currentThread].messageIdMap[message.id];
+			if (message.loading) {
+				smartNotify(`Loading message ${message.id}`);
+			}
+			let existingMsg: ChatMessage = this.getActiveThread.messageIdMap[message.id]
+			if (existingMsg) {
+				existingMsg = {
+					...existingMsg,
+					...message,
+					loading: loading ?? false,
 				}
+				this.threadsMap[this.currentThreadId].messageIdMap[message.id] = existingMsg;
+				this.saveData();
+				return existingMsg;
 			}
 			// message.dateCreated = new Date();
-			this.getThread.messageIdMap[message.id] = message;
+			message.loading = loading ?? false;
+
+			this.threadsMap[this.currentThreadId].messageIdMap[message.id] = message;
 			this.saveData();
 			return message;
 		},
 		deleteMessage(messageId: string, silent = false): void {
-			if (!this.getThread.messageIdMap[messageId]) {
+			if (!this.getActiveThread.messageIdMap[messageId]) {
 				if (!silent) {
 					smartNotify("An error occurred while deleting the message.");
 				}
 				console.error(`An error occurred while deleting the message: ${messageId}`);
 				return;
 			}
-			delete this.getThread.messageIdMap[messageId];
+			delete this.threadsMap[this.currentThreadId].messageIdMap[messageId];
 			this.saveData();
 			smartNotify("Successfully deleted message.");
 		},
 		async handleUserMessage(message: ChatMessage, comp: any, forceUserId?: string) {
 			forceUserId = forceUserId || message.userId;
 			const user: ChatUser = this.getUserConfig(forceUserId);
+			const thread: ChatThread = comp.getActiveThread
+
 			console.warn("*".repeat(40));
 
 			console.log('handleUserMessage->cfg:', user);
@@ -322,13 +378,13 @@ export const useCompStore = defineStore("counter", {
 			if (!msgHistIds) {
 				// First-time generation
 				msgHist = getMessageHistory(comp, {
-					hiddenUserIds: user.id !== ConfigCoordinator.id ? [ConfigCoordinator.id] : [],
-					maxLength: 10,
+					hiddenUserIds: user.id !== this.usersMap.coordinator.id ? [this.usersMap.coordinator.id] : [],
+					maxMessages: 10,
 					maxDate: message.dateCreated,
 				});
 			} else {
 				// Re-generation from specified context
-				msgHist = msgHistIds.map((id) => comp.getThread.messageMap[id]);
+				msgHist = msgHistIds.map((id) => thread.messageIdMap[id]);
 				// if there are any undefined messages, remove them
 				msgHist = msgHist.filter((m) => m !== undefined);
 				// TODO: This will end up with less messages than expected if there are any undefined messages
@@ -368,11 +424,10 @@ export const useCompStore = defineStore("counter", {
 					t.split("<prompt>")[1].trim().split("</prompt>")[0].trim()
 				);
 
-			const thread: ChatThread = comp.getThread
 			const followups = []
 
 			switch (user.id) {
-				case ConfigCoordinator.id:
+				case this.usersMap.coordinator.id:
 					if (followupActors.length === 0) {
 						console.warn("=> No follow-ups");
 						message.textSnippets.push("[INFO] It appears that all assistants chose to ignore your message, lol.");

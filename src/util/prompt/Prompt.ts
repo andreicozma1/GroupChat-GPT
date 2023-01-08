@@ -115,7 +115,7 @@ export class Prompt {
 
 	private promptAssistantInfo(ai: ChatUser, parenthesesTag?: string): string {
 		parenthesesTag = parenthesesTag === undefined ? "" : ` (${parenthesesTag})`;
-		const header = `# ${ai.name}${parenthesesTag}:`;
+		const header = `### ${ai.name}${parenthesesTag}:`;
 
 		if (!ai.promptConfig.traits) return header;
 
@@ -135,9 +135,9 @@ export class Prompt {
 		});
 		if (!availableAssistants || availableAssistants.length === 0) return "";
 
-		const header = "=== CHAT MEMBERS ===";
+		const header = "=== ASSISTANTS ===";
 
-		const info: string = availableAssistants
+		const info: string[] = availableAssistants
 			.map((user: ChatUser) => {
 				let tag = undefined;
 				if (this.user.id === user.id) tag = "You";
@@ -146,11 +146,10 @@ export class Prompt {
 				// else tag = user.type;
 				return this.promptAssistantInfo(user, tag);
 			})
-			.join("\n");
 
-		const you = `# You are: ${this.user.name}`;
+		const you = `### You are: ${this.user.name}`;
 
-		return [header, info, you].join("\n");
+		return [header, ...info, you].join("\n\n");
 	}
 
 	private promptRules(): string {
@@ -202,7 +201,7 @@ export class Prompt {
 			if (!isQuery && this.user.promptConfig.responseWrapTag) {
 				msgPrompt = wrapInTags(this.user.promptConfig.responseWrapTag, msgPrompt);
 			}
-			const identifier = isQuery ? `${msg.userName}'s Message` : this.user.promptConfig.responseHeader;
+			const identifier = isQuery ? msg.userName : this.user.promptConfig.responseHeader;
 			if (identifier) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 			return msgPrompt;
 		}).join("\n\n");

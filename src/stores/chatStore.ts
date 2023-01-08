@@ -312,9 +312,6 @@ export const useChatStore = defineStore("counter", {
 		},
 		pushMessage(message: ChatMessage, loading?: boolean): ChatMessage {
 			// console.log("-------------------------------");
-			if (message.loading) {
-				smartNotify(`Loading message ${message.id}`);
-			}
 			let existingMsg: ChatMessage = this.getActiveThread.messageIdMap[message.id]
 			if (existingMsg) {
 				existingMsg = {

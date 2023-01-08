@@ -70,9 +70,10 @@ export class ChatUserAssistant extends ChatUser {
 		this.promptConfig.rules = {
 			always: [
 				"Follow instructions, requests, and answer questions if appropriate to do so.",
+				"Strictly follow the rules of the conversation.",
 			],
 			never: [
-				"Respond to other assistant's questions.",
+				"Respond to other assistants or on behalf of other assistants.",
 			],
 		}
 	}

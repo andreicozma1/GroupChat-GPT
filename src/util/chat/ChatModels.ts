@@ -1,10 +1,5 @@
 import {PromptResponse} from "stores/chatStore";
 
-export enum ChatUserTypes {
-	HUMAN = "human",
-	ASSISTANT = "assistant",
-}
-
 export interface ChatThreadPrefs {
 	hiddenUserIds: string[];
 	dontShowMessagesHiddenInPrompts: boolean;

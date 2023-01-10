@@ -1,11 +1,10 @@
-import {User} from "src/util/users/User";
-import {ChatUserTypes} from "src/util/chat/ChatModels";
+import {User, UserTypes} from "src/util/users/User";
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {wrapInPrompt} from "src/util/TextUtils";
 
 export class Assistant extends User {
 	constructor(id: string, name: string) {
-		super(id, name, ChatUserTypes.ASSISTANT);
+		super(id, name, UserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.CONVERSATION;
 		this.promptConfig.responseHeader = this.name;
 		this.promptConfig.traits = {
@@ -68,7 +67,7 @@ export class UserDalle extends Assistant {
 
 export class UserCoordinator extends User {
 	constructor() {
-		super("coordinator", "Coordinator", ChatUserTypes.ASSISTANT);
+		super("coordinator", "Coordinator", UserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.COORDINATOR
 		this.promptConfig.rules?.always?.push(
 			"Only respond with the exact names of the assistant(s) that should respond to the user's message.",

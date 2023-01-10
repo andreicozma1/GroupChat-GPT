@@ -1,19 +1,23 @@
-import {ChatUserTypes} from "src/util/chat/ChatModels";
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {PromptConfig} from "src/util/prompt/PromptModels";
+
+export enum UserTypes {
+	HUMAN = "human",
+	ASSISTANT = "assistant",
+}
 
 export class User {
 	id: string;
 	name: string;
 	icon = "chat";
-	type: ChatUserTypes;
+	type: UserTypes;
 	apiReqConfig: ApiRequestConfigTypes | string = ApiRequestConfigTypes.CONVERSATION;
 	promptConfig: PromptConfig;
 	followupPromptHelperId?: string;
 	showInMembersInfo = true;
 	shouldIgnoreCache = false;
 
-	constructor(id: string, name: string, type: ChatUserTypes) {
+	constructor(id: string, name: string, type: UserTypes) {
 		this.id = id;
 		this.name = name;
 		this.type = type;

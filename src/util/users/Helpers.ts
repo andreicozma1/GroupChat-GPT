@@ -1,11 +1,10 @@
-import {User} from "src/util/users/User";
-import {ChatUserTypes} from "src/util/chat/ChatModels";
+import {User, UserTypes} from "src/util/users/User";
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {createCodeBlock, createMarkdown} from "src/util/TextUtils";
 
 export class UserDalleGen extends User {
 	constructor() {
-		super("dalle_gen", "DALL-E", ChatUserTypes.ASSISTANT);
+		super("dalle_gen", "DALL-E", UserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.DALLE_GEN;
 		this.promptConfig.promptType = "createPromptDalleGen";
 		this.showInMembersInfo = false;
@@ -14,7 +13,7 @@ export class UserDalleGen extends User {
 
 export class UserCodexGen extends User {
 	constructor() {
-		super("codex_gen", "Codex", ChatUserTypes.ASSISTANT);
+		super("codex_gen", "Codex", UserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.CODEX_GEN
 		this.promptConfig.queryWrapTag = "instructions";
 		this.promptConfig.responseWrapTag = "markdown";

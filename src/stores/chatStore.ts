@@ -1,12 +1,12 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {getAppVersion} from "src/util/Utils";
-import {ChatMessage, ChatThread, ChatThreadPrefs, ChatUserTypes} from "src/util/chat/ChatModels";
+import {ChatMessage, ChatThread, ChatThreadPrefs} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
 import {createMessageFromUserConfig, getMessageHistory} from "src/util/chat/ChatUtils";
 import {Prompt} from "src/util/prompt/Prompt";
-import {User} from "src/util/users/User";
+import {User, UserTypes} from "src/util/users/User";
 import {UserHuman} from "src/util/users/UserHuman";
 import {UserCodex, UserCoordinator, UserDalle, UserDavinci} from "src/util/users/Assistant";
 import {UserCodexGen, UserDalleGen} from "src/util/users/Helpers";
@@ -119,7 +119,7 @@ export const useChatStore = defineStore("counter", {
 			}
 			// if the number of assistants in the thread is 0, add the default assistants
 			const users = thread.joinedUserIds.map(id => this.getUserConfig(id))
-			const assistants = users.filter((user: User) => user.type === ChatUserTypes.ASSISTANT);
+			const assistants = users.filter((user: User) => user.type === UserTypes.ASSISTANT);
 
 			if (assistants.length === 0) {
 				smartNotify(`Adding default assistants: ${defaultAssistants.join(", ")}`);

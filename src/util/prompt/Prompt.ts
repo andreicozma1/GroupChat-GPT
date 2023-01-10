@@ -131,19 +131,24 @@ export class Prompt {
 		});
 		if (!availableAssistants || availableAssistants.length === 0) return "";
 
-		const header = "=== ASSISTANTS ===";
+		const header = "=== MEMBERS ===";
 
-		const info: string[] = availableAssistants
-			.map((user: User) => {
-				let tag = undefined;
-				if (this.user.id === user.id) tag = "You";
-				// else tag = user.type;
-				return this.promptAssistantInfo(user, tag);
-			})
+		const isAvailable = availableAssistants.some((a: User) => a.id === this.user.id)
 
-		const you = `### You are: ${this.user.name}`;
+		const info: string[] = []
+		if (isAvailable) {
+			info.push(this.promptAssistantInfo(this.user, "You"))
+		} else {
+			availableAssistants.forEach(
+				(user: User) => {
+					if (this.user.id === user.id) return
+					// else tag = user.type;
+					info.push(this.promptAssistantInfo(user));
+				}
+			)
+		}
 
-		return [header, ...info, you].join("\n\n");
+		return [header, ...info].join("\n\n");
 	}
 
 	private promptRules(): string {
@@ -155,11 +160,14 @@ export class Prompt {
 			.map(([k, v]) => {
 				const s = v.map((s: string) => s.trim()).join("");
 				if (s.length === 0) return undefined;
-				return processItemizedList(k, v, {keyPrefix: '#', valPrefix: k})
+				k = k.toUpperCase()
+				return processItemizedList(k, v, {keyPrefix: '###'})
+				// return processItemizedList(k, v, {keyPrefix: '###', valPrefix: k})
+
 			})
 			.filter((s: string | undefined) => s !== undefined)
 
-		return [header, ...rules].join("\n");
+		return [header, ...rules].join("\n\n");
 	}
 
 	private promptExamples(): string {

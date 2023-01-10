@@ -45,4 +45,5 @@ export interface ChatMessageHistoryConfig {
 	hiddenUserIds?: string[];
 	// always return messages with these keywords,  regardless of whether the message is from a user in hiddenUserIds
 	forceShowKeywords?: string[];
+	excludeLoading?: boolean;
 }

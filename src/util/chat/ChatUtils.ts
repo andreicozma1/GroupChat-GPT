@@ -11,13 +11,16 @@ function msgContainsKeywords(message: ChatMessage, keywords: string[]): boolean 
 }
 
 export const getMessageHistory = (comp: any, config: ChatMessageHistoryConfig): ChatMessage[] => {
+	const excludeLoading = config.excludeLoading ?? false;
 	let messages: ChatMessage[] = Object.values(comp.getActiveThread.messageIdMap)
 	// filter out messages whose textSnippets stripped and joined are empty
 	// unless the message has an image
 	messages = messages.filter((message: ChatMessage) => {
 		const textSnippets: string = message.textSnippets.map((snippet: string) => snippet.trim()).join("")
 		const imageUrls: string = message.imageUrls.map((url: string) => url.trim()).join("")
-		if (textSnippets.length === 0 && imageUrls.length === 0) return false
+		if (textSnippets.length === 0 && imageUrls.length === 0 && (!message.loading || excludeLoading)) {
+			return false
+		}
 		return true
 	})
 	messages.sort((a: ChatMessage, b: ChatMessage) => {

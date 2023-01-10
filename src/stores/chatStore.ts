@@ -379,6 +379,7 @@ export const useChatStore = defineStore("counter", {
 					hiddenUserIds: user.id !== this.usersMap.coordinator.id ? [this.usersMap.coordinator.id] : [],
 					maxMessages: 10,
 					maxDate: message.dateCreated,
+					excludeLoading: true,
 				});
 			} else {
 				// Re-generation from specified context

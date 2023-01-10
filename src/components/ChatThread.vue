@@ -350,10 +350,14 @@ const parseThreadMessages = (): ChatMessage[] => {
 };
 
 
-const loadThread = () => {
+const loadThread = (shouldScroll = false) => {
 	try {
+		// count the number of messages prior
+		const prevMsgCount = threadMessages.value.length;
 		threadMessages.value = parseThreadMessages();
-		scrollToBottom(1000);
+		// count the number of messages after
+		const newMsgCount = threadMessages.value.length;
+		if (shouldScroll || newMsgCount > prevMsgCount) scrollToBottom(1000);
 	} catch (err: any) {
 		console.error("Error loading chat thread", err);
 		const threadVer = store.getActiveThread.appVersion?.trim()
@@ -372,16 +376,9 @@ const loadThread = () => {
 	}
 };
 
-
-//
-watch(store.getActiveThread, () => loadThread());
-//
-// watch(
-// 	() => comp.getActiveThread.prefs?.shownUsers,
-// 	() => loadThread()
-// );
+watch(store.getActiveThread, () => loadThread(false));
 
 onMounted(() => {
-	loadThread();
+	loadThread(true);
 });
 </script>

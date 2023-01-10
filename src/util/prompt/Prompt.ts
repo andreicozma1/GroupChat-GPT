@@ -3,6 +3,7 @@ import {smartNotify} from "src/util/SmartNotify";
 import {User} from "src/util/users/User";
 import {wrapInTags} from "src/util/TextUtils";
 import {processItemizedList} from "src/util/ItemizedList";
+import {dateToLocaleStr} from "src/util/DateUtils";
 
 
 export class Prompt {
@@ -34,14 +35,17 @@ export class Prompt {
 
 	public createAssistantPrompt(): string | undefined {
 		const start = `=== AI GROUP CHAT: ${this.threadName} ===`
-		const desc = "The following is a group-chat conversation between a human and several AI assistants.";
+		const desc = [
+			"The following is a group-chat conversation between a human and several AI assistants.",
+			`Current Date-Time: ${dateToLocaleStr(new Date)}`
+		];
 
 		const members = this.promptMembersInfo();
 		const rules = this.promptRules();
 		const examples = this.promptExamples();
 		const conv = this.promptConversation();
 
-		return this.finalizePrompt(start, desc, members, rules, examples, conv);
+		return this.finalizePrompt(start, desc.join("\n"), members, rules, examples, conv);
 	}
 
 	public createPromptDalleGen(): string | undefined {
@@ -140,7 +144,7 @@ export class Prompt {
 			if (b.id === this.user.id) return -1;
 			return 0;
 		})
-		
+
 		const info: string[] = []
 		if (!isAvailable) {
 			availableAssistants.forEach(

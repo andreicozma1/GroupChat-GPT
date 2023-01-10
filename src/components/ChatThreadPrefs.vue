@@ -93,19 +93,19 @@
 </template>
 <script lang="ts" setup>
 import {useChatStore} from "stores/chatStore";
-import {ChatUser} from "src/util/assistant/AssistantModels";
+import {User} from "src/util/users/User";
 
 const store = useChatStore();
 
-const getThreadUsers = (): ChatUser[] => {
+const getThreadUsers = (): User[] => {
 	return store.getActiveThread.joinedUserIds.map((id) => store.getUserConfig(id));
 };
 
-const isUserHidden = (user: ChatUser): boolean => {
+const isUserHidden = (user: User): boolean => {
 	return store.getActiveThread.prefs.hiddenUserIds.includes(user.id);
 };
 
-const toggleHiddenUser = (user: ChatUser) => {
+const toggleHiddenUser = (user: User) => {
 	const userId = user.id;
 	if (isUserHidden(user)) {
 		store.getActiveThread.prefs.hiddenUserIds = store.getActiveThread.prefs.hiddenUserIds.filter((id) => id !== userId);

@@ -13,10 +13,6 @@ export const getRandomMinMax = (min: number, max: number) => {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export const parseNounCount = (singularStr: string, count: number) => {
-	return count === 1 ? singularStr : `${singularStr}s`;
-};
-
 export const copyClipboard = (text: string) => {
 	copyToClipboard(text).then(() => {
 		smartNotify(`Copied to clipboard`);

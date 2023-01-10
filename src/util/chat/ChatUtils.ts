@@ -1,8 +1,8 @@
 import {getRobohashUrl} from "src/util/ImageUtils";
-import {ChatUser} from "src/util/assistant/AssistantModels";
 import {v4 as uuidv4} from "uuid";
 import {ChatMessage, ChatMessageHistoryConfig} from "src/util/chat/ChatModels";
 import {parseDate} from "src/util/DateUtils";
+import {User} from "src/util/users/User";
 
 
 function msgContainsKeywords(message: ChatMessage, keywords: string[]): boolean {
@@ -42,7 +42,7 @@ export const getMessageHistory = (comp: any, config: ChatMessageHistoryConfig): 
 	return messages;
 };
 
-export const createMessageFromUserConfig = (chatUser: ChatUser, store: any): ChatMessage => {
+export const createMessageFromUserConfig = (chatUser: User, store: any): ChatMessage => {
 	const assistantName: string = chatUser?.name || "Unknown User";
 	const assistantKey: string = chatUser?.id || "unknown";
 	let msg: ChatMessage = {

@@ -1,21 +1,15 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {getAppVersion} from "src/util/Utils";
-import {
-	ChatUser,
-	ChatUserCodex,
-	ChatUserCodexGen,
-	ChatUserCoordinator,
-	ChatUserDalle,
-	ChatUserDalleGen,
-	ChatUserDavinci,
-	ChatUserHuman,
-} from "src/util/assistant/AssistantModels";
 import {ChatMessage, ChatThread, ChatThreadPrefs, ChatUserTypes} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
 import {createMessageFromUserConfig, getMessageHistory} from "src/util/chat/ChatUtils";
 import {Prompt} from "src/util/prompt/Prompt";
+import {User} from "src/util/users/User";
+import {UserHuman} from "src/util/users/UserHuman";
+import {UserCodex, UserCoordinator, UserDalle, UserDavinci} from "src/util/users/Assistant";
+import {UserCodexGen, UserDalleGen} from "src/util/users/Helpers";
 
 const localStorageKey = "data";
 const defaultUserId = "humanUser"
@@ -61,7 +55,7 @@ const DefaultThread = {
 // 	cachedResponses: Ref<Record<string, CachedResponse>>;
 // }
 interface ChatStoreState {
-	usersMap: Record<string, ChatUser>;
+	usersMap: Record<string, User>;
 	threadsMap: Record<string, ChatThread>;
 	humanUserId: string;
 	humanUserName: string;
@@ -73,14 +67,14 @@ interface ChatStoreState {
 export const useChatStore = defineStore("counter", {
 	state: (): ChatStoreState => ({
 		usersMap: {
-			coordinator: new ChatUserCoordinator(),
-			davinci: new ChatUserDavinci(),
+			coordinator: new UserCoordinator(),
+			davinci: new UserDavinci(),
 			// DALL-E
-			dalle: new ChatUserDalle(),
-			dalle_gen: new ChatUserDalleGen(),
+			dalle: new UserDalle(),
+			dalle_gen: new UserDalleGen(),
 			// Codex
-			codex: new ChatUserCodex(),
-			codex_gen: new ChatUserCodexGen(),
+			codex: new UserCodex(),
+			codex_gen: new UserCodexGen(),
 		},
 		threadsMap: {},
 		humanUserId: defaultUserId,
@@ -91,18 +85,18 @@ export const useChatStore = defineStore("counter", {
 		...LocalStorage.getItem(localStorageKey),
 	}),
 	getters: {
-		getUsersMap(state): Record<string, ChatUser> {
+		getUsersMap(state): Record<string, User> {
 			return state.usersMap;
 		},
-		getUserConfig(): (key: string) => ChatUser {
+		getUserConfig(): (key: string) => User {
 			return (key: string) => {
 				if (key === this.humanUserId && !this.getUsersMap[key]) {
-					this.getUsersMap[key] = new ChatUserHuman(this.humanUserId, this.humanUserName);
+					this.getUsersMap[key] = new UserHuman(this.humanUserId, this.humanUserName);
 				}
 				return this.getUsersMap[key];
 			}
 		},
-		getHumanUserConfig(): ChatUser {
+		getHumanUserConfig(): User {
 			console.log(this.getUsersMap)
 			console.log(this.getUserConfig(this.humanUserId))
 			console.log(this.humanUserId)
@@ -125,7 +119,7 @@ export const useChatStore = defineStore("counter", {
 			}
 			// if the number of assistants in the thread is 0, add the default assistants
 			const users = thread.joinedUserIds.map(id => this.getUserConfig(id))
-			const assistants = users.filter((user: ChatUser) => user.type === ChatUserTypes.ASSISTANT);
+			const assistants = users.filter((user: User) => user.type === ChatUserTypes.ASSISTANT);
 
 			if (assistants.length === 0) {
 				smartNotify(`Adding default assistants: ${defaultAssistants.join(", ")}`);
@@ -184,7 +178,8 @@ export const useChatStore = defineStore("counter", {
 	},
 	actions: {
 		saveData() {
-			smartNotify("Saving data...");
+			// TODO: Make this optional with a preference
+			// smartNotify("Saving data...");
 			LocalStorage.set(localStorageKey, this.$state);
 		},
 		clearAllData() {
@@ -222,14 +217,14 @@ export const useChatStore = defineStore("counter", {
 		resetAllUsers() {
 			smartNotify(`Resetting all users`);
 			this.usersMap = {
-				coordinator: new ChatUserCoordinator(),
-				davinci: new ChatUserDavinci(),
+				coordinator: new UserCoordinator(),
+				davinci: new UserDavinci(),
 				// DALL-E
-				dalle: new ChatUserDalle(),
-				dalle_gen: new ChatUserDalleGen(),
+				dalle: new UserDalle(),
+				dalle_gen: new UserDalleGen(),
 				// Codex
-				codex: new ChatUserCodex(),
-				codex_gen: new ChatUserCodexGen(),
+				codex: new UserCodex(),
+				codex_gen: new UserCodexGen(),
 			}
 			this.humanUserId = defaultUserId;
 			this.humanUserName = defaultUserName;
@@ -237,11 +232,11 @@ export const useChatStore = defineStore("counter", {
 		},
 		createMessageFromUserId(id: string, store: any): ChatMessage {
 			id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
-			const cfg: ChatUser = this.getUserConfig(id);
+			const cfg: User = this.getUserConfig(id);
 			return createMessageFromUserConfig(cfg, store);
 		},
 		async generate(
-			user: ChatUser,
+			user: User,
 			msgHist: ChatMessage[],
 			ignoreCache?: boolean
 		): Promise<PromptResponse> {
@@ -338,13 +333,19 @@ export const useChatStore = defineStore("counter", {
 				console.error(`An error occurred while deleting the message: ${messageId}`);
 				return;
 			}
+			const followUpIds = this.threadsMap[this.currentThreadId].messageIdMap[messageId].followupMsgIds;
+			if (followUpIds) {
+				for (let i = 0; i < followUpIds.length; i++) {
+					this.deleteMessage(followUpIds[i], true);
+				}
+			}
 			delete this.threadsMap[this.currentThreadId].messageIdMap[messageId];
 			this.saveData();
 			smartNotify("Successfully deleted message.");
 		},
 		async handleUserMessage(message: ChatMessage, comp: any, forceUserId?: string) {
 			forceUserId = forceUserId || message.userId;
-			const user: ChatUser = this.getUserConfig(forceUserId);
+			const user: User = this.getUserConfig(forceUserId);
 			const thread: ChatThread = comp.getActiveThread
 
 			console.warn("*".repeat(40));
@@ -510,7 +511,7 @@ export const useChatStore = defineStore("counter", {
 				}
 			}
 		},
-		handleAssistantCfg(cfg: ChatUser, comp: any) {
+		handleAssistantCfg(cfg: User, comp: any) {
 			const msg = createMessageFromUserConfig(cfg, comp);
 			return this.handleUserMessage(msg, comp);
 		}

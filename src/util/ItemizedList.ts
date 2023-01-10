@@ -1,11 +1,16 @@
-import {ProcessKVConfig} from "src/util/assistant/AssistantModels";
-
-
 // TODO: Find better name for these and move them to a separate file
-export const processKV = (
+export interface ItemizedListConfig {
+	keyPrefix?: string;
+	valJoinStr?: string;
+	inline?: boolean;
+	commaSepMinChars?: number;
+	valPrefix?: string;
+} // TODO: Find better name for these and move them to a separate file
+
+export const processItemizedList = (
 	key: string,
 	val: string | string[],
-	config?: ProcessKVConfig
+	config?: ItemizedListConfig
 ): string => {
 	const keyStartChar: string = config?.keyPrefix || "#";
 	let valJoinStr: string = config?.valJoinStr || ", ";
@@ -33,30 +38,3 @@ export const processKV = (
 
 	return [`${keyStartChar} ${key}:`, val].join(inline ? " " : "\n");
 };
-
-export const createExamplePrompt = (...message: string[]): string => {
-	let res = "<prompt>\n"
-	for (let i = 0; i < message.length; i++) {
-		res += message[i] + "\n"
-	}
-	res += "</prompt>"
-	return res
-}
-
-export const createCodeBlock = (lang: string, ...lines: string[]): string => {
-	let res = "```" + lang + "\n"
-	for (let i = 0; i < lines.length; i++) {
-		res += lines[i] + "\n"
-	}
-	res += "```\n"
-	return res
-}
-
-export const createMarkdown = (...lines: string[]): string => {
-	let res = ""
-	for (let i = 0; i < lines.length; i++) {
-		res += lines[i] + "\n"
-	}
-	res += "\n"
-	return res
-}

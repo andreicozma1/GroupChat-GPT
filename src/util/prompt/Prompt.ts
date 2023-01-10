@@ -1,16 +1,9 @@
-import {ChatUser} from "src/util/assistant/AssistantModels";
 import {ChatMessage} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
-import {processKV} from "src/util/assistant/AssistantUtils";
+import {User} from "src/util/users/User";
+import {wrapInTags} from "src/util/TextUtils";
+import {processItemizedList} from "src/util/ItemizedList";
 
-
-function wrapInTags(tag: string, ...msgPrompt: string[]) {
-	return [
-		`<${tag}>`,
-		msgPrompt,
-		`</${tag}>`
-	].join("\n");
-}
 
 export class Prompt {
 
@@ -22,8 +15,8 @@ export class Prompt {
 	constructor(
 		public threadName: string,
 		public humanUserName: string,
-		public user: ChatUser,
-		public usersMap: { [key: string]: ChatUser },
+		public user: User,
+		public usersMap: { [key: string]: User },
 		public msgHist: ChatMessage[],
 	) {
 		// promptType if a function part of this class.
@@ -114,7 +107,7 @@ export class Prompt {
 		return this.finalizePrompt(start, rules, examples, prompt);
 	}
 
-	private promptAssistantInfo(ai: ChatUser, parenthesesTag?: string): string {
+	private promptAssistantInfo(ai: User, parenthesesTag?: string): string {
 		parenthesesTag = parenthesesTag === undefined ? "" : ` (${parenthesesTag})`;
 		const header = `### ${ai.name}${parenthesesTag}:`;
 
@@ -124,7 +117,7 @@ export class Prompt {
 			.map(([k, v]) => {
 				const s = v.map((s: string) => s.trim()).join("");
 				if (s.length === 0) return undefined;
-				return processKV(k, v, {keyPrefix: "-"})
+				return processItemizedList(k, v, {keyPrefix: "-"})
 			})
 			.filter((s: string | undefined) => s !== undefined)
 
@@ -132,7 +125,7 @@ export class Prompt {
 	}
 
 	private promptMembersInfo(): string {
-		const availableAssistants: ChatUser[] = Object.values(this.usersMap).filter((a: ChatUser): boolean => {
+		const availableAssistants: User[] = Object.values(this.usersMap).filter((a: User): boolean => {
 			if (a.showInMembersInfo === undefined) return true;
 			return a.showInMembersInfo;
 		});
@@ -141,7 +134,7 @@ export class Prompt {
 		const header = "=== ASSISTANTS ===";
 
 		const info: string[] = availableAssistants
-			.map((user: ChatUser) => {
+			.map((user: User) => {
 				let tag = undefined;
 				if (this.user.id === user.id) tag = "You";
 				// else tag = user.type;
@@ -162,7 +155,7 @@ export class Prompt {
 			.map(([k, v]) => {
 				const s = v.map((s: string) => s.trim()).join("");
 				if (s.length === 0) return undefined;
-				return processKV(k, v, {keyPrefix: '#', valPrefix: k})
+				return processItemizedList(k, v, {keyPrefix: '#', valPrefix: k})
 			})
 			.filter((s: string | undefined) => s !== undefined)
 

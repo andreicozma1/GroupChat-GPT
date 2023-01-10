@@ -1,4 +1,4 @@
-import {parseNounCount} from "src/util/Utils";
+import {getSingularOrPlural} from "src/util/TextUtils";
 
 export const parseDate = (dateRepr: string | number | Date): Date => {
 	if (typeof dateRepr === "string" || typeof dateRepr === "number")
@@ -45,7 +45,7 @@ export const dateToTimeAgo = (date: string | number | Date) => {
 
 	// Helper for the final string
 	const parseTimeAgoStr = (unit: string, value: number) => {
-		const noun = parseNounCount(unit, value);
+		const noun = getSingularOrPlural(unit, value);
 		return `${value} ${noun} ago`;
 	};
 

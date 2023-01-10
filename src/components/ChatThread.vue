@@ -137,7 +137,7 @@ import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {getMessageHistory} from "src/util/chat/ChatUtils";
 import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
-import {ChatUser} from "src/util/assistant/AssistantModels";
+import {User} from "src/util/users/User";
 
 const props = defineProps({
 	scrollAreaStyle: {
@@ -158,13 +158,13 @@ const onClickMsg = (message: ChatMessage) => {
 };
 
 const getUserName = (message: ChatMessage): string => {
-	const user: ChatUser = store.getUserConfig(message.userId);
+	const user: User = store.getUserConfig(message.userId);
 	// return `${user.name} (${user.id})`;
 	return user.name;
 };
 
 const getUserIcon = (message: ChatMessage) => {
-	const user: ChatUser = store.getUserConfig(message.userId);
+	const user: User = store.getUserConfig(message.userId);
 	if (!user) {
 		console.error(`User "${message.userId}" not found.`);
 		smartNotify(`Error: User "${message.userId}" not found.`);

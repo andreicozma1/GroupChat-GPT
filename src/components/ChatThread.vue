@@ -138,6 +138,7 @@ import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {getMessageHistory} from "src/util/chat/ChatUtils";
 import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
 import {User} from "src/util/users/User";
+import {getSingularOrPlural} from "src/util/TextUtils";
 
 const props = defineProps({
 	scrollAreaStyle: {
@@ -155,6 +156,7 @@ const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 const onClickMsg = (message: ChatMessage) => {
 	console.log({...message});
+	console.log({...message.response?.data})
 };
 
 const getUserName = (message: ChatMessage): string => {
@@ -180,10 +182,8 @@ const getUserIcon = (message: ChatMessage) => {
 const getContentHoverHint = (message: ChatMessage) => {
 	const numTexts = message.textSnippets?.length ?? 0;
 	const numImages = message.imageUrls?.length ?? 0;
-	const who = isSentByMe(message) ? "You" : message.userName;
-	const what = `${numTexts} text and ${numImages} image${
-		numImages === 1 ? "" : "s"
-	}`;
+	const who = (isSentByMe(message) ? "You" : message.userName) + ` (${message.userId})`
+	const what = `${numTexts} ${getSingularOrPlural('text', numTexts)} and ${numImages} ${getSingularOrPlural('image', numImages)}`;
 	const when = dateToLocaleStr(message.dateCreated);
 	return `${who} sent ${what} on ${when}`;
 };

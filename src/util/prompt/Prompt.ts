@@ -162,8 +162,6 @@ export class Prompt {
 				if (s.length === 0) return undefined;
 				k = k.toUpperCase()
 				return processItemizedList(k, v, {keyPrefix: '###'})
-				// return processItemizedList(k, v, {keyPrefix: '###', valPrefix: k})
-
 			})
 			.filter((s: string | undefined) => s !== undefined)
 
@@ -172,8 +170,6 @@ export class Prompt {
 
 	private promptExamples(): string {
 		if (!this.user.promptConfig.examples || this.user.promptConfig.examples.length == 0) return "";
-		// promptHeader = promptHeader || ConfigUser.name;
-		// resultHeader = resultHeader || ai.name;
 		const header = "=== EXAMPLES ===";
 
 		const examples: string = this.user.promptConfig.examples.map((example: string, i) => {

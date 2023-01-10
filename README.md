@@ -34,8 +34,8 @@ Well, this application is a step towards that world.
     - If the user asks "Hey DALL-E, I need to generate an image", then only DALL-E will respond.
 - Assistant Traits, Characteristics, and Rules
     - Subject to tweaks and changes so read through the following files instead:
-    - [/src/util/assistant/Assistants.ts](./src/util/assistant/Assistants.ts)
-    - [/src/util/prompt/Prompts.ts](./src/util/prompt/Prompts.ts)
+    - [/src/util/assistant/configs](./src/util/assistant/configs)
+    - [/src/util/assistant/Prompt.ts](./src/util/assistant/AssistantPrompts.ts)
 - DALL-E can be asked to generate images.
     - If necessary, DALL-E it will try to gather information from you from which to generate a prompt for the DALL-E
       API.

@@ -1,4 +1,4 @@
-import { getRandomMinMax } from "src/util/Utils";
+import {getRandomMinMax} from "src/util/Utils";
 
 export interface ColorConfig {
 	minLightness?: number;
@@ -11,20 +11,26 @@ export interface ColorConfig {
 	maxAlpha?: number;
 }
 
-export const getSeededQColor = (seed: string | number, minNum?: number, maxNum?: number) => {
+export const getSeededQColor = (
+	seed: string | number,
+	minNum?: number,
+	maxNum?: number
+) => {
 	// based on the seed pick a color from the list of all quasar colors
 	// do not use random here, because we want the same seed to always return the same color
 	minNum = minNum ?? 0;
 	maxNum = maxNum ?? allQuasarColors.length - 1;
 	// create a flat list of all colors between minNum and maxNum inclusive
 	// now interleave the colors
-	const interleavedColors = allQuasarColors.slice(minNum, maxNum + 1).reduce((acc, val) => {
-		val.forEach((v, i) => {
-			if (!acc[i]) acc[i] = [];
-			acc[i].push(v);
-		});
-		return acc;
-	}, [] as string[][]);
+	const interleavedColors = allQuasarColors
+		.slice(minNum, maxNum + 1)
+		.reduce((acc, val) => {
+			val.forEach((v, i) => {
+				if (!acc[i]) acc[i] = [];
+				acc[i].push(v);
+			});
+			return acc;
+		}, [] as string[][]);
 	// now flatten the array
 	const flattenedColors = interleavedColors.flat();
 	if (typeof seed === "string") {
@@ -36,8 +42,14 @@ export const getSeededQColor = (seed: string | number, minNum?: number, maxNum?:
 
 const getSeededColorHex = (seed: string, config: ColorConfig) => {
 	const hue = getRandomMinMax(config.minHue ?? 0, config.maxHue ?? 360);
-	const saturation = getRandomMinMax(config.minSaturation ?? 0, config.maxSaturation ?? 100);
-	const lightness = getRandomMinMax(config.minLightness ?? 0, config.maxLightness ?? 100);
+	const saturation = getRandomMinMax(
+		config.minSaturation ?? 0,
+		config.maxSaturation ?? 100
+	);
+	const lightness = getRandomMinMax(
+		config.minLightness ?? 0,
+		config.maxLightness ?? 100
+	);
 	const alpha = getRandomMinMax(config.minAlpha ?? 0, config.maxAlpha ?? 1);
 
 	return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;

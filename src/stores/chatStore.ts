@@ -20,7 +20,7 @@ const defaultAssistants = ["davinci", "dalle", "codex"]
 
 interface CachedResponse {
 	contextIds: string[];
-	responseData: any;
+	data: any;
 }
 
 export interface PromptResponse {
@@ -140,7 +140,7 @@ export const useChatStore = defineStore("counter", {
 		getPromptResponse(): (prompt: Prompt) => PromptResponse {
 			return (prompt: Prompt): PromptResponse => {
 				const cache = this.getCachedResponseFromPrompt(prompt);
-				const responseData = cache.responseData;
+				const responseData = cache.data;
 				const choices = responseData.choices;
 				const text = choices
 					?.flatMap((c: any) => {
@@ -288,7 +288,7 @@ export const useChatStore = defineStore("counter", {
 					errorMsg: errorMsg,
 					response: {
 						contextIds: contextIds,
-						responseData: undefined,
+						data: undefined,
 					},
 					textSnippets: [],
 					imageUrls: [],
@@ -297,7 +297,7 @@ export const useChatStore = defineStore("counter", {
 			}
 			this.cachedResponses[prompt.hash] = {
 				contextIds: contextIds,
-				responseData: completion.data,
+				...completion
 			};
 
 			return {

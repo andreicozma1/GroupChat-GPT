@@ -202,7 +202,7 @@ const getStampHoverHint = (message: ChatMessage) => {
 	const when = dateToLocaleStr(message.dateCreated);
 	const what = isSentByMe(message) ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated = message.response?.responseData?.created * 1000;
+	const dateGenerated = message.response?.data?.created * 1000;
 	if (dateGenerated) res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 
 	return res;

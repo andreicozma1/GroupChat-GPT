@@ -134,18 +134,24 @@ export class Prompt {
 		const header = "=== MEMBERS ===";
 
 		const isAvailable = availableAssistants.some((a: User) => a.id === this.user.id)
-
+		// sort such that the current user is last
+		availableAssistants.sort((a: User, b: User) => {
+			if (a.id === this.user.id) return 1;
+			if (b.id === this.user.id) return -1;
+			return 0;
+		})
+		
 		const info: string[] = []
-		if (isAvailable) {
-			info.push(this.promptAssistantInfo(this.user, "You"))
-		} else {
+		if (!isAvailable) {
 			availableAssistants.forEach(
 				(user: User) => {
-					if (this.user.id === user.id) return
-					// else tag = user.type;
-					info.push(this.promptAssistantInfo(user));
+					let tag: string | undefined = undefined;
+					if (this.user.id === user.id) tag = "You"
+					info.push(this.promptAssistantInfo(user, tag));
 				}
 			)
+		} else {
+			info.push(this.promptAssistantInfo(this.user, "You"))
 		}
 
 		return [header, ...info].join("\n\n");

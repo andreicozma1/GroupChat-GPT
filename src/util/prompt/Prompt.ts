@@ -45,7 +45,7 @@ export class Prompt {
 		const examples = this.promptExamples();
 		const conv = this.promptConversation();
 
-		return this.finalizePrompt(start, desc.join("\n"), members, rules, examples, conv);
+		return this.buildPrompt(start, desc.join("\n"), members, rules, examples, conv);
 	}
 
 	public createPromptDalleGen(): string | undefined {
@@ -108,7 +108,7 @@ export class Prompt {
 		let prompt = promptSnippets[promptSnippets.length - 1];
 		prompt = prompt.replace(/(<([^>]+)>)/gi, "");
 
-		return this.finalizePrompt(start, rules, examples, prompt);
+		return this.buildPrompt(start, rules, examples, prompt);
 	}
 
 	private promptAssistantInfo(ai: User, parenthesesTag?: string): string {
@@ -218,7 +218,7 @@ export class Prompt {
 		return [header, res].join("\n");
 	}
 
-	private finalizePrompt(...promptParts: string[]): string {
+	private buildPrompt(...promptParts: string[]): string {
 		if (this.user.promptConfig.responseHeader) promptParts.push(`### ${this.user.promptConfig.responseHeader}:`);
 		promptParts = promptParts.filter((s) => s.length > 0);
 		promptParts = promptParts.map((s) => s.trim());

@@ -62,6 +62,7 @@ import {useChatStore} from "stores/chatStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
 import {ChatMessage} from "src/util/chat/ChatModels";
+import {smartNotify} from "src/util/SmartNotify";
 
 const store = useChatStore();
 
@@ -92,8 +93,14 @@ const sendMessage = () => {
 	responseTimeout.value = setInterval(() => {
 		if (!isTyping.value) {
 			console.log("=> userMsgObj:", {...userMsgObj.value});
-			userMsgObj.value = null;
-			store.handleAssistantCfg(store.getUserConfig("coordinator"));
+			if (userMsgObj.value !== null) {
+				store.handleUserMessage(userMsgObj.value);
+				userMsgObj.value = null;
+			} else {
+				console.error("usrMsgObj was null")
+				smartNotify("Error: User message was null")
+			}
+
 			clearInterval(responseTimeout.value);
 		}
 	}, 500);

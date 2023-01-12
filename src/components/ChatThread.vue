@@ -11,8 +11,8 @@
                     :name="getUserName(msg)"
                     :sent="isSentByMe(msg)"
                     size="6"
-                    @click="onClickMsg(msg)"
-                    v-bind="msg">
+                    v-bind="msg"
+                    @click="onClickMsg(msg)">
                 <div v-for="textSnippet in parseTextSnippets(msg)"
                      :key="textSnippet"
                      @click="copyClipboard(textSnippet)">
@@ -97,8 +97,8 @@
                                 {{ msg.hideInPrompt ? 'Use message' : 'Ignore message' }}
                             </q-tooltip>
                         </q-btn>
-                        <q-btn :icon="msg.shouldDelete ? 'delete_forever' : 'delete'"
-                               :color="msg.shouldDelete ? 'black' : 'blue-grey-8'"
+                        <q-btn :color="msg.shouldDelete ? 'black' : 'blue-grey-8'"
+                               :icon="msg.shouldDelete ? 'delete_forever' : 'delete'"
                                dense
                                flat
                                round
@@ -132,7 +132,7 @@
 import {getSeededQColor} from "src/util/Colors";
 import {copyClipboard, getAppVersion, regexTagEnd, regexTagStart} from "src/util/Utils";
 import {useChatStore} from "stores/chatStore";
-import {computed, onMounted, Ref, ref, watch} from "vue";
+import {computed, onMounted, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {getMessageHistory} from "src/util/chat/ChatUtils";
@@ -156,7 +156,7 @@ const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 const onClickMsg = (message: ChatMessage) => {
 	console.log({...message});
-	console.log({...message.response?.data})
+	console.log({...message.response?.response?.data})
 };
 
 const getUserName = (message: ChatMessage): string => {
@@ -194,7 +194,7 @@ const getStamp = (message: ChatMessage) => {
 	// let res = `${what} ${on}`;
 	let res = `${on}`;
 	// if (msg.isCompRegen) res = `* ${res}`;
-	if (message.cached) res = `${res} (cached)`;
+	if (message.response?.cached) res = `${res} (cached)`;
 	return res;
 };
 
@@ -202,7 +202,7 @@ const getStampHoverHint = (message: ChatMessage) => {
 	const when = dateToLocaleStr(message.dateCreated);
 	const what = isSentByMe(message) ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated = message.response?.data?.created * 1000;
+	const dateGenerated = message.response?.response?.data?.created * 1000;
 	if (dateGenerated) res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 
 	return res;
@@ -253,7 +253,7 @@ const editMessage = (message: ChatMessage) => {
 
 const canRegenMessage = (message: ChatMessage) => {
 	if (message.shouldDelete) return false;
-	const msgIds = message.response?.contextIds;
+	const msgIds = message.response?.response?.contextIds;
 	if (msgIds) return msgIds.length > 0;
 	return false;
 };
@@ -261,8 +261,8 @@ const canRegenMessage = (message: ChatMessage) => {
 const regenMessage = (message: ChatMessage) => {
 	console.warn("*".repeat(40));
 	console.log("regenMessage->message:", {...message});
-	console.log("regenMessage->message.response?.contextIds:", message.response?.contextIds);
-	store.handleUserMessage(message, store);
+	console.log("regenMessage->message.response?.contextIds:", message.response?.response?.contextIds);
+	store.handleUserMessage(message);
 };
 
 const deleteMessage = (message: ChatMessage) => {
@@ -341,7 +341,7 @@ watch(
 );
 
 const parseThreadMessages = (): ChatMessage[] => {
-	const thread: ChatThread = store.getActiveThread;
+	const thread: ChatThread = store.getActiveThread();
 	let messages: ChatMessage[] = getMessageHistory(store, {
 		forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
 		hiddenUserIds: thread.prefs.hiddenUserIds,
@@ -351,7 +351,7 @@ const parseThreadMessages = (): ChatMessage[] => {
 	console.log("parseThreadMessages->messages:", messages);
 
 	messages = messages.filter((message: ChatMessage) => {
-		return !(store.getActiveThread.prefs.dontShowMessagesHiddenInPrompts && message.hideInPrompt);
+		return !(store.getActiveThread().prefs.dontShowMessagesHiddenInPrompts && message.hideInPrompt);
 	});
 	console.log("parseThreadMessages->filtered:", messages);
 	return messages;
@@ -368,7 +368,7 @@ const loadThread = (shouldScroll = false) => {
 		if (shouldScroll || newMsgCount > prevMsgCount) scrollToBottom(1000);
 	} catch (err: any) {
 		console.error("Error loading chat thread", err);
-		const threadVer = store.getActiveThread.appVersion?.trim()
+		const threadVer = store.getActiveThread().appVersion?.trim()
 		const appVer = getAppVersion();
 		console.log("Thread version:", threadVer);
 		console.log("App version:", appVer);
@@ -384,7 +384,10 @@ const loadThread = (shouldScroll = false) => {
 	}
 };
 
-watch(store.getActiveThread, () => loadThread(false));
+watchEffect(() => {
+	loadThread(false)
+})
+// watch(() => store.threadsMap, () => loadThread(false));
 
 onMounted(() => {
 	loadThread(true);

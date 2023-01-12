@@ -10,32 +10,44 @@ import {regexTag} from "src/util/Utils";
 export class PromptBuilder {
 	constructor(protected promptConfig: PromptConfig) {}
 
+	public static filterMessagesWithTags(messages: ChatMessage[]): ChatMessage[] {
+		return messages.filter((msg: ChatMessage) => {
+			return msg.textSnippets.some((text: string) => {
+				return /(<([^>]+)>)/gi.test(text);
+			});
+		});
+	}
+
+	public static filterSnippetsWithTags(textSnipets: string[]): string[] {
+		return textSnipets.filter((text: string) => {
+			// return /(<([^>]+)>)/gi.test(text);
+			return regexTag.test(text);
+		});
+	}
+
+	public static getHash = (prompt: Prompt | string): string => {
+		const hashStr = "undefined";
+		let promptText = typeof prompt === "string" ? prompt : prompt.text;
+		// lowercase, remove all punctuation
+		promptText = promptText.toLowerCase();
+		promptText = promptText.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
+		promptText = promptText.trim();
+		if (promptText.length === 0) return hashStr;
+
+		let hashInt = 0
+		for (let i = 0; i < promptText.length; i++) {
+			const char = promptText.charCodeAt(i);
+			hashInt = (hashInt << 5) - hashInt + char;
+			hashInt = hashInt & hashInt;
+		}
+		return hashInt.toString();
+	};
+
 	buildPrompt(...promptParts: string[]): string {
 		if (this.promptConfig.responseHeader) promptParts.push(`### ${this.promptConfig.responseHeader}:`);
 		promptParts = promptParts.filter((s) => s.length > 0);
 		promptParts = promptParts.map((s) => s.trim());
 		return promptParts.join("\n\n");
-	}
-
-	private h1(header: string) {
-		return `=== ${header} ===`;
-	}
-
-	private promptAssistantInfo(user: User, parenthesesTag?: string): string {
-		parenthesesTag = parenthesesTag === undefined ? "" : ` (${parenthesesTag})`;
-		const header = `### ${user.name}${parenthesesTag}:`;
-
-		if (!user.promptConfig.traits) return header;
-
-		const info = Object.entries(user.promptConfig.traits)
-			.map(([k, v]) => {
-				const s = v.map((s: string) => s.trim()).join("");
-				if (s.length === 0) return undefined;
-				return processItemizedList(k, v, {keyPrefix: "-"})
-			})
-			.filter((s: string | undefined) => s !== undefined)
-
-		return [header, ...info].join("\n");
 	}
 
 	promptMembersInfo(currentUser: User, usersMap: { [key: string]: User }, header = "MEMBERS"): string {
@@ -124,38 +136,26 @@ export class PromptBuilder {
 		return [this.h1(header), res].join("\n");
 	}
 
-	public static filterMessagesWithTags(messages: ChatMessage[]): ChatMessage[] {
-		return messages.filter((msg: ChatMessage) => {
-			return msg.textSnippets.some((text: string) => {
-				return /(<([^>]+)>)/gi.test(text);
-			});
-		});
+	private h1(header: string) {
+		return `=== ${header} ===`;
 	}
 
-	public static filterSnippetsWithTags(textSnipets: string[]): string[] {
-		return textSnipets.filter((text: string) => {
-			// return /(<([^>]+)>)/gi.test(text);
-			return regexTag.test(text);
-		});
+	private promptAssistantInfo(user: User, parenthesesTag?: string): string {
+		parenthesesTag = parenthesesTag === undefined ? "" : ` (${parenthesesTag})`;
+		const header = `### ${user.name}${parenthesesTag}:`;
+
+		if (!user.promptConfig.traits) return header;
+
+		const info = Object.entries(user.promptConfig.traits)
+			.map(([k, v]) => {
+				const s = v.map((s: string) => s.trim()).join("");
+				if (s.length === 0) return undefined;
+				return processItemizedList(k, v, {keyPrefix: "-"})
+			})
+			.filter((s: string | undefined) => s !== undefined)
+
+		return [header, ...info].join("\n");
 	}
-
-	public static getHash = (prompt: Prompt | string): string => {
-		const hashStr = "undefined";
-		let promptText = typeof prompt === "string" ? prompt : prompt.text;
-		// lowercase, remove all punctuation
-		promptText = promptText.toLowerCase();
-		promptText = promptText.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
-		promptText = promptText.trim();
-		if (promptText.length === 0) return hashStr;
-
-		let hashInt = 0
-		for (let i = 0; i < promptText.length; i++) {
-			const char = promptText.charCodeAt(i);
-			hashInt = (hashInt << 5) - hashInt + char;
-			hashInt = hashInt & hashInt;
-		}
-		return hashInt.toString();
-	};
 }
 
 export class Prompt extends PromptBuilder {

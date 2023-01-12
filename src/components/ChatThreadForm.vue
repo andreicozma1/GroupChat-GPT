@@ -26,32 +26,32 @@
             <q-space/>
             <q-space/>
             <q-btn-group flat rounded>
-                <q-btn label="Clear Thread"
-                       @click="store.clearCurrentThreadMessages"
-                       color="light-blue"
+                <q-btn color="light-blue"
                        icon-right="clear"
+                       label="Clear Thread"
                        no-caps
-                       size="sm"
                        outline
+                       size="sm"
                        title="Clear all messages in the thread"
+                       @click="store.clearCurrentThreadMessages"
                 />
-                <q-btn label="Comp. Cache"
-                       @click="store.clearCachedResponses"
+                <q-btn color="green"
                        icon-right="cached"
-                       color="green"
+                       label="Comp. Cache"
                        no-caps
-                       size="sm"
                        outline
+                       size="sm"
                        title="Clear completion cache for assistant responses"
+                       @click="store.clearCachedResponses"
                 />
-                <q-btn label="Hard Reset"
-                       @click="store.clearAllData"
+                <q-btn color="red"
                        icon-right="delete_forever"
-                       color="red"
+                       label="Hard Reset"
                        no-caps
-                       size="sm"
                        outline
+                       size="sm"
                        title="Remove all data from browser local storage"
+                       @click="store.clearAllData"
                 />
             </q-btn-group>
         </q-card-actions>
@@ -61,7 +61,6 @@
 import {useChatStore} from "stores/chatStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
-import {createMessageFromUserConfig} from "src/util/chat/ChatUtils";
 import {ChatMessage} from "src/util/chat/ChatModels";
 
 const store = useChatStore();
@@ -84,8 +83,7 @@ const sendMessage = () => {
 	console.warn("=".repeat(60));
 	console.warn("=> sendMessage:");
 	if (userMsgObj.value === null) {
-		userMsgObj.value = createMessageFromUserConfig(store.getHumanUserConfig, store);
-		store.pushMessage(userMsgObj.value);
+		userMsgObj.value = new ChatMessage(store.getHumanUserConfig(), store);
 	}
 	userMsgObj.value.textSnippets.push(userMsgStr.value);
 	userMsgStr.value = "";
@@ -95,7 +93,7 @@ const sendMessage = () => {
 		if (!isTyping.value) {
 			console.log("=> userMsgObj:", {...userMsgObj.value});
 			userMsgObj.value = null;
-			store.handleAssistantCfg(store.getUserConfig("coordinator"), store);
+			store.handleAssistantCfg(store.getUserConfig("coordinator"));
 			clearInterval(responseTimeout.value);
 		}
 	}, 500);

@@ -1,8 +1,5 @@
-import {getRobohashUrl} from "src/util/ImageUtils";
-import {v4 as uuidv4} from "uuid";
 import {ChatMessage, ChatMessageHistoryConfig} from "src/util/chat/ChatModels";
 import {parseDate} from "src/util/DateUtils";
-import {User} from "src/util/users/User";
 
 
 function msgContainsKeywords(message: ChatMessage, keywords: string[]): boolean {
@@ -12,7 +9,7 @@ function msgContainsKeywords(message: ChatMessage, keywords: string[]): boolean 
 
 export const getMessageHistory = (comp: any, config: ChatMessageHistoryConfig): ChatMessage[] => {
 	const excludeLoading = config.excludeLoading ?? false;
-	let messages: ChatMessage[] = Object.values(comp.getActiveThread.messageIdMap)
+	let messages: ChatMessage[] = Object.values(comp.getActiveThread().messageIdMap)
 	// filter out messages whose textSnippets stripped and joined are empty
 	// unless the message has an image
 	messages = messages.filter((message: ChatMessage) => {
@@ -43,24 +40,6 @@ export const getMessageHistory = (comp: any, config: ChatMessageHistoryConfig): 
 
 	console.log("getMessageHistory->filter:", messages);
 	return messages;
-};
-
-export const createMessageFromUserConfig = (chatUser: User, store: any): ChatMessage => {
-	const assistantName: string = chatUser?.name || "Unknown User";
-	const assistantKey: string = chatUser?.id || "unknown";
-	let msg: ChatMessage = {
-		id: uuidv4(),
-		userId: assistantKey,
-		userName: assistantName,
-		userAvatarUrl: getRobohashUrl(assistantName),
-		textSnippets: [],
-		imageUrls: [],
-		dateCreated: new Date(),
-		loading: true,
-		followupMsgIds: [],
-	};
-	msg = store.pushMessage(msg);
-	return msg;
 };
 
 

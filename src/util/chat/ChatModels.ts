@@ -1,4 +1,7 @@
 import {PromptResponse} from "stores/chatStore";
+import {User} from "src/util/users/User";
+import {v4 as uuidv4} from "uuid";
+import {getRobohashUrl} from "src/util/ImageUtils";
 
 export interface ChatThreadPrefs {
 	hiddenUserIds: string[];
@@ -13,23 +16,33 @@ export interface ChatThread {
 	prefs: ChatThreadPrefs;
 }
 
-export interface ChatMessage extends PromptResponse {
-	id: string;
-	// TODO: Put these in a separate User interface
+
+export class ChatMessage {
 	userId: string;
 	userName: string;
 	userAvatarUrl: string;
-
-	// TODO: Put dates in ChatMessageDates interface and keep track of edits
-	dateCreated: string | number | Date;
-	// TODO: Put this in ChatMessageFlags interface
+	dateCreated: string | number | Date = new Date()
+	id: string = uuidv4()
 	loading: boolean;
-	// TODO: There's probably a better way to do keep track of whether a message is a re-generation
-	// TODO: Alternatively, could also keep history of edits (editMessage function)
-	isCompRegen?: boolean;
-	shouldDelete?: boolean;
-	hideInPrompt?: boolean;
-	followupMsgIds: string[];
+	followupMsgIds: string[] = []
+
+	shouldDelete = false
+	hideInPrompt = false
+	textSnippets: string[] = []
+	imageUrls: string[] = []
+	response?: PromptResponse
+
+	constructor(
+		chatUser: User,
+		store: any
+	) {
+		this.userId = chatUser?.id || "unknown";
+		this.userName = chatUser?.name || "Unknown User";
+		this.userAvatarUrl = getRobohashUrl(this.userName)
+		this.loading = true
+		store.getActiveThread().messageIdMap[this.id] = this
+	}
+
 }
 
 // TODO: Make these configurable in UI in the future

@@ -18,3 +18,9 @@ export const copyClipboard = (text: string) => {
 		smartNotify(`Copied to clipboard`);
 	});
 };
+
+
+export const regexTag = /(<\/?([^>]+)>)/gi
+
+export const regexTagStart = /<([a-z]+)[^>]*>/gi
+export const regexTagEnd = /<\/([a-z]+)[^>]*>/gi

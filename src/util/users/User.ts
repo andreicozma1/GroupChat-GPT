@@ -4,6 +4,7 @@ import {PromptConfig} from "src/util/prompt/PromptModels";
 export enum UserTypes {
 	HUMAN = "human",
 	ASSISTANT = "assistant",
+	HELPER = "helper"
 }
 
 export class User {

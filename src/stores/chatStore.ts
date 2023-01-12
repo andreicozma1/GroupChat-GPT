@@ -1,11 +1,11 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
-import {getAppVersion} from "src/util/Utils";
+import {getAppVersion, regexTag} from "src/util/Utils";
 import {ChatMessage, ChatThread, ChatThreadPrefs} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
 import {createMessageFromUserConfig, getMessageHistory} from "src/util/chat/ChatUtils";
-import {Prompt} from "src/util/prompt/Prompt";
+import {Prompt, PromptBuilder} from "src/util/prompt/Prompt";
 import {User, UserTypes} from "src/util/users/User";
 import {UserHuman} from "src/util/users/UserHuman";
 import {UserCodex, UserCoordinator, UserDalle, UserDavinci} from "src/util/users/Assistant";
@@ -417,11 +417,12 @@ export const useChatStore = defineStore("counter", {
 				.map((a: string) => a.trim().toLowerCase())
 				.filter((a: string) => a !== "none");
 
-			let followupPrompts = message.textSnippets
-				.filter((t: string) => t.includes("<prompt>"))
-				.map((t: string) =>
-					t.split("<prompt>")[1].trim().split("</prompt>")[0].trim()
-				);
+			let followupPrompts = PromptBuilder.filterSnippetsWithTags(message.textSnippets)
+				.map((t: string) => {
+					const res = t.split(regexTag)[1].trim().split(regexTag)[0].trim()
+					return res
+				});
+			// let followupPrompts = PromptBuilder.filterSnippetsWithTags(message.textSnippets)
 
 			const followups = []
 
@@ -448,14 +449,15 @@ export const useChatStore = defineStore("counter", {
 					}
 					break;
 				default:
-					message.textSnippets = message.textSnippets.map((t: string) => {
-						if (t.includes("<prompt>")) {
-							const parts = t.split("<prompt>");
-							const end = parts[1].split("</prompt>");
-							return parts[0] + end[1];
-						}
-						return t.trim();
-					});
+					// message.textSnippets = message.textSnippets.flatMap((text: string) => {
+					// 	// if (regexTag.test(text)) {
+					// 	// 	const parts = text.split(regexTag);
+					// 	// 	const end = parts[1].split(regexTag);
+					// 	// 	return parts[0] + end[1];
+					// 	// }
+					// 	return text.trim();
+					// });
+					// use flatMap to split before
 					message.textSnippets = message.textSnippets.filter((t: string) => t.length > 0);
 					comp.pushMessage(message);
 
@@ -469,7 +471,9 @@ export const useChatStore = defineStore("counter", {
 							break
 						}
 						for (let i = 0; i < followupPrompts.length; i++) {
-							const prompt = `<result>${followupPrompts[i]}</result>`
+							// const prompt = `<result>${followupPrompts[i]}</result>`
+							const prompt = followupPrompts[i]
+
 							/*
 							// msg.textSnippets.push(prompt);
 							const nextMsg: ChatMessage = createMessageFromUserId(

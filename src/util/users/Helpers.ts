@@ -1,10 +1,10 @@
 import {User, UserTypes} from "src/util/users/User";
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
-import {createCodeBlock, createMarkdown} from "src/util/TextUtils";
+import {getCodeBlock, getNewlineSeparated} from "src/util/TextUtils";
 
 export class UserDalleGen extends User {
 	constructor() {
-		super("dalle_gen", "DALL-E", UserTypes.ASSISTANT);
+		super("dalle_gen", "DALL-E", UserTypes.HELPER);
 		this.apiReqConfig = ApiRequestConfigTypes.DALLE_GEN;
 		this.promptConfig.promptType = "createPromptDalleGen";
 		this.showInMembersInfo = false;
@@ -13,7 +13,7 @@ export class UserDalleGen extends User {
 
 export class UserCodexGen extends User {
 	constructor() {
-		super("codex_gen", "Codex", UserTypes.ASSISTANT);
+		super("codex_gen", "Codex", UserTypes.HELPER);
 		this.apiReqConfig = ApiRequestConfigTypes.CODEX_GEN
 		this.promptConfig.queryWrapTag = "instructions";
 		this.promptConfig.responseWrapTag = "markdown";
@@ -27,26 +27,26 @@ export class UserCodexGen extends User {
 		this.promptConfig.examples = [
 			// TODO: Use LeetCode Examples
 			// ------------------------------------------------------------
-			createMarkdown(
+			getNewlineSeparated(
 				"Language: Python",
 				"1. Write a function that multiplies two numbers together.",
 				"2. Run the an example with the numbers 5 and 6.",
 				"3. Print the result.",
 			),
 			// ------------------------------------------------------------
-			createMarkdown(
+			getNewlineSeparated(
 				"# Multiplying Numbers",
 				"Language: Python",
 				"## Function Definition",
 				"First, we define a function called `multiply`, which takes two parameters, `a` and `b`.") +
-			createCodeBlock(
+			getCodeBlock(
 				"python",
 				"def multiply(a, b):",
 				"\treturn a * b") +
-			createMarkdown(
+			getNewlineSeparated(
 				"## Example",
 				"Next, run the function with the numbers 5 and 6, and print the result.") +
-			createCodeBlock("python",
+			getCodeBlock("python",
 				"result = multiply(5, 6)",
 				"print(result)")
 			// ------------------------------------------------------------

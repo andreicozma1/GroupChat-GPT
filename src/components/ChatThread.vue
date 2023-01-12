@@ -130,7 +130,7 @@
 
 <script lang="ts" setup>
 import {getSeededQColor} from "src/util/Colors";
-import {copyClipboard, getAppVersion} from "src/util/Utils";
+import {copyClipboard, getAppVersion, regexTagEnd, regexTagStart} from "src/util/Utils";
 import {useChatStore} from "stores/chatStore";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
@@ -223,13 +223,21 @@ const sanitizeTextSnippet = (textSnippet: string) => {
 		result: "b",
 	};
 	// replace special tags with valid html tags to distinguish them
-	const regex = /<\/?([a-z]+)[^>]*>/gi;
-	return textSnippet.replace(regex, (match, oldTag: string) => {
+	let ts = textSnippet.replace(regexTagStart, (match, oldTag: string) => {
 		// replace tag with replacement if it exists
 		if (oldTag in tagsReplMap) return `<${tagsReplMap[oldTag]}>`;
 		// remove all other tags
-		return "";
+		return "<b>"
 	});
+
+	ts = ts.replace(regexTagEnd, (match, oldTag: string) => {
+		// replace tag with replacement if it exists
+		if (oldTag in tagsReplMap) return `</${tagsReplMap[oldTag]}>`;
+		// remove all other tags
+		return "</b>"
+	});
+	// console.warn(ts)
+	return ts
 };
 
 const ignoreMessage = (message: ChatMessage) => {

@@ -340,13 +340,15 @@ export const useChatStore = defineStore("counter", {
 			console.log("handleUserMessage->cfg:", user);
 			console.log("handleUserMessage->message:", message);
 
-			message.followupMsgIds.forEach((id: string) => {
-				this.deleteMessage(id, true);
-			});
-			message.followupMsgIds = [];
-			message.loading = true;
+			if (message.followupMsgIds.length > 0) {
+				message.followupMsgIds.forEach((id: string) => {
+					this.deleteMessage(id, true);
+				});
+				message.followupMsgIds = [];
+			}
 
 			if (user.type !== UserTypes.HUMAN) {
+				message.loading = true;
 				const msgHistIds = message.response?.response?.contextIds;
 				let ignoreCache = user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
 				let msgHist;

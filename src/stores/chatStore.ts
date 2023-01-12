@@ -224,21 +224,14 @@ export const useChatStore = defineStore("counter", {
 				response: cache,
 			};
 		},
-		async generate(
-			user: User,
-			msgHist: ChatMessage[],
-			ignoreCache ?: boolean
-		):
-			Promise<PromptResponse> {
+		async generate(user: User, msgHist: ChatMessage[], ignoreCache ?: boolean): Promise<PromptResponse> {
 			ignoreCache = ignoreCache ?? false;
 			console.warn("-".repeat(20));
 			console.log('generate->actor:', user);
 			console.log("generate->ignoreCache:", ignoreCache);
 
 			msgHist = msgHist.filter((m: ChatMessage) => !m.hideInPrompt);
-			const contextIds
-				:
-				string[] = msgHist.map((m: ChatMessage) => m.id);
+			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
 			console.log("generate->contextIds:", contextIds);
 			for (let i = 0; i < msgHist.length; i++) {
 				console.log("----------------")
@@ -252,10 +245,7 @@ export const useChatStore = defineStore("counter", {
 			console.log("generate->prompt.text:")
 			console.log(prompt.text)
 
-// if we already have a completion for this prompt, return it
-
-// TODO: Change hash prompt to be based on msgIds?
-
+			// if we already have a completion for this prompt, return it
 			let completion;
 			let cached;
 			try {
@@ -299,9 +289,7 @@ export const useChatStore = defineStore("counter", {
 		},
 		deleteMessage(messageId: string, silent = false):
 			void {
-			if (!
-				this.getActiveThread().messageIdMap[messageId]
-			) {
+			if (!this.getActiveThread().messageIdMap[messageId]) {
 				if (!silent) {
 					smartNotify("An error occurred while deleting the message.");
 				}

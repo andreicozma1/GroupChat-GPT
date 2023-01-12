@@ -24,14 +24,14 @@ interface CachedResponse {
 }
 
 export interface PromptResponse {
-	prompt?: Prompt;
-	response?: CachedResponse;
+	prompt: Prompt;
+	response: CachedResponse;
 	// TODO: Put these in a separate MessageContent interface and keep track of history
 	textSnippets: string[];
 	imageUrls: string[];
 
-	errorMsg?: string;
-	cached?: boolean;
+	errorMsg: string;
+	cached: boolean;
 }
 
 
@@ -197,11 +197,10 @@ export const useChatStore = defineStore("counter", {
 			this.threadsMap[this.currentThreadId] = thread;
 			return this.threadsMap[this.currentThreadId]
 		},
-		getPromptResponse(prompt: Prompt): PromptResponse {
-			const cache = this.getCachedResponseFromPrompt(prompt);
-			const responseData = cache.data;
+		parseApiResponse(response: CachedResponse) {
+			// const cache = this.getCachedResponseFromPrompt(prompt);
+			const responseData = response.data;
 			const choices = responseData.choices;
-			console.log(cache)
 			const text = choices?.flatMap((c: any) => {
 				return c.text.trim();
 			})
@@ -217,11 +216,8 @@ export const useChatStore = defineStore("counter", {
 			}
 
 			return {
-				cached: undefined,
-				prompt: prompt,
 				textSnippets: text,
 				imageUrls: images,
-				response: cache,
 			};
 		},
 		async generate(user: User, msgHist: ChatMessage[], ignoreCache ?: boolean): Promise<PromptResponse> {
@@ -267,6 +263,7 @@ export const useChatStore = defineStore("counter", {
 						"\n" + "Data: " + JSON.stringify(error.response.data, null, 4);
 				}
 				return {
+					cached: false,
 					errorMsg: errorMsg,
 					response: {
 						contextIds: contextIds,
@@ -274,7 +271,7 @@ export const useChatStore = defineStore("counter", {
 					},
 					textSnippets: [],
 					imageUrls: [],
-					prompt: prompt,
+					prompt: prompt
 				};
 			}
 			this.cachedResponses[prompt.hash] = {
@@ -283,8 +280,11 @@ export const useChatStore = defineStore("counter", {
 			};
 
 			return {
-				...this.getPromptResponse(prompt),
+				errorMsg: "",
+				prompt: prompt,
+				response: this.cachedResponses[prompt.hash],
 				cached: cached,
+				...this.parseApiResponse(this.cachedResponses[prompt.hash]),
 			};
 		},
 		deleteMessage(messageId: string, silent = false):

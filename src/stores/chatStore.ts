@@ -1,11 +1,11 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
-import {getAppVersion, regexTag} from "src/util/Utils";
+import {getAppVersion} from "src/util/Utils";
 import {ChatMessage, ChatThread, ChatThreadPrefs,} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
 import {getMessageHistory} from "src/util/chat/ChatUtils";
-import {Prompt, PromptBuilder} from "src/util/prompt/Prompt";
+import {Prompt} from "src/util/prompt/Prompt";
 import {User, UserTypes} from "src/util/users/User";
 import {UserHuman} from "src/util/users/UserHuman";
 import {UserCodex, UserCoordinator, UserDalle, UserDavinci,} from "src/util/users/Assistant";
@@ -93,6 +93,53 @@ export const useChatStore = defineStore("counter", {
 		getCachedResponseFromPrompt(): (prompt: Prompt) => CachedResponse {
 			return (prompt: Prompt) => this.getCachedResponses[prompt.hash];
 		},
+		getUserConfig() {
+			return (key: string) => {
+				if (key === this.humanUserId && !this.getUsersMap[key]) {
+					this.getUsersMap[key] = new UserHuman(
+						this.humanUserId,
+						this.humanUserName
+					);
+				}
+				return this.getUsersMap[key];
+			}
+		},
+		getActiveThread(): ChatThread {
+			let needsSave = false;
+			let thread = this.threadsMap[this.currentThreadId];
+			if (!thread) {
+				smartNotify("Creating new thread");
+				thread = {...DefaultThread};
+				needsSave = true;
+			}
+
+			// if the human isnt in the thread, add them
+			if (!thread.joinedUserIds.includes(this.humanUserId)) {
+				smartNotify("Joining thread: " + this.currentThreadId);
+				thread.joinedUserIds.push(this.humanUserId);
+				needsSave = true;
+			}
+			// if the number of assistants in the thread is 0, add the default assistants
+			const users = thread.joinedUserIds.map((id) => this.getUserConfig(id));
+			const assistants = users.filter(
+				(user: User) => user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER
+			);
+
+			if (assistants.length === 0) {
+				smartNotify(
+					`Adding default assistants: ${defaultAssistants.join(", ")}`
+				);
+				thread.joinedUserIds.push(...defaultAssistants);
+				needsSave = true;
+			}
+			for (const id of thread.joinedUserIds) {
+				thread.joinedUserIds.push(...this.getUserConfig(id).requiresUserIds);
+			}
+			thread.joinedUserIds = Array.from(new Set(thread.joinedUserIds));
+			console.log("getThread:", this.currentThreadId, {...thread});
+			this.threadsMap[this.currentThreadId] = thread;
+			return this.threadsMap[this.currentThreadId];
+		},
 	},
 	actions: {
 		saveData() {
@@ -157,55 +204,14 @@ export const useChatStore = defineStore("counter", {
 			const cfg: User = this.getUserConfig(id);
 			return new ChatMessage(cfg, this);
 		},
-		getUserConfig(key: string): User {
-			if (key === this.humanUserId && !this.getUsersMap[key]) {
-				this.getUsersMap[key] = new UserHuman(
-					this.humanUserId,
-					this.humanUserName
-				);
-			}
-			return this.getUsersMap[key];
-		},
+
 		getHumanUserConfig(): User {
 			console.log(this.getUsersMap);
 			console.log(this.getUserConfig(this.humanUserId));
 			console.log(this.humanUserId);
 			return this.getUserConfig(this.humanUserId);
 		},
-		getActiveThread(): ChatThread {
-			let needsSave = false;
-			let thread = this.threadsMap[this.currentThreadId];
-			if (!thread) {
-				smartNotify("Creating new thread");
-				thread = {...DefaultThread};
-				needsSave = true;
-			}
 
-			// if the human isnt in the thread, add them
-			if (!thread.joinedUserIds.includes(this.humanUserId)) {
-				smartNotify("Joining thread: " + this.currentThreadId);
-				thread.joinedUserIds.push(this.humanUserId);
-				needsSave = true;
-			}
-			// if the number of assistants in the thread is 0, add the default assistants
-			const users = thread.joinedUserIds.map((id) => this.getUserConfig(id));
-			const assistants = users.filter(
-				(user: User) => user.type === UserTypes.ASSISTANT
-			);
-
-			if (assistants.length === 0) {
-				smartNotify(
-					`Adding default assistants: ${defaultAssistants.join(", ")}`
-				);
-				thread.joinedUserIds.push(...defaultAssistants);
-				needsSave = true;
-			}
-			thread.joinedUserIds = Array.from(new Set(thread.joinedUserIds));
-			console.log("getThread:", this.currentThreadId, {...thread});
-			this.threadsMap[this.currentThreadId] = thread;
-			if (needsSave) this.saveData();
-			return this.threadsMap[this.currentThreadId];
-		},
 		parseApiResponse(response: CachedResponse) {
 			// const cache = this.getCachedResponseFromPrompt(prompt);
 			const responseData = response.data;
@@ -310,7 +316,7 @@ export const useChatStore = defineStore("counter", {
 			};
 		},
 		deleteMessage(messageId: string, silent = false): void {
-			if (!this.getActiveThread().messageIdMap[messageId]) {
+			if (!this.getActiveThread.messageIdMap[messageId]) {
 				if (!silent) {
 					smartNotify("An error occurred while deleting the message.");
 				}
@@ -333,12 +339,14 @@ export const useChatStore = defineStore("counter", {
 		},
 		async handleUserMessage(message: ChatMessage) {
 			const user: User = this.getUserConfig(message.userId);
-			const thread: ChatThread = this.getActiveThread();
+			const thread: ChatThread = this.getActiveThread;
 
 			console.warn("*".repeat(40));
 
 			console.log("handleUserMessage->cfg:", user);
 			console.log("handleUserMessage->message:", message);
+
+			message.loading = true
 
 			if (message.followupMsgIds.length > 0) {
 				message.followupMsgIds.forEach((id: string) => {
@@ -348,7 +356,6 @@ export const useChatStore = defineStore("counter", {
 			}
 
 			if (user.type !== UserTypes.HUMAN) {
-				message.loading = true;
 				const msgHistIds = message.response?.response?.contextIds;
 				let ignoreCache = user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
 				let msgHist;
@@ -389,13 +396,34 @@ export const useChatStore = defineStore("counter", {
 
 			const followups = [];
 
-			const followupActors = message.textSnippets
-				.flatMap((t: string) => t.toLowerCase().split("\n"))
-				.filter((t: string) => t.includes("respond"))
-				.flatMap((t: string) => t.split(":")[1].split(","))
-				.map((a: string) => a.trim().toLowerCase())
-				.filter((a: string) => a !== "none");
-			console.log("handleUserMessage->followupActors:", followupActors);
+			// const followupActors = message.textSnippets
+			// 	.flatMap((t: string) => t.toLowerCase().split("\n"))
+			// 	.filter((t: string) => t.includes("respond"))
+			// 	.flatMap((t: string) => t.split(":")[1].split(","))
+			// 	.map((a: string) => a.trim().toLowerCase())
+			// 	.filter((a: string) => a !== "none");
+			// find if any instances of a member's name or id is in the message. otherwise default to the coordinator
+			const followupActors = message.textSnippets.flatMap((t: string) => {
+				const next = []
+				const directMention = t.match(/@([a-zA-Z0-9_]+)/g);
+				if (directMention) {
+					// remove the @ and only keep valid usernames
+					next.push(...directMention.map((m: string) => m.slice(1)).filter((m: string) => this.getActiveThread.joinedUserIds.includes(m)))
+				}
+				// also match html tags like <user_id> prompt </user_id>
+				// where user_id is the id of the user
+				const prompts = t.match(/<[a-zA-Z0-9_]+>(.*?)<\/[a-zA-Z0-9_]+>/g);
+				if (prompts) {
+					next.push(...prompts.map((p: string) => p.slice(1, p.indexOf(">"))).filter((m: string) => this.getActiveThread.joinedUserIds.includes(m)))
+				}
+
+				if (next.length > 0) return next;
+				return [];
+			});
+			if (user.id === this.getHumanUserConfig().id && followupActors.length === 0) {
+				followupActors.push(this.usersMap.coordinator.id);
+			}
+			console.warn("handleUserMessage->followupActors:", followupActors);
 
 			for (const nextKey of followupActors) {
 				const nextMsg: ChatMessage = this.createMessageFromUserId(nextKey);
@@ -404,29 +432,21 @@ export const useChatStore = defineStore("counter", {
 				followups.push(nextMsg);
 			}
 
-			const followupPrompts = PromptBuilder.filterSnippetsWithTags(message.textSnippets)
-				.map((t: string) => {
-					return t.split(regexTag)[1].trim().split(regexTag)[0].trim();
-				})
-				.filter((t: string) => {
-					return t.split(" ").length > 3
-				});
-			console.log("handleUserMessage->followupPrompts:", followupPrompts);
 
-			for (let i = 0; i < followupPrompts.length; i++) {
-				// const prompt = `<result>${followupPrompts[i]}</result>`
-				const prompt = followupPrompts[i];
-
-				message.textSnippets.push(prompt);
-				const nextMsg: ChatMessage = this.createMessageFromUserId(
-					"???"
-				);
-				message.followupMsgIds.push(nextMsg.id);
-				// nextMsg.textSnippets.push(prompt);
-				nextMsg.dateCreated = message.dateCreated;
-				// comp.pushMessage(nextMsg);
-				followups.push(nextMsg);
-			}
+			// for (let i = 0; i < followupPrompts.length; i++) {
+			// 	// const prompt = `<result>${followupPrompts[i]}</result>`
+			// 	const prompt = followupPrompts[i];
+			//
+			// 	message.textSnippets.push(prompt);
+			// 	const nextMsg: ChatMessage = this.createMessageFromUserId(
+			// 		"???"
+			// 	);
+			// 	message.followupMsgIds.push(nextMsg.id);
+			// 	// nextMsg.textSnippets.push(prompt);
+			// 	nextMsg.dateCreated = message.dateCreated;
+			// 	// comp.pushMessage(nextMsg);
+			// 	followups.push(nextMsg);
+			// }
 
 			for (const nextMsg of followups) {
 				if (thread.prefs.orderedResponses) {

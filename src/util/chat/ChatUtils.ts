@@ -9,7 +9,7 @@ function msgContainsKeywords(message: ChatMessage, keywords: string[]): boolean 
 
 export const getMessageHistory = (comp: any, config: ChatMessageHistoryConfig): ChatMessage[] => {
 	const excludeLoading = config.excludeLoading ?? false;
-	let messages: ChatMessage[] = Object.values(comp.getActiveThread().messageIdMap)
+	let messages: ChatMessage[] = Object.values(comp.getActiveThread.messageIdMap)
 	// filter out messages whose textSnippets stripped and joined are empty
 	// unless the message has an image
 	messages = messages.filter((message: ChatMessage) => {

@@ -16,9 +16,7 @@
                 <div v-for="textSnippet in parseTextSnippets(msg)"
                      :key="textSnippet"
                      @click="copyClipboard(textSnippet)">
-                    <div v-for="snip in sanitizeTextSnippet(textSnippet).split('\n')"
-                         :key="snip"
-                         v-html="snip"/>
+                    {{ textSnippet }}
                     <q-tooltip :delay="750">
                         {{ getContentHoverHint(msg) }}
                     </q-tooltip>
@@ -130,7 +128,7 @@
 
 <script lang="ts" setup>
 import {getSeededQColor} from "src/util/Colors";
-import {copyClipboard, getAppVersion, regexTagEnd, regexTagStart} from "src/util/Utils";
+import {copyClipboard, getAppVersion} from "src/util/Utils";
 import {useChatStore} from "stores/chatStore";
 import {computed, onMounted, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
@@ -210,34 +208,38 @@ const getStampHoverHint = (message: ChatMessage) => {
 
 
 const parseTextSnippets = (message: ChatMessage) => {
-	const texts = message.textSnippets;
+	const texts = message.textSnippets.flatMap((snippet: string) => {
+		return snippet.split("\n\n").map((line: string) => {
+			return line.trim();
+		});
+	});
 	if ((!texts || texts.length === 0) && !message.loading) return [];
 	return texts;
 };
 
 const sanitizeTextSnippet = (textSnippet: string) => {
-	const tagsReplMap: { [key: string]: string } = {
-		prompt: "b",
-		image: "b",
-		code: "b",
-		result: "b",
-	};
-	// replace special tags with valid html tags to distinguish them
-	let ts = textSnippet.replace(regexTagStart, (match, oldTag: string) => {
-		// replace tag with replacement if it exists
-		if (oldTag in tagsReplMap) return `<${tagsReplMap[oldTag]}>`;
-		// remove all other tags
-		return "<b>"
-	});
-
-	ts = ts.replace(regexTagEnd, (match, oldTag: string) => {
-		// replace tag with replacement if it exists
-		if (oldTag in tagsReplMap) return `</${tagsReplMap[oldTag]}>`;
-		// remove all other tags
-		return "</b>"
-	});
+	// const tagsReplMap: { [key: string]: string } = {
+	// 	prompt: "b",
+	// 	image: "b",
+	// 	code: "b",
+	// 	result: "b",
+	// };
+	// // replace special tags with valid html tags to distinguish them
+	// let ts = textSnippet.replace(regexTagStart, (match, oldTag: string) => {
+	// 	// replace tag with replacement if it exists
+	// 	if (oldTag in tagsReplMap) return `<${tagsReplMap[oldTag]}>`;
+	// 	// remove all other tags
+	// 	return "<b>"
+	// });
+	//
+	// ts = ts.replace(regexTagEnd, (match, oldTag: string) => {
+	// 	// replace tag with replacement if it exists
+	// 	if (oldTag in tagsReplMap) return `</${tagsReplMap[oldTag]}>`;
+	// 	// remove all other tags
+	// 	return "</b>"
+	// });
 	// console.warn(ts)
-	return ts
+	return textSnippet
 };
 
 const ignoreMessage = (message: ChatMessage) => {
@@ -341,7 +343,7 @@ watch(
 );
 
 const parseThreadMessages = (): ChatMessage[] => {
-	const thread: ChatThread = store.getActiveThread();
+	const thread: ChatThread = store.getActiveThread;
 	let messages: ChatMessage[] = getMessageHistory(store, {
 		forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
 		hiddenUserIds: thread.prefs.hiddenUserIds,
@@ -351,7 +353,7 @@ const parseThreadMessages = (): ChatMessage[] => {
 	console.log("parseThreadMessages->messages:", messages);
 
 	messages = messages.filter((message: ChatMessage) => {
-		return !(store.getActiveThread().prefs.dontShowMessagesHiddenInPrompts && message.hideInPrompt);
+		return !(store.getActiveThread.prefs.dontShowMessagesHiddenInPrompts && message.hideInPrompt);
 	});
 	console.log("parseThreadMessages->filtered:", messages);
 	return messages;
@@ -366,9 +368,10 @@ const loadThread = (shouldScroll = false) => {
 		// count the number of messages after
 		const newMsgCount = threadMessages.value.length;
 		if (shouldScroll || newMsgCount > prevMsgCount) scrollToBottom(1000);
+		store.saveData()
 	} catch (err: any) {
 		console.error("Error loading chat thread", err);
-		const threadVer = store.getActiveThread().appVersion?.trim()
+		const threadVer = store.getActiveThread.appVersion?.trim()
 		const appVer = getAppVersion();
 		console.log("Thread version:", threadVer);
 		console.log("App version:", appVer);

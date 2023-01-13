@@ -40,7 +40,7 @@ export class ChatMessage {
 		this.userName = chatUser?.name || "Unknown User";
 		this.userAvatarUrl = getRobohashUrl(this.userName)
 		this.loading = true
-		store.getActiveThread().messageIdMap[this.id] = this
+		store.getActiveThread.messageIdMap[this.id] = this
 	}
 
 }

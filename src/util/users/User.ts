@@ -14,12 +14,13 @@ export class User {
 	type: UserTypes;
 	apiReqConfig: ApiRequestConfigTypes | string = ApiRequestConfigTypes.CONVERSATION;
 	promptConfig: PromptConfig;
-	followupPromptHelperId?: string;
 	showInMembersInfo = true;
 	shouldIgnoreCache = false;
+	requiresUserIds: string[] = [];
 
 	constructor(id: string, name: string, type: UserTypes) {
 		this.id = id;
+		this.id = this.id.replace(/\s/g, "");
 		this.name = name;
 		this.type = type;
 		this.promptConfig = {

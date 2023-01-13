@@ -70,9 +70,7 @@ export class PromptBuilder {
 		if (!isAvailable) {
 			availableAssistants.forEach(
 				(user: User) => {
-					let tag: string | undefined = undefined;
-					if (user.id === user.id) tag = "You"
-					info.push(this.promptAssistantInfo(user, tag));
+					info.push(this.promptAssistantInfo(user));
 				}
 			)
 		} else {
@@ -141,8 +139,8 @@ export class PromptBuilder {
 	}
 
 	private promptAssistantInfo(user: User, parenthesesTag?: string): string {
-		parenthesesTag = parenthesesTag === undefined ? "" : ` (${parenthesesTag})`;
-		const header = `### ${user.name}${parenthesesTag}:`;
+		parenthesesTag = parenthesesTag === undefined ? "" : ` [${parenthesesTag.toUpperCase()}]`;
+		const header = `### ${user.name} (id: ${user.id}) ${parenthesesTag}:`;
 
 		if (!user.promptConfig.traits) return header;
 

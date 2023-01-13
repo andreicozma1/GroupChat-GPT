@@ -1,6 +1,6 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
-import {getAppVersion} from "src/util/Utils";
+import {getAppVersion, rHtmlTagWithContent} from "src/util/Utils";
 import {ChatMessage, ChatThread, ChatThreadPrefs,} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
@@ -361,7 +361,7 @@ export const useChatStore = defineStore("counter", {
 				let msgHist;
 				if (!msgHistIds) {
 					// First-time generation
-					msgHist = getMessageHistory(this, {
+					msgHist = getMessageHistory(thread, {
 						hiddenUserIds:
 							user.id !== this.usersMap.coordinator.id
 								? [this.usersMap.coordinator.id]
@@ -408,13 +408,21 @@ export const useChatStore = defineStore("counter", {
 				const directMention = t.match(/@([a-zA-Z0-9_]+)/g);
 				if (directMention) {
 					// remove the @ and only keep valid usernames
-					next.push(...directMention.map((m: string) => m.slice(1)).filter((m: string) => this.getActiveThread.joinedUserIds.includes(m)))
+					next.push(...directMention.map((m: string) => m.slice(1)).filter((m: string) => thread.joinedUserIds.includes(m)))
 				}
-				// also match html tags like <user_id> prompt </user_id>
-				// where user_id is the id of the user
-				const prompts = t.match(/<[a-zA-Z0-9_]+>(.*?)<\/[a-zA-Z0-9_]+>/g);
+				// also match html tags like <user_id>prompt</user_id>
+				// where user_id can be only letters, numbers, and underscores
+				// prompt may be anything
+				const prompts = t.match(rHtmlTagWithContent);
+
+				console.warn(t)
+				console.warn(prompts)
 				if (prompts) {
-					next.push(...prompts.map((p: string) => p.slice(1, p.indexOf(">"))).filter((m: string) => this.getActiveThread.joinedUserIds.includes(m)))
+					next.push(...prompts.map((p: string) => p.slice(1, p.indexOf(">"))).filter((m: string) => {
+						const isInChat = thread.joinedUserIds.includes(m)
+						if (!isInChat) smartNotify(`User ${m} is not a member of this chat thread.`)
+						return isInChat
+					}))
 				}
 
 				if (next.length > 0) return next;
@@ -431,22 +439,6 @@ export const useChatStore = defineStore("counter", {
 				nextMsg.dateCreated = message.dateCreated;
 				followups.push(nextMsg);
 			}
-
-
-			// for (let i = 0; i < followupPrompts.length; i++) {
-			// 	// const prompt = `<result>${followupPrompts[i]}</result>`
-			// 	const prompt = followupPrompts[i];
-			//
-			// 	message.textSnippets.push(prompt);
-			// 	const nextMsg: ChatMessage = this.createMessageFromUserId(
-			// 		"???"
-			// 	);
-			// 	message.followupMsgIds.push(nextMsg.id);
-			// 	// nextMsg.textSnippets.push(prompt);
-			// 	nextMsg.dateCreated = message.dateCreated;
-			// 	// comp.pushMessage(nextMsg);
-			// 	followups.push(nextMsg);
-			// }
 
 			for (const nextMsg of followups) {
 				if (thread.prefs.orderedResponses) {

@@ -13,6 +13,7 @@
                     size="6"
                     v-bind="msg"
                     @click="onClickMsg(msg)">
+
                 <div v-for="textSnippet in parseTextSnippets(msg)"
                      :key="textSnippet"
                      @click="copyClipboard(textSnippet)">
@@ -34,6 +35,9 @@
                                    style="max-height: 400px"/>
                         </q-card-section>
                     </q-card>
+                    <q-tooltip :delay="750">
+                        {{ getContentHoverHint(msg) }}
+                    </q-tooltip>
                 </div>
 
                 <div v-if="msg.loading">
@@ -177,13 +181,19 @@ const getUserIcon = (message: ChatMessage) => {
 	return user.icon;
 };
 
-const getContentHoverHint = (message: ChatMessage) => {
+
+const getWhoSentWhatWhen = (message: ChatMessage) => {
 	const numTexts = message.textSnippets?.length ?? 0;
 	const numImages = message.imageUrls?.length ?? 0;
 	const who = (isSentByMe(message) ? "You" : message.userName) + ` (${message.userId})`
 	const what = `${numTexts} ${getSingularOrPlural('text', numTexts)} and ${numImages} ${getSingularOrPlural('image', numImages)}`;
 	const when = dateToLocaleStr(message.dateCreated);
 	return `${who} sent ${what} on ${when}`;
+}
+const getContentHoverHint = (message: ChatMessage) => {
+	const fallback = getWhoSentWhatWhen(message);
+	return fallback
+	// return message.response?.prompt.text ?? fallback;
 };
 
 const getStamp = (message: ChatMessage) => {
@@ -319,7 +329,7 @@ watch(
 
 const parseThreadMessages = (): ChatMessage[] => {
 	const thread: ChatThread = store.getActiveThread;
-	let messages: ChatMessage[] = getMessageHistory(store, {
+	let messages: ChatMessage[] = getMessageHistory(thread, {
 		forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
 		hiddenUserIds: thread.prefs.hiddenUserIds,
 		maxMessages: undefined,
@@ -328,7 +338,7 @@ const parseThreadMessages = (): ChatMessage[] => {
 	console.log("parseThreadMessages->messages:", messages);
 
 	messages = messages.filter((message: ChatMessage) => {
-		return !(store.getActiveThread.prefs.dontShowMessagesHiddenInPrompts && message.hideInPrompt);
+		return !(thread.prefs.dontShowMessagesHiddenInPrompts && message.hideInPrompt);
 	});
 	console.log("parseThreadMessages->filtered:", messages);
 	return messages;

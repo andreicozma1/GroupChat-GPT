@@ -1,4 +1,4 @@
-import {ChatMessage, ChatMessageHistoryConfig} from "src/util/chat/ChatModels";
+import {ChatMessage, ChatMessageHistoryConfig, ChatThread} from "src/util/chat/ChatModels";
 import {parseDate} from "src/util/DateUtils";
 
 
@@ -7,9 +7,9 @@ function msgContainsKeywords(message: ChatMessage, keywords: string[]): boolean 
 	return keywords.some((keyword: string) => text.includes(keyword.toLowerCase()));
 }
 
-export const getMessageHistory = (comp: any, config: ChatMessageHistoryConfig): ChatMessage[] => {
+export const getMessageHistory = (thread: ChatThread, config: ChatMessageHistoryConfig): ChatMessage[] => {
 	const excludeLoading = config.excludeLoading ?? false;
-	let messages: ChatMessage[] = Object.values(comp.getActiveThread.messageIdMap)
+	let messages: ChatMessage[] = Object.values(thread.messageIdMap)
 	// filter out messages whose textSnippets stripped and joined are empty
 	// unless the message has an image
 	messages = messages.filter((message: ChatMessage) => {

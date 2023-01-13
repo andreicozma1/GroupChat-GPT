@@ -5,7 +5,7 @@ import {wrapInTag} from "src/util/TextUtils";
 import {processItemizedList} from "src/util/ItemizedList";
 import {dateToLocaleStr} from "src/util/DateUtils";
 import {PromptConfig} from "src/util/prompt/PromptModels";
-import {regexTag} from "src/util/Utils";
+import {createRegexHtmlTagWithContent, rHtmlTagEnd, rHtmlTagStart, rHtmlTagWithContent} from "src/util/Utils";
 
 export class PromptBuilder {
 	constructor(protected promptConfig: PromptConfig) {}
@@ -13,15 +13,17 @@ export class PromptBuilder {
 	public static filterMessagesWithTags(messages: ChatMessage[]): ChatMessage[] {
 		return messages.filter((msg: ChatMessage) => {
 			return msg.textSnippets.some((text: string) => {
-				return /(<([^>]+)>)/gi.test(text);
+				return rHtmlTagWithContent.test(text);
 			});
 		});
 	}
 
-	public static filterSnippetsWithTags(textSnipets: string[]): string[] {
+	public static filterSnippetsWithTags(textSnipets: string[], tag?: string): string[] {
+		let regex = rHtmlTagWithContent
+		if (tag?.trim()) regex = createRegexHtmlTagWithContent(tag)
 		return textSnipets.filter((text: string) => {
 			// return /(<([^>]+)>)/gi.test(text);
-			return regexTag.test(text);
+			return regex.test(text);
 		});
 	}
 
@@ -200,23 +202,26 @@ export class Prompt extends PromptBuilder {
 	}
 
 	public createPromptDalleGen(): string | undefined {
-		// find the last message that contains a html tag in any of the text snippets
-		const usedMessages = PromptBuilder.filterMessagesWithTags(this.messagesCtx);
-		if (usedMessages.length === 0) {
-			smartNotify("Error: No messages with prompts found in message history");
-			return undefined;
-		}
 		// now get the actual textSnippet that contains the html tag
-		const promptSnippets = usedMessages[usedMessages.length - 1].textSnippets
-
-		if (promptSnippets.length === 0) {
-			smartNotify("Error: No prompt found in the conversation history");
-			return undefined;
+		const promptSnippets = PromptBuilder.filterSnippetsWithTags(this.messagesCtx.flatMap((msg: ChatMessage) => msg.textSnippets), "dalle_gen");
+		if (promptSnippets.length !== 0) {
+			smartNotify('Using text within dalle_gen tags');
+			return this.removeHtmlTags(promptSnippets[promptSnippets.length - 1])
 		}
-
-		return promptSnippets[promptSnippets.length - 1];
+		const lastMsg = this.messagesCtx[this.messagesCtx.length - 1];
+		if (lastMsg) {
+			smartNotify('Using last message text snippet as prompt');
+			return this.removeHtmlTags(lastMsg.textSnippets[lastMsg.textSnippets.length - 1])
+		}
+		smartNotify("Error: No prompt found");
+		return undefined;
 	}
 
+	public removeHtmlTags(text: string): string {
+		text = text.replace(rHtmlTagStart, "");
+		text = text.replace(rHtmlTagEnd, "");
+		return text.trim();
+	}
 
 	public createPromptCodexGen(): string | undefined {
 		const start = "### CODE GENERATION ###\n";

@@ -353,7 +353,6 @@ const loadThread = (shouldScroll = false) => {
 		// count the number of messages after
 		const newMsgCount = threadMessages.value.length;
 		if (shouldScroll || newMsgCount > prevMsgCount) scrollToBottom(1000);
-		store.saveData()
 	} catch (err: any) {
 		console.error("Error loading chat thread", err);
 		const threadVer = store.getActiveThread.appVersion?.trim()

@@ -433,6 +433,8 @@ export const useChatStore = defineStore("counter", {
 
 			console.warn("handleUserMessage->followupActors:", followups);
 
+			this.saveData()
+			
 			for (const nextKey of followups) {
 				const nextMsg: ChatMessage = this.createMessageFromUserId(nextKey);
 				message.followupMsgIds.push(nextMsg.id);

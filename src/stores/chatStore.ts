@@ -394,8 +394,6 @@ export const useChatStore = defineStore("counter", {
 
 			message.loading = false;
 
-			const followups = [];
-
 			// const followupActors = message.textSnippets
 			// 	.flatMap((t: string) => t.toLowerCase().split("\n"))
 			// 	.filter((t: string) => t.includes("respond"))
@@ -403,7 +401,7 @@ export const useChatStore = defineStore("counter", {
 			// 	.map((a: string) => a.trim().toLowerCase())
 			// 	.filter((a: string) => a !== "none");
 			// find if any instances of a member's name or id is in the message. otherwise default to the coordinator
-			const followupActors = message.textSnippets.flatMap((t: string) => {
+			const followups = message.textSnippets.flatMap((t: string) => {
 				const next = []
 				const directMention = t.match(/@([a-zA-Z0-9_]+)/g);
 				if (directMention) {
@@ -428,19 +426,17 @@ export const useChatStore = defineStore("counter", {
 				if (next.length > 0) return next;
 				return [];
 			});
-			if (user.id === this.getHumanUserConfig().id && followupActors.length === 0) {
-				followupActors.push(this.usersMap.coordinator.id);
-			}
-			console.warn("handleUserMessage->followupActors:", followupActors);
 
-			for (const nextKey of followupActors) {
+			if (user.id === this.getHumanUserConfig().id && followups.length === 0) {
+				followups.push(this.usersMap.coordinator.id);
+			}
+
+			console.warn("handleUserMessage->followupActors:", followups);
+
+			for (const nextKey of followups) {
 				const nextMsg: ChatMessage = this.createMessageFromUserId(nextKey);
 				message.followupMsgIds.push(nextMsg.id);
 				nextMsg.dateCreated = message.dateCreated;
-				followups.push(nextMsg);
-			}
-
-			for (const nextMsg of followups) {
 				if (thread.prefs.orderedResponses) {
 					await this.handleUserMessage(nextMsg);
 				} else {

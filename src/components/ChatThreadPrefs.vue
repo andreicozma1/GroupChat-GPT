@@ -11,17 +11,15 @@
                         <q-card bordered flat>
                             <q-list separator>
                                 <q-item v-for="member in getThreadUsers()" :key="member">
-                                    <q-item-section avatar>
+                                    <q-item-section side>
                                         <q-avatar :icon="member.icon" rounded size="sm"/>
                                     </q-item-section>
                                     <q-item-section>
-                                        <q-item-label>{{ member.name }}</q-item-label>
+                                        <q-item-label>
+                                            {{ member.name }}
+                                        </q-item-label>
                                         <q-item-label caption>
-                                            {{
-                                                isUserHidden(member)
-                                                        ? "Hidden"
-                                                        : "Visible"
-                                            }}
+                                            ID: {{ member.id }} ({{ member.type }})
                                         </q-item-label>
                                     </q-item-section>
                                     <q-item-section side>

@@ -217,31 +217,6 @@ const parseTextSnippets = (message: ChatMessage) => {
 	return texts;
 };
 
-const sanitizeTextSnippet = (textSnippet: string) => {
-	// const tagsReplMap: { [key: string]: string } = {
-	// 	prompt: "b",
-	// 	image: "b",
-	// 	code: "b",
-	// 	result: "b",
-	// };
-	// // replace special tags with valid html tags to distinguish them
-	// let ts = textSnippet.replace(regexTagStart, (match, oldTag: string) => {
-	// 	// replace tag with replacement if it exists
-	// 	if (oldTag in tagsReplMap) return `<${tagsReplMap[oldTag]}>`;
-	// 	// remove all other tags
-	// 	return "<b>"
-	// });
-	//
-	// ts = ts.replace(regexTagEnd, (match, oldTag: string) => {
-	// 	// replace tag with replacement if it exists
-	// 	if (oldTag in tagsReplMap) return `</${tagsReplMap[oldTag]}>`;
-	// 	// remove all other tags
-	// 	return "</b>"
-	// });
-	// console.warn(ts)
-	return textSnippet
-};
-
 const ignoreMessage = (message: ChatMessage) => {
 	console.warn("=> ignore:", {...message});
 	message.hideInPrompt = message.hideInPrompt === undefined ? true : !message.hideInPrompt;

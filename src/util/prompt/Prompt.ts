@@ -162,6 +162,7 @@ export class Prompt extends PromptBuilder {
 
 	public text: string;
 	public hash: string;
+	public messagesCtxIds: string[];
 	public createTextPrompt: () => string;
 
 	// create a constructor
@@ -173,6 +174,7 @@ export class Prompt extends PromptBuilder {
 		public messagesCtx: ChatMessage[],
 	) {
 		super(user.promptConfig);
+		this.messagesCtxIds = messagesCtx.map((m: ChatMessage) => m.id)
 		// promptType if a function part of this class.
 		this.createTextPrompt = Object.getPrototypeOf(this)[this.promptConfig.promptType];
 		console.log(Object.getPrototypeOf(this));

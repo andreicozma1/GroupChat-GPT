@@ -18,20 +18,12 @@ const defaultThreadId = "general";
 const defaultThreadName = "General";
 const defaultAssistants = ["davinci", "dalle", "codex"];
 
-interface CachedResponse {
-	contextIds: string[];
-	data: any;
-}
 
-export interface PromptResponse {
-	prompt: Prompt;
-	response: CachedResponse;
-	// TODO: Put these in a separate MessageContent interface and keep track of history
-	textSnippets: string[];
-	imageUrls: string[];
-
-	errorMsg: string;
+export interface ApiResponse {
 	cached: boolean;
+	errorMsg: string;
+	prompt: Prompt;
+	data: any;
 }
 
 const DefaultThread = {
@@ -59,7 +51,7 @@ interface ChatStoreState {
 	humanUserName: string;
 	currentThreadId: string;
 	currentThreadName: string;
-	cachedResponses: Record<string, CachedResponse>;
+	cachedResponses: Record<string, any>;
 }
 
 export const useChatStore = defineStore("counter", {
@@ -90,7 +82,7 @@ export const useChatStore = defineStore("counter", {
 		getCachedResponses(state) {
 			return state.cachedResponses;
 		},
-		getCachedResponseFromPrompt(): (prompt: Prompt) => CachedResponse {
+		getCachedResponseFromPrompt(): (prompt: Prompt) => any {
 			return (prompt: Prompt) => this.getCachedResponses[prompt.hash];
 		},
 		getUserConfig() {
@@ -200,52 +192,53 @@ export const useChatStore = defineStore("counter", {
 			this.humanUserName = defaultUserName;
 			this.saveData();
 		},
+
+		getHumanUserConfig(): User {
+			return this.getUserConfig(this.humanUserId);
+		},
+
 		createMessageFromUserId(id: string): ChatMessage {
 			id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
 			const cfg: User = this.getUserConfig(id);
 			return new ChatMessage(cfg, this);
 		},
 
-		getHumanUserConfig(): User {
-			return this.getUserConfig(this.humanUserId);
-		},
-
-		parseApiResponse(response: CachedResponse) {
-			// const cache = this.getCachedResponseFromPrompt(prompt);
-			const responseData = response.data;
-			const choices = responseData.choices;
-			const text = choices?.flatMap((c: any) => {
-				return c.text.trim();
-			});
-			if (text) {
-				console.warn("=> text:");
-				text?.forEach((t: string) => console.log(t));
+		deleteMessage(messageId: string, silent = false): void {
+			if (!this.getActiveThread.messageIdMap[messageId]) {
+				if (!silent) {
+					smartNotify("An error occurred while deleting the message.");
+				}
+				console.error(
+					`An error occurred while deleting the message: ${messageId}`
+				);
+				return;
 			}
-
-			const images = responseData.data?.map((d: any) => d.url);
-			if (images) {
-				console.warn("=> images:");
-				images?.forEach((i: string) => console.log(i));
+			const followUpIds =
+				this.threadsMap[this.currentThreadId].messageIdMap[messageId]
+					.followupMsgIds;
+			if (followUpIds) {
+				for (let i = 0; i < followUpIds.length; i++) {
+					this.deleteMessage(followUpIds[i], true);
+				}
 			}
-
-			return {
-				textSnippets: text ?? [],
-				imageUrls: images ?? []
-			};
+			delete this.threadsMap[this.currentThreadId].messageIdMap[messageId];
+			this.saveData();
+			smartNotify("Successfully deleted message.");
 		},
 		async generate(
 			user: User,
 			msgHist: ChatMessage[],
 			ignoreCache?: boolean
-		): Promise<PromptResponse> {
+		): Promise<ApiResponse> {
 			ignoreCache = ignoreCache ?? false;
 			console.warn("-".repeat(20));
 			console.log("generate->actor:", user);
 			console.log("generate->ignoreCache:", ignoreCache);
 
 			msgHist = msgHist.filter((m: ChatMessage) => !m.hideInPrompt);
-			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
-			console.log("generate->contextIds:", contextIds);
+			// const contextIds: string[] = ;
+			// console.log("generate->contextIds:", contextIds);
+
 			for (let i = 0; i < msgHist.length; i++) {
 				console.log("----------------");
 				console.log(
@@ -291,50 +284,20 @@ export const useChatStore = defineStore("counter", {
 				return {
 					cached: false,
 					errorMsg: errorMsg,
-					response: {
-						contextIds: contextIds,
-						data: undefined,
-					},
-					textSnippets: [],
-					imageUrls: [],
 					prompt: prompt,
+					data: undefined,
 				};
 			}
-			this.cachedResponses[prompt.hash] = {
-				contextIds: contextIds,
-				...completion,
-			};
+			this.cachedResponses[prompt.hash] = {...completion};
 
 			return {
+				cached: cached,
 				errorMsg: "",
 				prompt: prompt,
-				response: this.cachedResponses[prompt.hash],
-				cached: cached,
-				...this.parseApiResponse(this.cachedResponses[prompt.hash]),
+				data: this.cachedResponses[prompt.hash],
 			};
 		},
-		deleteMessage(messageId: string, silent = false): void {
-			if (!this.getActiveThread.messageIdMap[messageId]) {
-				if (!silent) {
-					smartNotify("An error occurred while deleting the message.");
-				}
-				console.error(
-					`An error occurred while deleting the message: ${messageId}`
-				);
-				return;
-			}
-			const followUpIds =
-				this.threadsMap[this.currentThreadId].messageIdMap[messageId]
-					.followupMsgIds;
-			if (followUpIds) {
-				for (let i = 0; i < followUpIds.length; i++) {
-					this.deleteMessage(followUpIds[i], true);
-				}
-			}
-			delete this.threadsMap[this.currentThreadId].messageIdMap[messageId];
-			this.saveData();
-			smartNotify("Successfully deleted message.");
-		},
+
 		async handleUserMessage(message: ChatMessage) {
 			const user: User = this.getUserConfig(message.userId);
 			const thread: ChatThread = this.getActiveThread;
@@ -356,7 +319,7 @@ export const useChatStore = defineStore("counter", {
 			}
 
 			if (user.type !== UserTypes.HUMAN) {
-				const msgHistIds = message.response?.response?.contextIds;
+				const msgHistIds = message.apiResponse?.prompt?.messagesCtxIds
 				let ignoreCache = user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
 				let msgHist;
 				if (!msgHistIds) {
@@ -379,16 +342,7 @@ export const useChatStore = defineStore("counter", {
 					ignoreCache = true;
 				}
 				const response = await this.generate(user, msgHist, ignoreCache);
-				message.response = response;
-				console.log("handleUserMessage->response:", message.response);
-
-				if (response?.textSnippets) message.textSnippets = response.textSnippets;
-				if (response?.imageUrls) message.imageUrls = response.imageUrls;
-
-				if (response.errorMsg) {
-					console.error("Error generating response:", response.errorMsg);
-					message.textSnippets.push("[ERROR]" + "\n" + response.errorMsg)
-				}
+				message.parseApiResponse(response);
 			}
 
 			message.loading = false;

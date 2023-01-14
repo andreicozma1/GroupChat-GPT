@@ -1,4 +1,4 @@
-import {PromptResponse} from "stores/chatStore";
+import {ApiResponse} from "stores/chatStore";
 import {User} from "src/util/users/User";
 import {v4 as uuidv4} from "uuid";
 import {getRobohashUrl} from "src/util/ImageUtils";
@@ -30,7 +30,7 @@ export class ChatMessage {
 	hideInPrompt = false
 	textSnippets: string[] = []
 	imageUrls: string[] = []
-	response?: PromptResponse
+	apiResponse?: ApiResponse
 
 	constructor(
 		chatUser: User,
@@ -41,6 +41,32 @@ export class ChatMessage {
 		this.userAvatarUrl = getRobohashUrl(this.userName)
 		this.loading = true
 		store.getActiveThread.messageIdMap[this.id] = this
+	}
+
+	parseApiResponse(apiRequest: ApiResponse) {
+		this.apiResponse = apiRequest;
+		console.log("ChatMessage.parseApiResponse:", this.apiResponse);
+
+		const textSnippets = apiRequest.data?.choices?.flatMap((c: any) => {
+			return c.text.trim();
+		});
+		if (textSnippets) {
+			console.warn("=> text:");
+			textSnippets?.forEach((t: string) => console.log(t));
+			this.textSnippets = textSnippets;
+		}
+
+		const imageUrls = apiRequest.data?.data?.map((d: any) => d.url);
+		if (imageUrls) {
+			console.warn("=> images:");
+			imageUrls?.forEach((i: string) => console.log(i));
+			this.imageUrls = imageUrls;
+		}
+
+		if (apiRequest.errorMsg) {
+			console.error("Error generating response:", apiRequest.errorMsg);
+			this.textSnippets.push("[ERROR]" + "\n" + apiRequest.errorMsg)
+		}
 	}
 
 }

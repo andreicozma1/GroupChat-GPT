@@ -158,7 +158,7 @@ const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 const onClickMsg = (message: ChatMessage) => {
 	console.log({...message});
-	console.log({...message.response?.response?.data})
+	console.log({...message.apiResponse?.data?.data})
 };
 
 const getUserName = (message: ChatMessage): string => {
@@ -202,7 +202,7 @@ const getStamp = (message: ChatMessage) => {
 	// let res = `${what} ${on}`;
 	let res = `${on}`;
 	// if (msg.isCompRegen) res = `* ${res}`;
-	if (message.response?.cached) res = `${res} (cached)`;
+	if (message.apiResponse?.cached) res = `${res} (cached)`;
 	return res;
 };
 
@@ -210,7 +210,7 @@ const getStampHoverHint = (message: ChatMessage) => {
 	const when = dateToLocaleStr(message.dateCreated);
 	const what = isSentByMe(message) ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated = message.response?.response?.data?.created * 1000;
+	const dateGenerated = message.apiResponse?.data?.data?.created * 1000;
 	if (dateGenerated) res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 
 	return res;
@@ -240,7 +240,7 @@ const editMessage = (message: ChatMessage) => {
 
 const canRegenMessage = (message: ChatMessage) => {
 	if (message.shouldDelete) return false;
-	const msgIds = message.response?.response?.contextIds;
+	const msgIds = message.apiResponse?.prompt.messagesCtxIds
 	if (msgIds) return msgIds.length > 0;
 	return false;
 };
@@ -248,7 +248,7 @@ const canRegenMessage = (message: ChatMessage) => {
 const regenMessage = (message: ChatMessage) => {
 	console.warn("*".repeat(40));
 	console.log("regenMessage->message:", {...message});
-	console.log("regenMessage->message.response?.contextIds:", message.response?.response?.contextIds);
+	console.log("regenMessage->message.apiResponse?.prompt.messagesCtxId:", message.apiResponse?.prompt.messagesCtxIds);
 	store.handleUserMessage(message);
 };
 

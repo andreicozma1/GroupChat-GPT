@@ -22,7 +22,7 @@ const defaultAssistants = ["davinci", "dalle", "codex"];
 
 export interface ApiResponse {
 	cached: boolean;
-	errorMsg: string;
+	errorMsg: string | undefined;
 	prompt: Prompt;
 	data: any;
 }
@@ -293,7 +293,7 @@ export const useChatStore = defineStore("counter", {
 
 			return {
 				cached: cached,
-				errorMsg: "",
+				errorMsg: undefined,
 				prompt: prompt,
 				data: this.cachedResponses[prompt.hash],
 			};
@@ -306,7 +306,7 @@ export const useChatStore = defineStore("counter", {
 
 			console.warn("*".repeat(40));
 
-			console.log("handleUserMessage->cfg:", user);
+			console.log("handleUserMessage->user:", user);
 			console.log("handleUserMessage->message:", message);
 
 			message.loading = true

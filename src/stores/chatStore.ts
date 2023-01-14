@@ -105,6 +105,7 @@ export const useChatStore = defineStore("counter", {
 			}
 		},
 		getActiveThread(): ChatThread {
+			console.warn("=".repeat(60))
 			let needsSave = false;
 			let thread = this.threadsMap[this.currentThreadId];
 			if (!thread) {
@@ -434,7 +435,7 @@ export const useChatStore = defineStore("counter", {
 			console.warn("handleUserMessage->followupActors:", followups);
 
 			this.saveData()
-			
+
 			for (const nextKey of followups) {
 				const nextMsg: ChatMessage = this.createMessageFromUserId(nextKey);
 				message.followupMsgIds.push(nextMsg.id);

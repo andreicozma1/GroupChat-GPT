@@ -55,7 +55,7 @@ export const smartNotify = (message: string, caption?: string) => {
 	}
 
 	console.log("message", message);
-	console.log("caption", caption);
+	if (caption) console.log("caption", caption);
 
 	Notify.create({
 		color: color,

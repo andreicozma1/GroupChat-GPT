@@ -1,7 +1,7 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {getAppVersion, rHtmlTagWithContent} from "src/util/Utils";
-import {ChatMessage, ChatThread, ChatThreadPrefs,} from "src/util/chat/ChatModels";
+import {ChatThread, ChatThreadPrefs,} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
 import {getMessageHistory} from "src/util/chat/ChatUtils";
@@ -10,6 +10,7 @@ import {User, UserTypes} from "src/util/users/User";
 import {UserHuman} from "src/util/users/UserHuman";
 import {UserCodex, UserCoordinator, UserDalle, UserDavinci,} from "src/util/users/Assistant";
 import {UserCodexGen, UserDalleGen} from "src/util/users/Helpers";
+import {ChatMessage} from "src/util/chat/ChatMessage";
 
 const localStorageKey = "data";
 const defaultUserId = "humanUser";
@@ -302,7 +303,6 @@ export const useChatStore = defineStore("counter", {
 			const user: User = this.getUserConfig(message.userId);
 			const thread: ChatThread = this.getActiveThread;
 			this.saveData()
-
 
 			console.warn("*".repeat(40));
 

@@ -1,4 +1,3 @@
-import {ChatMessage} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {User} from "src/util/users/User";
 import {wrapInTag} from "src/util/TextUtils";
@@ -6,6 +5,7 @@ import {processItemizedList} from "src/util/ItemizedList";
 import {dateToLocaleStr} from "src/util/DateUtils";
 import {PromptConfig} from "src/util/prompt/PromptModels";
 import {createRegexHtmlTagWithContent, rHtmlTagEnd, rHtmlTagStart, rHtmlTagWithContent} from "src/util/Utils";
+import {ChatMessage} from "src/util/chat/ChatMessage";
 
 export class PromptBuilder {
 	constructor(protected promptConfig: PromptConfig) {}

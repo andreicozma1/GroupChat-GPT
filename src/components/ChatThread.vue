@@ -138,9 +138,10 @@ import {computed, onMounted, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {getMessageHistory} from "src/util/chat/ChatUtils";
-import {ChatMessage, ChatThread} from "src/util/chat/ChatModels";
+import {ChatThread} from "src/util/chat/ChatModels";
 import {User} from "src/util/users/User";
 import {getSingularOrPlural} from "src/util/TextUtils";
+import {ChatMessage} from "src/util/chat/ChatMessage";
 
 const props = defineProps({
 	scrollAreaStyle: {

@@ -61,8 +61,8 @@
 import {useChatStore} from "stores/chatStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
-import {ChatMessage} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
+import {ChatMessage} from "src/util/chat/ChatMessage";
 
 const store = useChatStore();
 

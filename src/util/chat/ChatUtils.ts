@@ -1,5 +1,6 @@
-import {ChatMessage, ChatMessageHistoryConfig, ChatThread} from "src/util/chat/ChatModels";
+import {ChatMessageHistoryConfig, ChatThread} from "src/util/chat/ChatModels";
 import {parseDate} from "src/util/DateUtils";
+import {ChatMessage} from "src/util/chat/ChatMessage";
 
 
 function msgContainsKeywords(message: ChatMessage, keywords: string[]): boolean {

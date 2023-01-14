@@ -347,13 +347,6 @@ export const useChatStore = defineStore("counter", {
 
 			message.loading = false;
 
-			// const followupActors = message.textSnippets
-			// 	.flatMap((t: string) => t.toLowerCase().split("\n"))
-			// 	.filter((t: string) => t.includes("respond"))
-			// 	.flatMap((t: string) => t.split(":")[1].split(","))
-			// 	.map((a: string) => a.trim().toLowerCase())
-			// 	.filter((a: string) => a !== "none");
-			// find if any instances of a member's name or id is in the message. otherwise default to the coordinator
 			const followups = message.textSnippets.flatMap((text: string) => {
 				const next = []
 				const directMention = text.match(/@([a-zA-Z0-9_]+)/g);
@@ -361,9 +354,6 @@ export const useChatStore = defineStore("counter", {
 					// remove the @ and only keep valid usernames
 					next.push(...directMention.map((m: string) => m.slice(1)).filter((m: string) => thread.joinedUserIds.includes(m)))
 				}
-				// also match html tags like <user_id>prompt</user_id>
-				// where user_id can be only letters, numbers, and underscores
-				// prompt may be anything
 				const prompts = text.match(rHtmlTagWithContent);
 
 				console.warn(text)

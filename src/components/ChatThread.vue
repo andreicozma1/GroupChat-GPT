@@ -158,8 +158,8 @@ const threadMessages: Ref<ChatMessage[]> = ref([]);
 
 
 const onClickMsg = (message: ChatMessage) => {
-	console.log({...message});
-	console.log({...message.apiResponse?.data?.data})
+	console.log('onClickMsg:', {...message});
+	console.log('onClickMsg', {...message.apiResponse?.data?.data})
 };
 
 const getUserName = (message: ChatMessage): string => {

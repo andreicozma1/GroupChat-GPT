@@ -20,13 +20,11 @@ export class ChatMessage {
 
 	constructor(
 		chatUser: User,
-		store: any
 	) {
 		this.userId = chatUser?.id || "unknown";
 		this.userName = chatUser?.name || "Unknown User";
 		this.userAvatarUrl = getRobohashUrl(this.userName)
 		this.loading = true
-		store.getActiveThread.messageIdMap[this.id] = this
 	}
 
 	parseApiResponse(apiResponse: ApiResponse) {

@@ -201,7 +201,7 @@ export const useChatStore = defineStore("counter", {
 		createMessageFromUserId(id: string): ChatMessage {
 			id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
 			const cfg: User = this.getUserConfig(id);
-			return new ChatMessage(cfg, this);
+			return new ChatMessage(cfg);
 		},
 
 		deleteMessage(messageId: string, silent = false): void {
@@ -302,6 +302,7 @@ export const useChatStore = defineStore("counter", {
 		async handleUserMessage(message: ChatMessage) {
 			const user: User = this.getUserConfig(message.userId);
 			const thread: ChatThread = this.getActiveThread;
+			thread.messageIdMap[message.id] = message;
 			this.saveData()
 
 			console.warn("*".repeat(40));

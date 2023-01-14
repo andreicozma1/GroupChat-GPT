@@ -84,7 +84,7 @@ const sendMessage = () => {
 	console.warn("=".repeat(60));
 	console.warn("=> sendMessage:");
 	if (userMsgObj.value === null) {
-		userMsgObj.value = new ChatMessage(store.getHumanUserConfig(), store);
+		userMsgObj.value = new ChatMessage(store.getHumanUserConfig());
 	}
 	userMsgObj.value.textSnippets.push(userMsgStr.value);
 	userMsgStr.value = "";

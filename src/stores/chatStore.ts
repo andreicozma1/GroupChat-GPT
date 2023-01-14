@@ -145,7 +145,7 @@ export const useChatStore = defineStore("counter", {
 	actions: {
 		saveData() {
 			// TODO: Make this optional with a preference
-			// smartNotify("Saving data...");
+			smartNotify("Saving data...");
 			LocalStorage.set(localStorageKey, this.$state);
 		},
 		clearAllData() {
@@ -207,9 +207,6 @@ export const useChatStore = defineStore("counter", {
 		},
 
 		getHumanUserConfig(): User {
-			console.log(this.getUsersMap);
-			console.log(this.getUserConfig(this.humanUserId));
-			console.log(this.humanUserId);
 			return this.getUserConfig(this.humanUserId);
 		},
 
@@ -232,8 +229,8 @@ export const useChatStore = defineStore("counter", {
 			}
 
 			return {
-				textSnippets: text,
-				imageUrls: images,
+				textSnippets: text ?? [],
+				imageUrls: images ?? []
 			};
 		},
 		async generate(
@@ -341,6 +338,8 @@ export const useChatStore = defineStore("counter", {
 		async handleUserMessage(message: ChatMessage) {
 			const user: User = this.getUserConfig(message.userId);
 			const thread: ChatThread = this.getActiveThread;
+			this.saveData()
+
 
 			console.warn("*".repeat(40));
 
@@ -383,14 +382,13 @@ export const useChatStore = defineStore("counter", {
 				message.response = response;
 				console.log("handleUserMessage->response:", message.response);
 
-				if (response.errorMsg) {
-					console.error("Error generating response:", response.errorMsg);
-					message.textSnippets = ["[ERROR]" + "\n" + response.errorMsg];
-					return;
-				}
-
 				if (response?.textSnippets) message.textSnippets = response.textSnippets;
 				if (response?.imageUrls) message.imageUrls = response.imageUrls;
+
+				if (response.errorMsg) {
+					console.error("Error generating response:", response.errorMsg);
+					message.textSnippets.push("[ERROR]" + "\n" + response.errorMsg)
+				}
 			}
 
 			message.loading = false;
@@ -402,9 +400,9 @@ export const useChatStore = defineStore("counter", {
 			// 	.map((a: string) => a.trim().toLowerCase())
 			// 	.filter((a: string) => a !== "none");
 			// find if any instances of a member's name or id is in the message. otherwise default to the coordinator
-			const followups = message.textSnippets.flatMap((t: string) => {
+			const followups = message.textSnippets.flatMap((text: string) => {
 				const next = []
-				const directMention = t.match(/@([a-zA-Z0-9_]+)/g);
+				const directMention = text.match(/@([a-zA-Z0-9_]+)/g);
 				if (directMention) {
 					// remove the @ and only keep valid usernames
 					next.push(...directMention.map((m: string) => m.slice(1)).filter((m: string) => thread.joinedUserIds.includes(m)))
@@ -412,9 +410,9 @@ export const useChatStore = defineStore("counter", {
 				// also match html tags like <user_id>prompt</user_id>
 				// where user_id can be only letters, numbers, and underscores
 				// prompt may be anything
-				const prompts = t.match(rHtmlTagWithContent);
+				const prompts = text.match(rHtmlTagWithContent);
 
-				console.warn(t)
+				console.warn(text)
 				console.warn(prompts)
 				if (prompts) {
 					next.push(...prompts.map((p: string) => p.slice(1, p.indexOf(">"))).filter((m: string) => {
@@ -434,8 +432,6 @@ export const useChatStore = defineStore("counter", {
 
 			console.warn("handleUserMessage->followupActors:", followups);
 
-			this.saveData()
-
 			for (const nextKey of followups) {
 				const nextMsg: ChatMessage = this.createMessageFromUserId(nextKey);
 				message.followupMsgIds.push(nextMsg.id);
@@ -446,6 +442,7 @@ export const useChatStore = defineStore("counter", {
 					this.handleUserMessage(nextMsg);
 				}
 			}
+			this.saveData()
 		},
 	},
 });

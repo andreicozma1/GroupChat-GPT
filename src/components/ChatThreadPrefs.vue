@@ -92,6 +92,7 @@
 <script lang="ts" setup>
 import {useChatStore} from "stores/chatStore";
 import {User} from "src/util/users/User";
+import {ChatThread} from "src/util/chat/ChatModels";
 
 const store = useChatStore();
 
@@ -105,10 +106,11 @@ const isUserHidden = (user: User): boolean => {
 
 const toggleHiddenUser = (user: User) => {
 	const userId = user.id;
+	const thread: ChatThread = store.getActiveThread
 	if (isUserHidden(user)) {
-		store.getActiveThread.prefs.hiddenUserIds = store.getActiveThread.prefs.hiddenUserIds.filter((id) => id !== userId);
+		thread.prefs.hiddenUserIds = thread.prefs.hiddenUserIds.filter((id) => id !== userId);
 	} else {
-		store.getActiveThread.prefs.hiddenUserIds.push(userId);
+		thread.prefs.hiddenUserIds.push(userId);
 	}
 };
 

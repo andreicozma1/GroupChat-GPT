@@ -4,7 +4,7 @@ import {PromptConfig} from "src/util/prompt/PromptModels";
 export enum UserTypes {
 	HUMAN = "human",
 	ASSISTANT = "assistant",
-	HELPER = "helper"
+	HELPER = "helper",
 }
 
 export class User {
@@ -12,11 +12,13 @@ export class User {
 	name: string;
 	icon = "chat";
 	type: UserTypes;
-	apiReqConfig: ApiRequestConfigTypes | string = ApiRequestConfigTypes.CONVERSATION;
+	apiReqConfig: ApiRequestConfigTypes | string =
+		ApiRequestConfigTypes.CONVERSATION;
 	promptConfig: PromptConfig;
 	showInMembersInfo = true;
 	shouldIgnoreCache = false;
 	requiresUserIds: string[] = [];
+	defaultJoin = false;
 
 	constructor(id: string, name: string, type: UserTypes) {
 		this.id = id;
@@ -33,13 +35,10 @@ export class User {
 			strengths: [],
 			weaknesses: [],
 			abilities: [],
-		}
+		};
 		this.promptConfig.rules = {
-			always: [
-				"Strictly follow the rules of the conversation.",
-			],
+			always: ["Strictly follow the rules of the conversation."],
 			never: [],
-		}
+		};
 	}
 }
-

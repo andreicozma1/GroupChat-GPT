@@ -15,7 +15,7 @@ export const processItemizedList = (
 	const keyStartChar: string = config?.keyPrefix || "#";
 	let valJoinStr: string = config?.valJoinStr || ", ";
 	let inline: boolean = config?.inline || true;
-	const valPrefix = config?.valPrefix?.trim()
+	const valPrefix = config?.valPrefix?.trim();
 	const commaSepMinChars = config?.commaSepMinChars || 40;
 
 	// remove all underscores

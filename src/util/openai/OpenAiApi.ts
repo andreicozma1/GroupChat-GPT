@@ -5,4 +5,3 @@ export const openAiConfig = {
 };
 
 export const openAiApi = new OpenAIApi(new Configuration(openAiConfig));
-

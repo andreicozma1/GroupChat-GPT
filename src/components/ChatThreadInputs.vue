@@ -26,32 +26,35 @@
             <q-space/>
             <q-space/>
             <q-btn-group flat rounded>
-                <q-btn color="light-blue"
-                       icon-right="clear"
-                       label="Clear Thread"
-                       no-caps
-                       outline
-                       size="sm"
-                       title="Clear all messages in the thread"
-                       @click="store.clearCurrentThreadMessages"
+                <q-btn
+                        color="light-blue"
+                        icon-right="clear"
+                        label="Reset Thread"
+                        no-caps
+                        outline
+                        size="sm"
+                        title="Clear all messages in the thread"
+                        @click="store.getActiveThread().resetAll()"
                 />
-                <q-btn color="green"
-                       icon-right="cached"
-                       label="Comp. Cache"
-                       no-caps
-                       outline
-                       size="sm"
-                       title="Clear completion cache for assistant responses"
-                       @click="store.clearCachedResponses"
+                <q-btn
+                        color="green"
+                        icon-right="cached"
+                        label="Comp. Cache"
+                        no-caps
+                        outline
+                        size="sm"
+                        title="Clear completion cache for assistant responses"
+                        @click="store.resetCachedResponses"
                 />
-                <q-btn color="red"
-                       icon-right="delete_forever"
-                       label="Hard Reset"
-                       no-caps
-                       outline
-                       size="sm"
-                       title="Remove all data from browser local storage"
-                       @click="store.clearAllData"
+                <q-btn
+                        color="red"
+                        icon-right="delete_forever"
+                        label="Hard Reset"
+                        no-caps
+                        outline
+                        size="sm"
+                        title="Remove all data from browser local storage"
+                        @click="store.clearAllData"
                 />
             </q-btn-group>
         </q-card-actions>
@@ -84,7 +87,7 @@ const sendMessage = () => {
 	console.warn("=".repeat(60));
 	console.warn("=> sendMessage:");
 	if (userMsgObj.value === null) {
-		userMsgObj.value = new ChatMessage(store.getHumanUserConfig);
+		userMsgObj.value = new ChatMessage(store.getMyUser());
 	}
 	userMsgObj.value.textSnippets.push(userMsgStr.value);
 	userMsgStr.value = "";
@@ -97,8 +100,8 @@ const sendMessage = () => {
 				store.handleUserMessage(userMsgObj.value);
 				userMsgObj.value = null;
 			} else {
-				console.error("usrMsgObj was null")
-				smartNotify("Error: User message was null")
+				console.error("usrMsgObj was null");
+				smartNotify("Error: User message was null");
 			}
 
 			clearInterval(responseTimeout.value);
@@ -123,7 +126,7 @@ const kbShortcuts = (e: KeyboardEvent) => {
 	// ctrl/cmd+shift+x clears thread
 	if (e.key.toLowerCase() === "x" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
 		e.preventDefault();
-		store.clearCurrentThreadMessages();
+		store.resetAllThreads()
 		return;
 	}
 	// ctrl/cmd+shift+r clears cache

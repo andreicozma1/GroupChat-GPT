@@ -9,24 +9,22 @@ export class ChatMessage {
 	userId: string;
 	userName: string;
 	userAvatarUrl: string;
-	dateCreated: string | number | Date = new Date()
-	id: string = uuidv4()
+	dateCreated: string | number | Date = new Date();
+	id: string = uuidv4();
 	loading: boolean;
-	followupMsgIds: string[] = []
+	followupMsgIds: string[] = [];
 
-	shouldDelete = false
-	isIgnored = false
-	textSnippets: string[] = []
-	imageUrls: string[] = []
-	apiResponse?: ApiResponse
+	shouldDelete = false;
+	isIgnored = false;
+	textSnippets: string[] = [];
+	imageUrls: string[] = [];
+	apiResponse?: ApiResponse;
 
-	constructor(
-		chatUser: User,
-	) {
+	constructor(chatUser: User) {
 		this.userId = chatUser?.id || "unknown";
 		this.userName = chatUser?.name || "Unknown User";
-		this.userAvatarUrl = getRobohashUrl(this.userName)
-		this.loading = true
+		this.userAvatarUrl = getRobohashUrl(this.userName);
+		this.loading = true;
 	}
 
 	parseApiResponse(apiResponse: ApiResponse) {
@@ -51,13 +49,20 @@ export class ChatMessage {
 
 		if (apiResponse.errorMsg) {
 			console.error("Error generating response:", apiResponse.errorMsg);
-			this.textSnippets = ["[ERROR]" + "\n" + apiResponse.errorMsg]
+			this.textSnippets = ["[ERROR]" + "\n" + apiResponse.errorMsg];
 		}
+	}
+
+	containsKeywords(keywords: string[]): boolean {
+		const text: string = this.textSnippets.join(" ").toLowerCase();
+		return keywords.some((keyword: string) =>
+			text.includes(keyword.toLowerCase())
+		);
 	}
 
 	canRefresh() {
 		if (this.shouldDelete) return false;
-		const msgIds = this.apiResponse?.prompt.messagesCtxIds
+		const msgIds = this.apiResponse?.prompt.messagesCtxIds;
 		if (msgIds) return msgIds.length > 0;
 		return false;
 	}
@@ -91,8 +96,11 @@ export class ChatMessage {
 		const numTexts = this.textSnippets?.length ?? 0;
 		const numImages = this.imageUrls?.length ?? 0;
 		// const who = (isSentByMe(this) ? "You" : this.userName) + ` (${this.userId})`
-		const who = this.userName + ` (${this.userId})`
-		const what = `${numTexts} ${getSingularOrPlural('text', numTexts)} and ${numImages} ${getSingularOrPlural('image', numImages)}`;
+		const who = this.userName + ` (${this.userId})`;
+		const what = `${numTexts} ${getSingularOrPlural(
+			"text",
+			numTexts
+		)} and ${numImages} ${getSingularOrPlural("image", numImages)}`;
 		const when = dateToLocaleStr(this.dateCreated);
 		return `${who} sent ${what} on ${when}`;
 		// return message.response?.prompt.text ?? fallback;
@@ -119,5 +127,4 @@ export class ChatMessage {
 			};
 		return {};
 	}
-
 }

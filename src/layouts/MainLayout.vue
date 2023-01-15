@@ -1,6 +1,6 @@
 <template>
     <q-layout view="lHh Lpr lFf">
-        <AppBar/>
+        <AppBarLayout/>
 
         <q-page-container>
             <router-view/>
@@ -9,4 +9,4 @@
 </template>
 
 <script lang="ts" setup>
-import AppBar from "layouts/AppBar.vue";</script>
+import AppBarLayout from "layouts/AppBarLayout.vue";</script>

@@ -1,10 +1,14 @@
-import {Notify} from "quasar";
+import {Notify, QNotifyCreateOptions} from "quasar";
+import {sleepPromise} from "src/util/Utils";
+
+const notifyQueue: QNotifyCreateOptions[] = [];
+let notifyTimeout: any = undefined;
 
 export const smartNotify = (message: string, caption?: string) => {
 	const msgLen = message.length;
 	const capLen = caption ? caption.length : 0;
 	let msgTimeout = 500;
-	msgTimeout += msgLen * 40 + capLen * 30;
+	msgTimeout += msgLen * 50 + capLen * 30;
 
 	const typeMap = {
 		error: {
@@ -19,21 +23,23 @@ export const smartNotify = (message: string, caption?: string) => {
 			textColor: "white",
 		},
 		warning: {
-			keywords: [
-				"warn",
-				"not implemented",
-				"not yet implemented",
-			],
+			keywords: ["warn", "not implemented", "not yet implemented"],
 			color: "orange-12",
 			textColor: "white",
 		},
 		info: {
-			keywords: ["info", "copied"],
+			keywords: [
+				"info", "copied",
+				"registering", "loading"
+			],
 			color: "blue-4",
 			textColor: "white",
 		},
 		success: {
-			keywords: ["success", "done"],
+			keywords: [
+				"success", "done",
+				"registered", "loaded"
+			],
 			color: "green-4",
 			textColor: "white",
 		},
@@ -54,10 +60,10 @@ export const smartNotify = (message: string, caption?: string) => {
 		}
 	}
 
-	console.log("message", message);
-	if (caption) console.log("caption", caption);
+	console.warn("smartNotify->message", message);
+	if (caption) console.log("smartNotify->caption", caption);
 
-	Notify.create({
+	notifyQueue.push({
 		color: color,
 		textColor: textColor,
 		message: message,
@@ -65,4 +71,18 @@ export const smartNotify = (message: string, caption?: string) => {
 		timeout: msgTimeout,
 		progress: true,
 	});
+
+	if (notifyTimeout) {
+		clearTimeout(notifyTimeout);
+		notifyTimeout = undefined;
+	}
+	notifyTimeout = setTimeout(async () => {
+		while (notifyQueue.length > 0) {
+			const opts: QNotifyCreateOptions | undefined = notifyQueue.shift();
+			if (!opts) continue;
+			Notify.create(opts);
+			await sleepPromise(1000)
+		}
+	}, 250);
 };
+

@@ -6,12 +6,10 @@
                    flat
                    icon="menu"
                    round
-                   @click="toggleSideMenu"/>
-
+                   @click="toggleSideMenu"
+            />
             <q-toolbar-title> GroupChat-GPT</q-toolbar-title>
-
             <ChatThreadPrefs/>
-
             <div class="q-ml-sm">Quasar v{{ $q.version }}</div>
         </q-toolbar>
     </q-header>
@@ -21,13 +19,13 @@
     </q-drawer>
 </template>
 <script lang="ts" setup>
-import ChatThreadPrefs from 'components/ChatThreadPrefs.vue'
-import SideMenu from "layouts/SideMenu.vue";
 import {ref} from "vue";
+import ChatThreadPrefs from "components/ChatThreadPrefs.vue";
+import SideMenu from "components/SideMenu.vue";
 
 const sideMenuOpen = ref(false);
 
 const toggleSideMenu = () => {
 	sideMenuOpen.value = !sideMenuOpen.value;
-}
+};
 </script>

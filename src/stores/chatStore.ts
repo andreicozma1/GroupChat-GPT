@@ -1,22 +1,18 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
-import {getAppVersion, rHtmlTagWithContent} from "src/util/Utils";
-import {ChatThread,} from "src/util/chat/ChatModels";
+import {rHtmlTagWithContent} from "src/util/Utils";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
-import {getMessageHistory} from "src/util/chat/ChatUtils";
+import {getMessageHistory} from "src/util/chat/MessageHistory";
 import {Prompt} from "src/util/prompt/Prompt";
 import {User, UserTypes} from "src/util/users/User";
 import {UserHuman} from "src/util/users/UserHuman";
-import {UserCodex, UserCoordinator, UserDalle, UserDavinci,} from "src/util/users/Assistant";
+import {assistantFilter, UserCodex, UserCoordinator, UserDalle, UserDavinci,} from "src/util/users/Assistant";
 import {UserCodexGen, UserDalleGen} from "src/util/users/Helpers";
 import {ChatMessage} from "src/util/chat/ChatMessage";
+import {ChatThread} from "src/util/chat/ChatThread";
 
 const localStorageKey = "data";
-const defaultHumanUserId = "human";
-const defaultThreadId = "general";
-const defaultAssistants = ["davinci", "dalle", "codex"];
-
 
 export interface ApiResponse {
 	cached: boolean;
@@ -37,18 +33,19 @@ export interface ApiResponse {
 // };
 
 interface ChatStoreState {
-	user: {
+	userData: {
 		usersMap: Record<string, User>;
-		humanUserId: string;
-	},
-	thread: {
+		myUserId: string;
+	};
+	threadData: {
 		threadsMap: Record<string, ChatThread>;
-		currentThreadId: string;
-	},
+		activeThreadId: string | undefined;
+		defaultThreadName: string;
+	};
 	cachedResponses: Record<string, any>;
 }
 
-const getDefaultUsersState = (): ChatStoreState["user"] => {
+const getDefaultUsersState = (): ChatStoreState["userData"] => {
 	return {
 		usersMap: {
 			coordinator: new UserCoordinator(),
@@ -60,161 +57,114 @@ const getDefaultUsersState = (): ChatStoreState["user"] => {
 			codex: new UserCodex(),
 			codex_gen: new UserCodexGen(),
 		},
-		humanUserId: defaultHumanUserId,
-	}
-}
+		myUserId: "human",
+	};
+};
 
-const getDefaultThreadState = (): ChatStoreState["thread"] => {
+const getDefaultThreadState = (): ChatStoreState["threadData"] => {
 	return {
 		threadsMap: {},
-		currentThreadId: defaultThreadId,
-	}
-}
-
-const getDefaultThread = (): ChatThread => {
-	return {
-		id: defaultThreadId,
-		name: "New Thread",
-		messageIdMap: {},
-		appVersion: getAppVersion(),
-		joinedUserIds: [],
-		prefs: {
-			hiddenUserIds: [],
-			dontShowMessagesHiddenInPrompts: false,
-			orderedResponses: true,
-		}
-	}
-}
+		activeThreadId: undefined,
+		defaultThreadName: "General",
+	};
+};
 
 export const useChatStore = defineStore("counter", {
 	state: (): ChatStoreState => ({
-		user: getDefaultUsersState(),
-		thread: getDefaultThreadState(),
+		userData: getDefaultUsersState(),
+		threadData: getDefaultThreadState(),
 		cachedResponses: {},
-		...LocalStorage.getItem(localStorageKey),
+		...JSON.parse(LocalStorage.getItem(localStorageKey) || "{}"),
 	}),
 	getters: {
-		getUsersMap(state): Record<string, User> {
-			return state.user.usersMap;
+		/**************************************************************************************************************/
+		// Users
+		/**************************************************************************************************************/
+		myUserId(state): string {
+			return state.userData.myUserId;
 		},
-		getUserConfig() {
-			return (key: string) => {
-				if (key === this.user.humanUserId && !this.getUsersMap[key]) {
-					this.getUsersMap[key] = new UserHuman(this.user.humanUserId);
-				}
-				return this.getUsersMap[key];
-			}
+		usersMap(state): Record<string, User> {
+			return state.userData.usersMap;
 		},
-		getHumanUserConfig(): User {
-			return this.getUserConfig(this.user.humanUserId);
+		usersArray(): User[] {
+			return Object.values(this.usersMap);
 		},
-		getThreadsMap(state): Record<string, ChatThread> {
-			return state.thread.threadsMap;
+		usersAssistantsArray(): User[] {
+			return this.usersArray.filter(assistantFilter);
 		},
-		getThreadConfig() {
-			return (key: string) => {
-				if (!this.getThreadsMap[key]) {
-					this.thread.threadsMap[key] = {
-						...getDefaultThread(),
-						id: key,
-					}
-				}
-				const thread = this.getThreadsMap[key];
-				// if the human isnt in the thread, add them
-				if (!thread.joinedUserIds.includes(this.getHumanUserConfig.id)) {
-					smartNotify("Joining thread: " + thread.name);
-					thread.joinedUserIds.push(this.getHumanUserConfig.id);
-				}
-				// if the number of assistants in the thread is 0, add the default assistants
-				const users = thread.joinedUserIds.map((id) => this.getUserConfig(id));
-				const assistants = users.filter(
-					(user: User) => user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER
-				);
-
-				if (assistants.length === 0) {
-					smartNotify(
-						`Adding default assistants: ${defaultAssistants.join(", ")}`
-					);
-					thread.joinedUserIds.push(...defaultAssistants);
-				}
-				for (const id of thread.joinedUserIds) {
-					thread.joinedUserIds.push(...this.getUserConfig(id).requiresUserIds);
-				}
-				thread.joinedUserIds = Array.from(new Set(thread.joinedUserIds));
-				console.log("getThread:", {...thread});
-				// this.thread.threadsMap[thread.id] = thread;
-				return thread;
-			}
+		/**************************************************************************************************************/
+		// Threads
+		/**************************************************************************************************************/
+		activeThreadId(state): string | undefined {
+			return state.threadData.activeThreadId;
 		},
-		getCurrentThread(): ChatThread {
-			return this.getThreadConfig(this.thread.currentThreadId);
-		},
-		getCachedResponses(state) {
-			return state.cachedResponses;
-		},
-		getCachedResponseFromPrompt(): (prompt: Prompt) => any {
-			return (prompt: Prompt) => this.getCachedResponses[prompt.hash];
+		threadsMap(state): Record<string, ChatThread> {
+			return state.threadData.threadsMap;
 		},
 	},
 	actions: {
-		saveData() {
-			// TODO: Make this optional with a preference
-			smartNotify("Saving data...");
-			LocalStorage.set(localStorageKey, this.$state);
+		/**************************************************************************************************************/
+		// Users
+		/**************************************************************************************************************/
+		registerUser(user: User) {
+			console.warn("registerUser:", user);
+			smartNotify(`Registering user: "${user.id}"...`);
+			this.usersMap[user.id] = user;
+			return user
 		},
-		clearAllData() {
-			// clear whole local storage and reload
-			smartNotify("Clearing all app data...");
-			LocalStorage.clear();
-			location.reload();
+		getUserById(id: string): User {
+			console.warn("getUserById:", id);
+			const user = this.usersMap[id]
+			if (!user) smartNotify(`Error: User not found: ${id}`);
+			return user
 		},
-		clearCurrentThreadMessages() {
-			const thread = this.getCurrentThread;
-			smartNotify(`Clearing thread messages: ${thread.id}`);
-			this.thread.threadsMap[thread.id].messageIdMap = {};
-			this.saveData();
-			return this.thread.threadsMap[thread.id].messageIdMap;
+		getMyUser(): User {
+			console.warn("getMyUser");
+			const user = this.getUserById(this.myUserId);
+			if (!user) return this.registerUser(new UserHuman(this.myUserId));
+			return user
 		},
-		clearCachedResponses() {
-			smartNotify(`Clearing cached responses`);
-			this.cachedResponses = {};
-			this.saveData();
-			return this.cachedResponses;
+		/**************************************************************************************************************/
+		// Threads
+		/**************************************************************************************************************/
+		registerThread(thread: ChatThread) {
+			console.warn("registerThread:", thread);
+			smartNotify(`Registering new thread: "${thread.id}"...`);
+			// if the human isnt in the thread, add them
+			thread.addUser(this.getMyUser());
+			// add the default assistants to the thread
+			this.usersAssistantsArray.filter((u) => u.defaultJoin).forEach((u) => thread.addUser(u));
+			this.threadsMap[thread.id] = thread;
+			// set the new thread as the active thread
+			this.threadData.activeThreadId = thread.id;
+			return thread
 		},
-		resetCurrentThreadPrefs() {
-			const thread = this.getCurrentThread;
-			smartNotify(`Resetting thread prefs: ${thread.id}`);
-			this.thread.threadsMap[thread.id].prefs = getDefaultThread().prefs
-			this.saveData();
-			return this.thread.threadsMap[thread.id].prefs;
+		getThreadById(key: string) {
+			console.warn("getThreadById:", key);
+			const thread = this.threadsMap[key];
+			const joinedAssistants = thread.getJoinedUsers(this.getUserById).filter(assistantFilter);
+			if (joinedAssistants.length === 0) {
+				smartNotify("Warning: There are no assistants in this thread!",
+					"You can add assistants in the thread preferences menu.");
+			}
+			return thread;
 		},
-		resetCurrentThread() {
-			const thread = this.getCurrentThread;
-			smartNotify(`Resetting thread: ${thread.id}`);
-			this.thread.threadsMap[thread.id] = getDefaultThread();
-			this.saveData();
-			return this.thread.threadsMap[thread.id];
+		getActiveThread(): ChatThread {
+			console.warn("=".repeat(60));
+			console.warn("getActiveThread");
+			if (!this.activeThreadId) return this.registerThread(new ChatThread())
+			return this.getThreadById(this.activeThreadId);
 		},
-		resetAllThreads() {
-			smartNotify(`Resetting all threads`);
-			this.thread = getDefaultThreadState();
-			this.saveData();
-			return this.thread
-		},
-		resetAllUsers() {
-			smartNotify(`Resetting all users`);
-			this.user = getDefaultUsersState();
-			this.saveData();
-			return this.user
-		},
-
+		/**************************************************************************************************************/
+		// Messages
+		/**************************************************************************************************************/
 		createMessageFromUserId(id: string): ChatMessage {
 			id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
-			const cfg: User = this.getUserConfig(id);
+			const cfg: User = this.getUserById(id);
 			return new ChatMessage(cfg);
 		},
 		deleteMessage(messageId: string, silent = false): void {
-			const thread = this.getCurrentThread;
+			const thread = this.getActiveThread();
 			if (!thread.messageIdMap[messageId]) {
 				if (!silent) {
 					smartNotify("An error occurred while deleting the message.");
@@ -224,9 +174,7 @@ export const useChatStore = defineStore("counter", {
 				);
 				return;
 			}
-			const followUpIds =
-				thread.messageIdMap[messageId]
-					.followupMsgIds;
+			const followUpIds = thread.messageIdMap[messageId].followupMsgIds;
 			if (followUpIds) {
 				for (let i = 0; i < followUpIds.length; i++) {
 					this.deleteMessage(followUpIds[i], true);
@@ -235,6 +183,113 @@ export const useChatStore = defineStore("counter", {
 			delete thread.messageIdMap[messageId];
 			this.saveData();
 			smartNotify("Successfully deleted message.");
+		},
+		async handleUserMessage(message: ChatMessage) {
+			const user: User = this.getUserById(message.userId);
+			const thread: ChatThread = this.getActiveThread();
+			thread.messageIdMap[message.id] = message;
+			this.saveData();
+
+			console.warn("*".repeat(40));
+
+			console.log("handleUserMessage->user:", user);
+			console.log("handleUserMessage->message:", message);
+
+			message.loading = true;
+
+			if (message.followupMsgIds.length > 0) {
+				message.followupMsgIds.forEach((id: string) => {
+					this.deleteMessage(id, true);
+				});
+				message.followupMsgIds = [];
+			}
+
+			if (user.type !== UserTypes.HUMAN) {
+				const msgHistIds = message.apiResponse?.prompt?.messagesCtxIds;
+				let ignoreCache =
+					user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
+				let msgHist;
+				if (!msgHistIds) {
+					// First-time generation
+					msgHist = getMessageHistory(thread, {
+						hiddenUserIds:
+							user.id !== this.userData.usersMap.coordinator.id
+								? [this.userData.usersMap.coordinator.id]
+								: [],
+						maxMessages: 10,
+						maxDate: message.dateCreated,
+						excludeLoading: true,
+					});
+				} else {
+					// Re-generation from specified context
+					msgHist = msgHistIds.map((id: string) => thread.messageIdMap[id]);
+					// if there are any undefined messages, remove them
+					msgHist = msgHist.filter((m: ChatMessage) => m !== undefined);
+					// TODO: This will end up with less messages than expected if there are any undefined messages
+					ignoreCache = true;
+				}
+				const response = await this.generate(user, msgHist, ignoreCache);
+				message.parseApiResponse(response);
+			}
+
+			message.loading = false;
+
+			const followups = message.textSnippets.flatMap((text: string) => {
+				const nextUsers = [];
+				const isDirectMention = text.match(/@([a-zA-Z0-9_]+)/g);
+				const joinedUserIds = thread.getJoinedUsers(this.getUserById).map(u => u.id)
+				if (isDirectMention) {
+					// remove the @ and only keep valid usernames
+					nextUsers.push(
+						...isDirectMention
+							.map((m: string) => m.slice(1))
+							.filter((m: string) => joinedUserIds.includes(m))
+					);
+				}
+				const prompts = text.match(rHtmlTagWithContent);
+
+				console.warn(text);
+				console.warn(prompts);
+				if (prompts) {
+					nextUsers.push(
+						...prompts
+							.map((p: string) => p.slice(1, p.indexOf(">")))
+							.filter((m: string) => {
+								const isInChat = joinedUserIds.includes(m);
+								if (!isInChat)
+									smartNotify(`User ${m} is not a member of this chat thread.`);
+								return isInChat;
+							})
+					);
+				}
+
+				if (nextUsers.length > 0) return nextUsers;
+				return [];
+			});
+
+			if (user.id === this.getMyUser().id && followups.length === 0) {
+				followups.push(this.userData.usersMap.coordinator.id);
+			}
+
+			console.warn("handleUserMessage->followupActors:", followups);
+
+			for (const nextKey of followups) {
+				const nextMsg: ChatMessage = this.createMessageFromUserId(nextKey);
+				message.followupMsgIds.push(nextMsg.id);
+				nextMsg.dateCreated = message.dateCreated;
+				if (thread.prefs.orderedResponses) {
+					await this.handleUserMessage(nextMsg);
+				} else {
+					this.handleUserMessage(nextMsg);
+				}
+			}
+			this.saveData();
+		},
+		/**************************************************************************************************************/
+		// API Responses
+		/**************************************************************************************************************/
+		getCachedResponseFromPrompt(prompt: Prompt): any {
+			return this.cachedResponses[prompt.hash];
 		},
 		async generate(
 			user: User,
@@ -262,10 +317,10 @@ export const useChatStore = defineStore("counter", {
 			const prompt = new Prompt(
 				// this.currentThreadName,
 				// this.humanUserName,
-				this.getCurrentThread.name,
-				this.getHumanUserConfig.name,
+				this.getActiveThread().name,
+				this.getMyUser().name,
 				user,
-				this.getUsersMap,
+				this.usersMap,
 				msgHist
 			);
 			console.log("generate->prompt:", prompt);
@@ -273,15 +328,15 @@ export const useChatStore = defineStore("counter", {
 			console.log("generate->prompt.text:");
 			console.log(prompt.text);
 
-			// if we already have a completion for this prompt, return it
-			let completion;
+			// if we already have a response for this prompt, return it
+			let response;
 			let cached;
 			try {
 				if (!ignoreCache && this.getCachedResponseFromPrompt(prompt)) {
-					completion = this.getCachedResponseFromPrompt(prompt);
+					response = this.getCachedResponseFromPrompt(prompt);
 					cached = true;
 				} else {
-					completion = await makeApiRequest(user.apiReqConfig, prompt.text);
+					response = await makeApiRequest(user.apiReqConfig, prompt.text);
 					cached = false;
 				}
 			} catch (error: any) {
@@ -301,105 +356,47 @@ export const useChatStore = defineStore("counter", {
 					data: undefined,
 				};
 			}
-			this.cachedResponses[prompt.hash] = {...completion};
+			this.cachedResponses[prompt.hash] = response;
 
 			return {
 				cached: cached,
 				errorMsg: undefined,
 				prompt: prompt,
-				data: this.cachedResponses[prompt.hash],
+				data: this.cachedResponses[prompt.hash].data,
 			};
 		},
-
-		async handleUserMessage(message: ChatMessage) {
-			const user: User = this.getUserConfig(message.userId);
-			const thread: ChatThread = this.getCurrentThread;
-			thread.messageIdMap[message.id] = message;
-			this.saveData()
-
-			console.warn("*".repeat(40));
-
-			console.log("handleUserMessage->user:", user);
-			console.log("handleUserMessage->message:", message);
-
-			message.loading = true
-
-			if (message.followupMsgIds.length > 0) {
-				message.followupMsgIds.forEach((id: string) => {
-					this.deleteMessage(id, true);
-				});
-				message.followupMsgIds = [];
-			}
-
-			if (user.type !== UserTypes.HUMAN) {
-				const msgHistIds = message.apiResponse?.prompt?.messagesCtxIds
-				let ignoreCache = user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
-				let msgHist;
-				if (!msgHistIds) {
-					// First-time generation
-					msgHist = getMessageHistory(thread, {
-						hiddenUserIds:
-							user.id !== this.user.usersMap.coordinator.id
-								? [this.user.usersMap.coordinator.id]
-								: [],
-						maxMessages: 10,
-						maxDate: message.dateCreated,
-						excludeLoading: true,
-					});
-				} else {
-					// Re-generation from specified context
-					msgHist = msgHistIds.map((id: string) => thread.messageIdMap[id]);
-					// if there are any undefined messages, remove them
-					msgHist = msgHist.filter((m: ChatMessage) => m !== undefined);
-					// TODO: This will end up with less messages than expected if there are any undefined messages
-					ignoreCache = true;
-				}
-				const response = await this.generate(user, msgHist, ignoreCache);
-				message.parseApiResponse(response);
-			}
-
-			message.loading = false;
-
-			const followups = message.textSnippets.flatMap((text: string) => {
-				const next = []
-				const directMention = text.match(/@([a-zA-Z0-9_]+)/g);
-				if (directMention) {
-					// remove the @ and only keep valid usernames
-					next.push(...directMention.map((m: string) => m.slice(1)).filter((m: string) => thread.joinedUserIds.includes(m)))
-				}
-				const prompts = text.match(rHtmlTagWithContent);
-
-				console.warn(text)
-				console.warn(prompts)
-				if (prompts) {
-					next.push(...prompts.map((p: string) => p.slice(1, p.indexOf(">"))).filter((m: string) => {
-						const isInChat = thread.joinedUserIds.includes(m)
-						if (!isInChat) smartNotify(`User ${m} is not a member of this chat thread.`)
-						return isInChat
-					}))
-				}
-
-				if (next.length > 0) return next;
-				return [];
-			});
-
-			if (user.id === this.getHumanUserConfig.id && followups.length === 0) {
-				followups.push(this.user.usersMap.coordinator.id);
-			}
-
-			console.warn("handleUserMessage->followupActors:", followups);
-
-			for (const nextKey of followups) {
-				const nextMsg: ChatMessage = this.createMessageFromUserId(nextKey);
-				message.followupMsgIds.push(nextMsg.id);
-				nextMsg.dateCreated = message.dateCreated;
-				if (thread.prefs.orderedResponses) {
-					await this.handleUserMessage(nextMsg);
-				} else {
-					this.handleUserMessage(nextMsg);
-				}
-			}
-			this.saveData()
+		/**************************************************************************************************************/
+		/* DATA & STORAGE
+		/**************************************************************************************************************/
+		saveData() {
+			// TODO: Make this optional with a preference
+			smartNotify("Saving data...");
+			LocalStorage.set(localStorageKey, JSON.stringify(this.$state));
 		},
+		clearAllData() {
+			// clear whole local storage and reload
+			smartNotify("Clearing all app data...");
+			LocalStorage.clear();
+			location.reload();
+		},
+		resetCachedResponses() {
+			smartNotify(`Clearing cached responses`);
+			this.cachedResponses = {};
+			this.saveData();
+			return this.cachedResponses;
+		},
+		resetAllThreads() {
+			smartNotify(`Resetting all threads`);
+			this.threadData = getDefaultThreadState();
+			this.saveData();
+			return this.threadData;
+		},
+		resetAllUsers() {
+			smartNotify(`Resetting all users`);
+			this.userData = getDefaultUsersState();
+			this.saveData();
+			return this.userData;
+		},
+
 	},
 });

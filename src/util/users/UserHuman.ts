@@ -6,5 +6,6 @@ export class UserHuman extends User {
 		super(id, "Human", UserTypes.HUMAN);
 		this.apiReqConfig = ApiRequestConfigTypes.HUMAN;
 		this.showInMembersInfo = false;
+		this.defaultJoin = true;
 	}
 }

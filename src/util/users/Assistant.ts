@@ -2,6 +2,8 @@ import {User, UserTypes} from "src/util/users/User";
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {wrapInTag} from "src/util/TextUtils";
 
+export const assistantFilter = (user?: User) => !user || user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER;
+
 export class Assistant extends User {
 	constructor(id: string, name: string) {
 		super(id, name, UserTypes.ASSISTANT);
@@ -12,21 +14,20 @@ export class Assistant extends User {
 			strengths: ["making conversation", "answering questions"],
 			weaknesses: [],
 			abilities: [],
-		}
+		};
 		this.promptConfig.rules = {
 			always: [
 				"Follow instructions, requests, and answer questions if appropriate to do so.",
 			],
-			never: [
-				"Respond to other assistants or on behalf of other assistants.",
-			],
-		}
+			never: ["Respond to other assistants or on behalf of other assistants."],
+		};
 	}
 }
 
 export class UserDavinci extends Assistant {
 	constructor() {
 		super("davinci", "Davinci");
+		this.defaultJoin = true;
 		this.promptConfig.traits?.personality?.push("helpful");
 		this.promptConfig.traits?.strengths?.push("providing general information");
 	}
@@ -35,11 +36,21 @@ export class UserDavinci extends Assistant {
 export class UserDalle extends Assistant {
 	constructor() {
 		super("dalle", "DALL-E");
-		this.requiresUserIds = ["dalle_gen"]
+		this.defaultJoin = true;
+		this.requiresUserIds = ["dalle_gen"];
 
-		this.promptConfig.traits?.personality?.push("artistic", "creative", "visionary");
-		this.promptConfig.traits?.strengths?.push("making art", "coming up with creative ideas");
-		this.promptConfig.traits?.abilities?.push("generating images based on text descriptions and prompts");
+		this.promptConfig.traits?.personality?.push(
+			"artistic",
+			"creative",
+			"visionary"
+		);
+		this.promptConfig.traits?.strengths?.push(
+			"making art",
+			"coming up with creative ideas"
+		);
+		this.promptConfig.traits?.abilities?.push(
+			"generating images based on text descriptions and prompts"
+		);
 
 		this.promptConfig.examples = [
 			// ------------------------------------------------------------
@@ -50,9 +61,7 @@ export class UserDalle extends Assistant {
 			"Also, should the cat be sitting, standing, or perhaps playing with a ball of yarn?\n" +
 			"Let me know if there is anything else you want to add.\n" +
 			"\n" +
-			wrapInTag(
-				"dalle_gen",
-				"A picture of a cat."),
+			wrapInTag("dalle_gen", "A picture of a cat."),
 			// ------------------------------------------------------------
 			"Tabby, sitting on a chair. Also, give it a cowboy hat.",
 			// ------------------------------------------------------------
@@ -62,7 +71,8 @@ export class UserDalle extends Assistant {
 			"\n" +
 			wrapInTag(
 				"dalle_gen",
-				"A picture of a tabby cat, sitting on a chair, wearing a cowboy hat."),
+				"A picture of a tabby cat, sitting on a chair, wearing a cowboy hat."
+			),
 			// ------------------------------------------------------------
 			"Surprise me!",
 			// ------------------------------------------------------------
@@ -70,23 +80,32 @@ export class UserDalle extends Assistant {
 			"\n" +
 			wrapInTag(
 				"dalle_gen",
-				"A picture of a tabby cat, sitting on a chair, wearing a cowboy hat, cartoon style."),
+				"A picture of a tabby cat, sitting on a chair, wearing a cowboy hat, cartoon style."
+			),
 		];
 	}
 }
 
-
 export class UserCodex extends Assistant {
 	constructor() {
 		super("codex", "Codex");
-		this.requiresUserIds = ["codex_gen"]
+		this.defaultJoin = true;
+		this.requiresUserIds = ["codex_gen"];
 
-		this.promptConfig.traits?.personality?.push("analytical", "logical", "rational");
+		this.promptConfig.traits?.personality?.push(
+			"analytical",
+			"logical",
+			"rational"
+		);
 		this.promptConfig.traits?.strengths?.push("programming", "coding");
-		this.promptConfig.traits?.abilities?.push("generating code based on text descriptions and prompts");
+		this.promptConfig.traits?.abilities?.push(
+			"generating code based on text descriptions and prompts"
+		);
 
 		this.promptConfig.rules?.never?.push("Write the code yourself.");
-		this.promptConfig.rules?.always?.push("Only generate the prompt with instructions.");
+		this.promptConfig.rules?.always?.push(
+			"Only generate the prompt with instructions."
+		);
 
 		this.promptConfig.examples = [
 			// ------------------------------------------------------------
@@ -98,7 +117,7 @@ export class UserCodex extends Assistant {
 			wrapInTag(
 				"codex_gen",
 				"Language: Python",
-				"1. Write a function that can add any numbers together.",
+				"1. Write a function that can add any numbers together."
 			),
 			// ------------------------------------------------------------
 			"Yes, use 5 and 6.",
@@ -110,7 +129,7 @@ export class UserCodex extends Assistant {
 				"Language: Python",
 				"1. Write a function that can add any numbers together.",
 				"2. Run the function with the numbers 5 and 6.",
-				"3. Print the result.",
+				"3. Print the result."
 			),
 			// ------------------------------------------------------------
 		];
@@ -120,15 +139,14 @@ export class UserCodex extends Assistant {
 export class UserCoordinator extends User {
 	constructor() {
 		super("coordinator", "Coordinator", UserTypes.ASSISTANT);
-		this.apiReqConfig = ApiRequestConfigTypes.COORDINATOR
+		this.apiReqConfig = ApiRequestConfigTypes.COORDINATOR;
 		this.promptConfig.rules?.always?.push(
 			"Only respond with the exact IDs of the assistant(s) that should respond to the user's message.",
 			// "Separate assistant IDs with commas if more than one assistant should respond.",
 			"Take into consideration the assistant's traits including personality, strengths, weaknesses, and abilities.",
-			"Maintain the logical flow and consistency of the conversation.")
-		this.promptConfig.rules?.never?.push(
-			"Respond with None or N/A."
-		)
+			"Maintain the logical flow and consistency of the conversation."
+		);
+		this.promptConfig.rules?.never?.push("Respond with None or N/A.");
 		this.promptConfig.examples = [
 			"Hey Davinci!",
 			"@davinci",

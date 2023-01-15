@@ -24,7 +24,7 @@
                                     </q-item-section>
                                     <q-item-section side>
                                         <q-checkbox
-                                                v-if="store.getActiveThread.prefs.hiddenUserIds"
+                                                v-if="store.getCurrentThread.prefs.hiddenUserIds.length > 0"
                                                 :model-value="!isUserHidden(member)"
                                                 color="primary"
                                                 @update:model-value="toggleHiddenUser(member)"
@@ -50,8 +50,8 @@
                             <q-list separator>
                                 <q-item dense>
                                     <q-checkbox
-                                            v-if="store.getActiveThread.prefs"
-                                            v-model="store.getActiveThread.prefs.orderedResponses"
+                                            v-if="store.getCurrentThread.prefs"
+                                            v-model="store.getCurrentThread.prefs.orderedResponses"
                                             label="Ordered Responses"
                                             left-label
                                     />
@@ -67,8 +67,8 @@
 
                                 <q-item dense>
                                     <q-checkbox
-                                            v-if="store.getActiveThread.prefs"
-                                            v-model="store.getActiveThread.prefs.dontShowMessagesHiddenInPrompts"
+                                            v-if="store.getCurrentThread.prefs"
+                                            v-model="store.getCurrentThread.prefs.dontShowMessagesHiddenInPrompts"
                                             label="Hide Ignored Messages"
                                             left-label
                                     />
@@ -97,16 +97,16 @@ import {ChatThread} from "src/util/chat/ChatModels";
 const store = useChatStore();
 
 const getThreadUsers = (): User[] => {
-	return store.getActiveThread.joinedUserIds.map((id) => store.getUserConfig(id));
+	return store.getCurrentThread.joinedUserIds.map((id) => store.getUserConfig(id));
 };
 
 const isUserHidden = (user: User): boolean => {
-	return store.getActiveThread.prefs.hiddenUserIds.includes(user.id);
+	return store.getCurrentThread.prefs.hiddenUserIds.includes(user.id);
 };
 
 const toggleHiddenUser = (user: User) => {
 	const userId = user.id;
-	const thread: ChatThread = store.getActiveThread
+	const thread: ChatThread = store.getCurrentThread
 	if (isUserHidden(user)) {
 		thread.prefs.hiddenUserIds = thread.prefs.hiddenUserIds.filter((id) => id !== userId);
 	} else {

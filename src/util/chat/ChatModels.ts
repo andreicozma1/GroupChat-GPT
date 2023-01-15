@@ -7,6 +7,8 @@ export interface ChatThreadPrefs {
 }
 
 export interface ChatThread {
+	id: string;
+	name: string;
 	messageIdMap: { [key: string]: ChatMessage };
 	appVersion?: string;
 	joinedUserIds: string[];

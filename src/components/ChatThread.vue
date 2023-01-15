@@ -4,7 +4,7 @@
                         class="q-pt-md"/>
         <div v-for="msg in threadMessages"
              :key="msg.dateCreated"
-             :style="getMsgStyle(msg)">
+             :style="msg.getStyle()">
             <q-chat-message
                     :avatar="msg.userAvatarUrl"
                     :bg-color="getMsgBgColor(msg)"
@@ -14,12 +14,12 @@
                     v-bind="msg"
                     @click="onClickMsg(msg)">
 
-                <div v-for="textSnippet in parseTextSnippets(msg)"
+                <div v-for="textSnippet in msg.parseTextSnippets()"
                      :key="textSnippet"
                      @click="copyClipboard(textSnippet)">
                     {{ textSnippet }}
                     <q-tooltip :delay="750">
-                        {{ getContentHoverHint(msg) }}
+                        {{ msg.getTextHoverHint(textSnippet) }}
                     </q-tooltip>
                 </div>
 
@@ -34,19 +34,22 @@
                                    fit="contain"
                                    style="max-height: 400px"/>
                         </q-card-section>
+                        <q-tooltip :delay="750">
+                            {{ msg.getImageHoverHint(imageUrl) }}
+                        </q-tooltip>
                     </q-card>
-                    <q-tooltip :delay="750">
-                        {{ getContentHoverHint(msg) }}
-                    </q-tooltip>
                 </div>
 
                 <div v-if="msg.loading">
                     <q-spinner-dots class="q-ml-md" color="primary" size="2em"/>
+                    <q-tooltip :delay="750">
+                        {{ msg.getLoadingHoverHint() }}
+                    </q-tooltip>
                 </div>
 
                 <template v-slot:stamp>
                     <div class="row items-center">
-                        <q-btn :disable="!canRegenMessage(msg)"
+                        <q-btn :disable="!msg.canRefresh()"
                                :icon="getUserIcon(msg)"
                                class="q-ma-none q-pa-none"
                                color="blue-grey-8"
@@ -55,7 +58,7 @@
                                round
                                size="xs"
                                @click="regenMessage(msg)">
-                            <q-tooltip v-if="canRegenMessage(msg)">
+                            <q-tooltip v-if="msg.canRefresh()">
                                 Re-generate message ({{ msg.userId }})
                             </q-tooltip>
                             <q-tooltip v-else>
@@ -66,7 +69,7 @@
 
                         <div class="text-caption text-blue-grey-10">
                             <q-item-label :lines="1">
-                                {{ getStamp(msg) }}
+                                {{ msg.getStamp() }}
                             </q-item-label>
                             <q-tooltip>
                                 {{ getStampHoverHint(msg) }}
@@ -88,15 +91,15 @@
                             </q-tooltip>
                         </q-btn>
                         <q-btn v-if="!msg.shouldDelete"
-                               :icon="msg.hideInPrompt ? 'visibility' : 'visibility_off'"
+                               :icon="msg.isIgnored ? 'visibility' : 'visibility_off'"
                                color="blue-grey-8"
                                dense
                                flat
                                round
                                size="xs"
-                               @click="ignoreMessage(msg)">
+                               @click="msg.toggleIgnored()">
                             <q-tooltip>
-                                {{ msg.hideInPrompt ? 'Use message' : 'Ignore message' }}
+                                {{ msg.isIgnored ? 'Use message' : 'Ignore message' }}
                             </q-tooltip>
                         </q-btn>
                         <q-btn :color="msg.shouldDelete ? 'black' : 'blue-grey-8'"
@@ -136,11 +139,10 @@ import {copyClipboard, getAppVersion} from "src/util/Utils";
 import {useChatStore} from "stores/chatStore";
 import {computed, onMounted, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
-import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
+import {dateToLocaleStr} from "src/util/DateUtils";
 import {getMessageHistory} from "src/util/chat/ChatUtils";
 import {ChatThread} from "src/util/chat/ChatModels";
 import {User} from "src/util/users/User";
-import {getSingularOrPlural} from "src/util/TextUtils";
 import {ChatMessage} from "src/util/chat/ChatMessage";
 
 const props = defineProps({
@@ -183,30 +185,6 @@ const getUserIcon = (message: ChatMessage) => {
 };
 
 
-const getWhoSentWhatWhen = (message: ChatMessage) => {
-	const numTexts = message.textSnippets?.length ?? 0;
-	const numImages = message.imageUrls?.length ?? 0;
-	const who = (isSentByMe(message) ? "You" : message.userName) + ` (${message.userId})`
-	const what = `${numTexts} ${getSingularOrPlural('text', numTexts)} and ${numImages} ${getSingularOrPlural('image', numImages)}`;
-	const when = dateToLocaleStr(message.dateCreated);
-	return `${who} sent ${what} on ${when}`;
-}
-const getContentHoverHint = (message: ChatMessage) => {
-	const fallback = getWhoSentWhatWhen(message);
-	return fallback
-	// return message.response?.prompt.text ?? fallback;
-};
-
-const getStamp = (message: ChatMessage) => {
-	// const what = isSentByMe(msg) ? "Sent" : "Received";
-	const on = dateToTimeAgo(message.dateCreated);
-	// let res = `${what} ${on}`;
-	let res = `${on}`;
-	// if (msg.isCompRegen) res = `* ${res}`;
-	if (message.apiResponse?.cached) res = `${res} (cached)`;
-	return res;
-};
-
 const getStampHoverHint = (message: ChatMessage) => {
 	const when = dateToLocaleStr(message.dateCreated);
 	const what = isSentByMe(message) ? "Sent" : "Received";
@@ -218,33 +196,12 @@ const getStampHoverHint = (message: ChatMessage) => {
 };
 
 
-const parseTextSnippets = (message: ChatMessage) => {
-	const texts = message.textSnippets.flatMap((snippet: string) => {
-		return snippet.split("\n\n").map((line: string) => {
-			return line.trim();
-		});
-	});
-	if ((!texts || texts.length === 0) && !message.loading) return [];
-	return texts;
-};
-
-const ignoreMessage = (message: ChatMessage) => {
-	console.warn("=> ignore:", {...message});
-	message.hideInPrompt = message.hideInPrompt === undefined ? true : !message.hideInPrompt;
-};
-
 const editMessage = (message: ChatMessage) => {
 	smartNotify(`Message editing is not yet implemented`);
 	console.warn("=> edit:", {...message});
 	// comp.editMessage(msg);
 };
 
-const canRegenMessage = (message: ChatMessage) => {
-	if (message.shouldDelete) return false;
-	const msgIds = message.apiResponse?.prompt.messagesCtxIds
-	if (msgIds) return msgIds.length > 0;
-	return false;
-};
 
 const regenMessage = (message: ChatMessage) => {
 	console.warn("*".repeat(40));
@@ -270,23 +227,10 @@ const restoreMessage = (message: ChatMessage) => {
 	message.shouldDelete = false;
 };
 
-const getMsgStyle = (message: ChatMessage) => {
-	if (message.hideInPrompt)
-		return {
-			opacity: 0.5,
-			// textDecoration: "line-through",
-		};
-	if (message.shouldDelete)
-		return {
-			outline: "2px dashed red",
-			// borderRadius: "15px",
-		};
-	return {};
-};
-
 
 const isSentByMe = (message: ChatMessage) => {
-	return message.userId === store.humanUserId && message.userName === store.humanUserName;
+	const humanUser = store.getHumanUserConfig;
+	return message.userId === humanUser.id && message.userName === humanUser.name;
 };
 
 const getMsgBgColor = (message: ChatMessage) => {
@@ -329,7 +273,7 @@ watch(
 );
 
 const parseThreadMessages = (): ChatMessage[] => {
-	const thread: ChatThread = store.getActiveThread;
+	const thread: ChatThread = store.getCurrentThread;
 	let messages: ChatMessage[] = getMessageHistory(thread, {
 		forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
 		hiddenUserIds: thread.prefs.hiddenUserIds,
@@ -339,7 +283,7 @@ const parseThreadMessages = (): ChatMessage[] => {
 	console.log("parseThreadMessages->messages:", messages);
 
 	messages = messages.filter((message: ChatMessage) => {
-		return !(thread.prefs.dontShowMessagesHiddenInPrompts && message.hideInPrompt);
+		return !(thread.prefs.dontShowMessagesHiddenInPrompts && message.isIgnored);
 	});
 	console.log("parseThreadMessages->filtered:", messages);
 	return messages;
@@ -356,7 +300,7 @@ const loadThread = (shouldScroll = false) => {
 		if (shouldScroll || newMsgCount > prevMsgCount) scrollToBottom(1000);
 	} catch (err: any) {
 		console.error("Error loading chat thread", err);
-		const threadVer = store.getActiveThread.appVersion?.trim()
+		const threadVer = store.getCurrentThread.appVersion?.trim()
 		const appVer = getAppVersion();
 		console.log("Thread version:", threadVer);
 		console.log("App version:", appVer);
@@ -379,5 +323,6 @@ watchEffect(() => {
 
 onMounted(() => {
 	loadThread(true);
+	console.warn(threadMessages.value)
 });
 </script>

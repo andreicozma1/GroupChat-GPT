@@ -1,5 +1,5 @@
 import {CreateCompletionRequest, CreateImageRequest} from "openai/api";
-import {openaiApi} from "src/util/openai/OpenAiUtils";
+import {openAiApi} from "src/util/openai/OpenAiApi";
 
 export type ApiOptsValidTypes = CreateCompletionRequest | CreateImageRequest;
 
@@ -33,7 +33,7 @@ export enum ApiRequestConfigTypes {
 export const ApiRequestConfigsMap: ApiRequestConfigs = {
 	base: {
 		createCompletion: {
-			func: (opts: CreateCompletionRequest) => openaiApi.createCompletion(opts),
+			func: (opts: CreateCompletionRequest) => openAiApi.createCompletion(opts),
 			opts: {
 				model: "text-davinci-003",
 				max_tokens: 250,
@@ -45,7 +45,7 @@ export const ApiRequestConfigsMap: ApiRequestConfigs = {
 			},
 		},
 		createImage: {
-			func: (opts: CreateImageRequest) => openaiApi.createImage(opts),
+			func: (opts: CreateImageRequest) => openAiApi.createImage(opts),
 			opts: {
 				n: 1,
 				size: "256x256",

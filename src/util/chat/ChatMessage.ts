@@ -2,6 +2,8 @@ import {v4 as uuidv4} from "uuid";
 import {ApiResponse} from "stores/chatStore";
 import {User} from "src/util/users/User";
 import {getRobohashUrl} from "src/util/ImageUtils";
+import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
+import {getSingularOrPlural} from "src/util/TextUtils";
 
 export class ChatMessage {
 	userId: string;
@@ -13,7 +15,7 @@ export class ChatMessage {
 	followupMsgIds: string[] = []
 
 	shouldDelete = false
-	hideInPrompt = false
+	isIgnored = false
 	textSnippets: string[] = []
 	imageUrls: string[] = []
 	apiResponse?: ApiResponse
@@ -51,6 +53,71 @@ export class ChatMessage {
 			console.error("Error generating response:", apiResponse.errorMsg);
 			this.textSnippets = ["[ERROR]" + "\n" + apiResponse.errorMsg]
 		}
+	}
+
+	canRefresh() {
+		if (this.shouldDelete) return false;
+		const msgIds = this.apiResponse?.prompt.messagesCtxIds
+		if (msgIds) return msgIds.length > 0;
+		return false;
+	}
+
+	toggleIgnored() {
+		console.warn("=> ignore:", {...this});
+		this.isIgnored = this.isIgnored === undefined ? true : !this.isIgnored;
+	}
+
+	parseTextSnippets() {
+		const texts = this.textSnippets.flatMap((snippet: string) => {
+			return snippet.split("\n\n").map((line: string) => {
+				return line.trim();
+			});
+		});
+		if ((!texts || texts.length === 0) && !this.loading) return [];
+		return texts;
+	}
+
+	getStamp() {
+		// const what = isSentByMe(msg) ? "Sent" : "Received";
+		const on = dateToTimeAgo(this.dateCreated);
+		// let res = `${what} ${on}`;
+		let res = `${on}`;
+		// if (msg.isCompRegen) res = `* ${res}`;
+		if (this.apiResponse?.cached) res = `${res} (cached)`;
+		return res;
+	}
+
+	getTextHoverHint(textSnippet?: string) {
+		const numTexts = this.textSnippets?.length ?? 0;
+		const numImages = this.imageUrls?.length ?? 0;
+		// const who = (isSentByMe(this) ? "You" : this.userName) + ` (${this.userId})`
+		const who = this.userName + ` (${this.userId})`
+		const what = `${numTexts} ${getSingularOrPlural('text', numTexts)} and ${numImages} ${getSingularOrPlural('image', numImages)}`;
+		const when = dateToLocaleStr(this.dateCreated);
+		return `${who} sent ${what} on ${when}`;
+		// return message.response?.prompt.text ?? fallback;
+	}
+
+	getImageHoverHint(imageUrl?: string) {
+		return this.getTextHoverHint();
+	}
+
+	getLoadingHoverHint() {
+		return "Loading...";
+	}
+
+	getStyle() {
+		if (this.isIgnored)
+			return {
+				opacity: 0.5,
+				// textDecoration: "line-through",
+			};
+		if (this.shouldDelete)
+			return {
+				outline: "2px dashed red",
+				// borderRadius: "15px",
+			};
+		return {};
 	}
 
 }

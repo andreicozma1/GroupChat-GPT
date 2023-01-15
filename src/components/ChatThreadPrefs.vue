@@ -9,29 +9,28 @@
                                       popup>
                         <q-card bordered flat>
                             <q-list separator>
-                                <q-item v-for="member in getThreadUsers()" :key="member">
+                                <q-item v-for="user in threadUsers()" :key="user">
                                     <q-item-section side>
-                                        <q-avatar :icon="member.icon" rounded size="sm"/>
+                                        <q-avatar :icon="user.icon" rounded size="sm"/>
                                     </q-item-section>
                                     <q-item-section>
                                         <q-item-label>
-                                            {{ member.name }}
+                                            {{ user.name }}
                                         </q-item-label>
                                         <q-item-label caption>
-                                            ID: {{ member.id }} ({{ member.type }})
+                                            ID: {{ user.id }} ({{ user.type }})
                                         </q-item-label>
                                     </q-item-section>
                                     <q-item-section side>
-                                        <q-checkbox v-if="store.getActiveThread().prefs.hiddenUserIds.length > 0"
-                                                    :model-value="!isUserHidden(member)"
+                                        <q-checkbox :model-value="isUserVisible(user)"
                                                     color="primary"
-                                                    @update:model-value="toggleHiddenUser(member)"/>
-                                        <q-checkbox v-else :model-value="undefined" color="primary">
-                                            <q-tooltip>
-                                                Could not load user's hidden/visible state from thread
-                                                preferences
-                                            </q-tooltip>
-                                        </q-checkbox>
+                                                    @update:model-value="toggleUserVisibility(user)"/>
+                                        <!--                                        <q-checkbox v-else :model-value="undefined" color="primary">-->
+                                        <!--                                            <q-tooltip>-->
+                                        <!--                                                Could not load user's hidden/visible state from thread-->
+                                        <!--                                                preferences-->
+                                        <!--                                            </q-tooltip>-->
+                                        <!--                                        </q-checkbox>-->
                                     </q-item-section>
                                 </q-item>
                             </q-list>
@@ -45,8 +44,8 @@
                         <q-card bordered flat>
                             <q-list separator>
                                 <q-item dense>
-                                    <q-checkbox v-if="store.getActiveThread().prefs"
-                                                v-model="store.getActiveThread().prefs.orderedResponses"
+                                    <q-checkbox v-if="activeThread.prefs"
+                                                v-model="activeThread.prefs.orderedResponses"
                                                 label="Ordered Responses"
                                                 left-label/>
                                     <q-checkbox v-else
@@ -58,8 +57,8 @@
                                 </q-item>
 
                                 <q-item dense>
-                                    <q-checkbox v-if="store.getActiveThread().prefs"
-                                                v-model="store.getActiveThread().prefs.hideIgnoredMessages"
+                                    <q-checkbox v-if="activeThread.prefs"
+                                                v-model="activeThread.prefs.hideIgnoredMessages"
                                                 label="Hide Ignored Messages"
                                                 left-label/>
                                     <q-checkbox v-else
@@ -81,21 +80,23 @@
 import {useChatStore} from "stores/chatStore";
 import {User} from "src/util/users/User";
 import {ChatThread} from "src/util/chat/ChatThread";
+import {computed, ComputedRef} from "vue";
 
 const store = useChatStore();
+const activeThread: ComputedRef<ChatThread> = computed(() => store.getActiveThread());
 
-const getThreadUsers = (): User[] => {
-	return store.getActiveThread().getJoinedUsers(store.getUserById);
+const threadUsers = (): User[] => {
+	return activeThread.value.getJoinedUsers(store.getUserById);
 };
 
-const isUserHidden = (user: User): boolean => {
-	return store.getActiveThread().prefs.hiddenUserIds.includes(user.id);
+const isUserVisible = (user: User): boolean => {
+	return !activeThread.value.prefs.hiddenUserIds.includes(user.id);
 };
 
-const toggleHiddenUser = (user: User) => {
+const toggleUserVisibility = (user: User) => {
 	const userId = user.id;
-	const thread: ChatThread = store.getActiveThread();
-	if (isUserHidden(user)) {
+	const thread: ChatThread = activeThread.value;
+	if (isUserVisible(user)) {
 		thread.prefs.hiddenUserIds = thread.prefs.hiddenUserIds.filter(
 			(id) => id !== userId
 		);
@@ -103,4 +104,6 @@ const toggleHiddenUser = (user: User) => {
 		thread.prefs.hiddenUserIds.push(userId);
 	}
 };
+
+
 </script>

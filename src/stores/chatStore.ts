@@ -152,8 +152,9 @@ export const useChatStore = defineStore("counter", {
 		getActiveThread(): ChatThread {
 			console.warn("=".repeat(60));
 			console.warn("getActiveThread");
-			if (!this.activeThreadId) return this.registerThread(new ChatThread())
-			return this.getThreadById(this.activeThreadId);
+			const activeThreadId = this.activeThreadId;
+			if (!activeThreadId) return this.registerThread(new ChatThread())
+			return this.getThreadById(activeThreadId);
 		},
 		/**************************************************************************************************************/
 		// Messages

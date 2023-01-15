@@ -49,9 +49,7 @@ export class ChatThread {
 	}
 
 	getJoinedUsers(getUserCallback: (id: string) => User | undefined): User[] {
-		const users: User[] = this.joinedUserIds.map(getUserCallback).filter((u: User | undefined) => u !== undefined) as User[];
-		this.joinedUserIds = users.map((u: User) => u.id);
-		return users
+		return this.joinedUserIds.map(getUserCallback).filter((u: User | undefined) => u !== undefined) as User[]
 	}
 
 	deleteMessage(messageId: string): void {

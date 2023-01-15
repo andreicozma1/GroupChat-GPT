@@ -9,7 +9,7 @@
                                       popup>
                         <q-card bordered flat>
                             <q-list separator>
-                                <q-item v-for="user in threadUsers()" :key="user">
+                                <q-item v-for="user in threadUsers" :key="user">
                                     <q-item-section side>
                                         <q-avatar :icon="user.icon" rounded size="sm"/>
                                     </q-item-section>
@@ -25,12 +25,6 @@
                                         <q-checkbox :model-value="isUserVisible(user)"
                                                     color="primary"
                                                     @update:model-value="toggleUserVisibility(user)"/>
-                                        <!--                                        <q-checkbox v-else :model-value="undefined" color="primary">-->
-                                        <!--                                            <q-tooltip>-->
-                                        <!--                                                Could not load user's hidden/visible state from thread-->
-                                        <!--                                                preferences-->
-                                        <!--                                            </q-tooltip>-->
-                                        <!--                                        </q-checkbox>-->
                                     </q-item-section>
                                 </q-item>
                             </q-list>
@@ -85,9 +79,9 @@ import {computed, ComputedRef} from "vue";
 const store = useChatStore();
 const activeThread: ComputedRef<ChatThread> = computed(() => store.getActiveThread());
 
-const threadUsers = (): User[] => {
+const threadUsers: ComputedRef<User[]> = computed(() => {
 	return activeThread.value.getJoinedUsers(store.getUserById);
-};
+});
 
 const isUserVisible = (user: User): boolean => {
 	return !activeThread.value.prefs.hiddenUserIds.includes(user.id);

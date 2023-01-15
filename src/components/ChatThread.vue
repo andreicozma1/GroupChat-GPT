@@ -187,13 +187,14 @@ const getUserName = (message: ChatMessage): string => {
 const getUserIcon = (message: ChatMessage) => {
 	const user: User = store.getUserById(message.userId);
 	if (!user) {
-		console.error(`User "${message.userId}" not found.`);
-		smartNotify(`Error: User "${message.userId}" not found.`);
-		return "send";
+		const ic = 'send'
+		console.error(`User "${message.userId}" not found. Using default icon: '${ic}'`);
+		return ic;
 	}
 	if (!user.icon) {
-		console.warn(`User "${user.id}" does not define an icon.`);
-		return "help";
+		const ic = 'help'
+		console.warn(`User "${user.id}" icon not found. Using default icon: '${ic}'`);
+		return ic;
 	}
 	return user.icon;
 };
@@ -203,9 +204,7 @@ const getStampHoverHint = (message: ChatMessage) => {
 	const what = isSentByMe(message) ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
 	const dateGenerated = message.apiResponse?.data?.data?.created * 1000;
-	if (dateGenerated)
-		res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
-
+	if (dateGenerated) res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 	return res;
 };
 

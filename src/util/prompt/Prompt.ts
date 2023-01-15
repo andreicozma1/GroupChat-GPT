@@ -256,7 +256,7 @@ export class Prompt extends PromptBuilder {
 				lastMsg.textSnippets[lastMsg.textSnippets.length - 1]
 			);
 		}
-		smartNotify("Error: No prompt found");
+		smartNotify("Prompt not found")
 		return undefined;
 	}
 
@@ -282,14 +282,14 @@ export class Prompt extends PromptBuilder {
 
 		const usedMessages = PromptBuilder.filterMessagesWithTags(this.messagesCtx);
 		if (usedMessages.length === 0) {
-			smartNotify("Error: No messages with prompts found in message history");
+			smartNotify("Prompt not found in conversation history");
 			return undefined;
 		}
 		// now get the actual textSnippet that contains the html tag
 		const promptSnippets = usedMessages[usedMessages.length - 1].textSnippets;
 
 		if (promptSnippets.length === 0) {
-			smartNotify("Error: No prompt found in the conversation history");
+			smartNotify("Prompt not found in conversation history");
 			return undefined;
 		}
 		const prompt = promptSnippets[promptSnippets.length - 1];

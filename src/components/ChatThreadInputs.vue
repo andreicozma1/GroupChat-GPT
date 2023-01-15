@@ -100,8 +100,8 @@ const sendMessage = () => {
 				store.handleUserMessage(userMsgObj.value);
 				userMsgObj.value = null;
 			} else {
-				console.error("usrMsgObj was null");
-				smartNotify("Error: User message was null");
+				console.error("User message not found");
+				smartNotify("User message not found")
 			}
 
 			clearInterval(responseTimeout.value);

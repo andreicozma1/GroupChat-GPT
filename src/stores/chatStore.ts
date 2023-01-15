@@ -115,7 +115,7 @@ export const useChatStore = defineStore("counter", {
 		getUserById(id: string): User {
 			console.warn("getUserById:", id);
 			const user = this.usersMap[id]
-			if (!user) smartNotify(`Error: User not found: ${id}`);
+			if (!user) smartNotify(`User not found: ${id}`);
 			return user
 		},
 		getMyUser(): User {

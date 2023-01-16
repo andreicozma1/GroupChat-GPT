@@ -209,6 +209,7 @@ export const useChatStore = defineStore("chatStore", {
 					maxMessages: 10,
 					maxDate: message.dateCreated,
 					excludeLoading: true,
+					excludeNoText: true,
 				});
 				message.loading = true;
 				const response = await this.generate(user, messages, thread, ignoreCache);

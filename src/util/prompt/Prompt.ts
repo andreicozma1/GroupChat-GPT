@@ -212,8 +212,7 @@ export class Prompt extends PromptBuilder {
 		super(user.promptConfig);
 		this.messagesCtxIds = messagesCtx.map((m: ChatMessage) => m.id);
 		// promptType if a function part of this class.
-		this.createTextPrompt =
-			Object.getPrototypeOf(this)[this.promptConfig.promptType];
+		this.createTextPrompt = Object.getPrototypeOf(this)[this.promptConfig.promptType];
 		console.log(Object.getPrototypeOf(this));
 		if (this.createTextPrompt === undefined) {
 			const promptTypeDefault = "createAssistantPrompt";

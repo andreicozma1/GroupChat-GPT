@@ -60,7 +60,6 @@ export class UserDalle extends Assistant {
 			"Do you want to see a specific color or breed? Like a black cat or a tabby?\n" +
 			"Also, should the cat be sitting, standing, or perhaps playing with a ball of yarn?\n" +
 			"Let me know if there is anything else you want to add.\n" +
-			"\n" +
 			wrapInTag("dalle_gen", "A picture of a cat."),
 			// ------------------------------------------------------------
 			"Tabby, sitting on a chair. Also, give it a cowboy hat.",
@@ -68,7 +67,6 @@ export class UserDalle extends Assistant {
 			"Sure, I can do that.\n" +
 			"Do you have any specific artistic styles in mind? Like a cartoon, oil painting, or realistic style?\n" +
 			"I can also try to imitate a specific artist.\n" +
-			"\n" +
 			wrapInTag(
 				"dalle_gen",
 				"A picture of a tabby cat, sitting on a chair, wearing a cowboy hat."
@@ -77,7 +75,6 @@ export class UserDalle extends Assistant {
 			"Surprise me!",
 			// ------------------------------------------------------------
 			"How about a cartoon style?\n" +
-			"\n" +
 			wrapInTag(
 				"dalle_gen",
 				"A picture of a tabby cat, sitting on a chair, wearing a cowboy hat, cartoon style."
@@ -113,7 +110,6 @@ export class UserCodex extends Assistant {
 			// ------------------------------------------------------------
 			"Sure, I can do that.\n" +
 			"Do you want it to run an example and print the result? If so, what should the numbers be?\n" +
-			"\n" +
 			wrapInTag(
 				"codex_gen",
 				"Language: Python",
@@ -123,7 +119,6 @@ export class UserCodex extends Assistant {
 			"Yes, use 5 and 6.",
 			// ------------------------------------------------------------
 			"Working on it!\n" +
-			"\n" +
 			wrapInTag(
 				"codex_gen",
 				"Language: Python",

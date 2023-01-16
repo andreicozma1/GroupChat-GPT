@@ -1,6 +1,6 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
-import {rHtmlTagWithContent} from "src/util/Utils";
+import {rHtmlTagStart, rHtmlTagWithContent} from "src/util/Utils";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
 import {parseMessageHistory} from "src/util/chat/MessageHistory";
@@ -20,6 +20,11 @@ export interface ApiResponse {
 	errorMsg: string | undefined;
 	prompt: Prompt;
 	data: any;
+}
+
+interface FollowUp {
+	userId: string;
+	prompt?: string
 }
 
 class ChatStoreState {
@@ -210,33 +215,30 @@ export const useChatStore = defineStore("chatStore", {
 				message.parseApiResponse(response);
 			}
 
-			const followups = message.textSnippets.flatMap((text: string) => {
-				const nextUsers = [];
-				const isDirectMention = text.match(/@([a-zA-Z0-9_]+)/g);
-				const joinedUserIds = thread.getJoinedUsers(this.getUserById).map(u => u.id)
-				if (isDirectMention) {
-					// remove the @ and only keep valid usernames
-					nextUsers.push(
-						...isDirectMention
-							.map((m: string) => m.slice(1))
-							.filter((m: string) => joinedUserIds.includes(m))
-					);
-				}
-				const prompts = text.match(rHtmlTagWithContent);
-				if (prompts) {
-					nextUsers.push(
-						...prompts
-							.map((p: string) => p.slice(1, p.indexOf(">")))
-							.filter((m: string) => {
-								const isInChat = joinedUserIds.includes(m);
-								if (!isInChat)
-									smartNotify(`User ${m} is not a member of this chat thread.`);
-								return isInChat;
-							})
-					);
-				}
 
-				if (nextUsers.length > 0) return nextUsers;
+			const followups = message.textSnippets.flatMap((text: string) => {
+				const joinedUserIds = thread.getJoinedUsers(this.getUserById).map(u => u.id)
+				const fups: string[] = []
+
+				text.match(/@([a-zA-Z0-9_]+)/g)?.forEach((m: string) => {
+					fups.push(m.slice(1))
+				})
+
+				text.match(rHtmlTagWithContent)?.forEach((m: string) => {
+					// get the name of the html tag
+					const tag = m.match(rHtmlTagStart)?.[0].slice(1, -1)
+					// get the content of the html tag
+					if (tag) fups.push(tag)
+				})
+
+				fups.filter((m: string) => {
+					const isInChat = joinedUserIds.includes(m)
+					if (!isInChat)
+						smartNotify(`User ${m} is not a member of this chat thread.`);
+					return isInChat;
+				})
+
+				if (fups.length > 0) return fups;
 				return [];
 			});
 
@@ -246,8 +248,8 @@ export const useChatStore = defineStore("chatStore", {
 
 			console.warn("handleUserMessage->followupActors:", followups);
 
-			for (const nextKey of followups) {
-				const nextMsg: ChatMessage = this.createMessageFromUserId(nextKey);
+			for (const followUpUserId of followups) {
+				const nextMsg: ChatMessage = this.createMessageFromUserId(followUpUserId);
 				message.followupMsgIds.push(nextMsg.id);
 				// increment the DateCreated from the previous message
 				// nextMsg.dateCreated = message.dateCreated;

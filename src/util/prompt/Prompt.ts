@@ -24,9 +24,10 @@ export class PromptBuilder {
 	): string[] {
 		let regex = rHtmlTagWithContent;
 		if (tag?.trim()) regex = createRegexHtmlTagWithContent(tag);
-		return textSnipets.filter((text: string) => {
-			// return /(<([^>]+)>)/gi.test(text);
-			return regex.test(text);
+		return textSnipets.flatMap((text: string) => {
+			const matches = text.match(regex);
+			if (!matches) return [];
+			return matches;
 		});
 	}
 
@@ -181,6 +182,12 @@ export class PromptBuilder {
 
 		return [header, ...info].join("\n");
 	}
+
+	public static removeHtmlTags(text: string): string {
+		text = text.replace(rHtmlTagStart, "");
+		text = text.replace(rHtmlTagEnd, "");
+		return text.trim();
+	}
 }
 
 export class Prompt extends PromptBuilder {
@@ -241,29 +248,17 @@ export class Prompt extends PromptBuilder {
 
 	public createPromptDalleGen(): string | undefined {
 		// now get the actual textSnippet that contains the html tag
-		const promptSnippets = PromptBuilder.filterSnippetsWithTags(
-			this.messagesCtx.flatMap((msg: ChatMessage) => msg.textSnippets),
-			"dalle_gen"
-		);
-		if (promptSnippets.length !== 0) {
-			smartNotify("Using text within dalle_gen tags");
-			return this.removeHtmlTags(promptSnippets[promptSnippets.length - 1]);
-		}
-		const lastMsg = this.messagesCtx[this.messagesCtx.length - 1];
-		if (lastMsg) {
-			smartNotify("Using last message text snippet as prompt");
-			return this.removeHtmlTags(
-				lastMsg.textSnippets[lastMsg.textSnippets.length - 1]
-			);
-		}
-		smartNotify("Prompt not found")
-		return undefined;
-	}
+		const allSnippets = this.messagesCtx.flatMap((m: ChatMessage) => m.textSnippets);
+		const prompts = PromptBuilder.filterSnippetsWithTags(allSnippets, "dalle_gen");
 
-	public removeHtmlTags(text: string): string {
-		text = text.replace(rHtmlTagStart, "");
-		text = text.replace(rHtmlTagEnd, "");
-		return text.trim();
+		if (prompts.length === 0) {
+			smartNotify("Prompt not found")
+			return undefined;
+		}
+
+		const prompt = PromptBuilder.removeHtmlTags(prompts[prompts.length - 1]);
+
+		return prompt;
 	}
 
 	public createPromptCodexGen(): string | undefined {
@@ -273,26 +268,15 @@ export class Prompt extends PromptBuilder {
 
 		const examples = this.getPromptExamples();
 
-		// const usedMessage: ChatMessage = this.msgHist[this.msgHist.length - 1];
-		// // last text
-		// let prompt = `### ${promptHeader}:\n`;
-		// prompt += usedMessage.textSnippets[
-		// usedMessage.textSnippets.length - 1
-		// 	].replace(/(<([^>]+)>)/gi, "");
+		const allSnippets = this.messagesCtx.flatMap((m: ChatMessage) => m.textSnippets);
+		const prompts = PromptBuilder.filterSnippetsWithTags(allSnippets, "codex_gen");
 
-		const usedMessages = PromptBuilder.filterMessagesWithTags(this.messagesCtx);
-		if (usedMessages.length === 0) {
-			smartNotify("Prompt not found in conversation history");
+		if (prompts.length === 0) {
+			smartNotify("Prompt not found")
 			return undefined;
 		}
-		// now get the actual textSnippet that contains the html tag
-		const promptSnippets = usedMessages[usedMessages.length - 1].textSnippets;
 
-		if (promptSnippets.length === 0) {
-			smartNotify("Prompt not found in conversation history");
-			return undefined;
-		}
-		const prompt = promptSnippets[promptSnippets.length - 1];
+		const prompt = PromptBuilder.removeHtmlTags(prompts[prompts.length - 1]);
 
 		return this.buildPrompt(start, rules, examples, prompt);
 	}

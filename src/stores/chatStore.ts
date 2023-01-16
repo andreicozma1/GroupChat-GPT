@@ -75,8 +75,8 @@ const getLocalStorageData = (): ChatStoreState => {
 	return state;
 }
 
-export const useChatStore = defineStore("counter", {
-	state: (): ChatStoreState => (getLocalStorageData()),
+export const useChatStore = defineStore("chatStore", {
+	state: (): ChatStoreState => getLocalStorageData(),
 	getters: {
 		/**************************************************************************************************************/
 		// Users
@@ -346,8 +346,7 @@ export const useChatStore = defineStore("counter", {
 		/* DATA & STORAGE
 		/**************************************************************************************************************/
 		saveData() {
-			// TODO: Make this optional with a preference
-			smartNotify("Saving data...");
+			// smartNotify("Saving data...");
 			LocalStorage.set(localStorageKey, JSON.stringify(this.$state));
 		},
 		clearAllData() {

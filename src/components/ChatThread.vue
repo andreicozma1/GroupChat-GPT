@@ -1,16 +1,10 @@
 <template>
-    <!--    <q-circular-progress-->
-    <!--            class="full-width q-ma-md z-top"-->
-    <!--            v-if="isLoading"-->
-    <!--            :color="loadingColor"-->
-    <!--            size="md"-->
-    <!--            show-value-->
-    <!--            :indeterminate="loadingColor !== 'positive'">-->
-    <!--        <q-icon v-if="loadingColor === 'positive'"-->
-    <!--                name="check_circle"-->
-    <!--                size="md"-->
-    <!--                color="positive"/>-->
-    <!--    </q-circular-progress>-->
+
+    <q-linear-progress
+            v-if="isLoading"
+            color="primary"
+            indeterminate
+    />
 
     <q-scroll-area ref="threadElem" :style="getScrollAreaStyle">
         <q-item-label v-bind="threadCaptionProps">
@@ -165,8 +159,8 @@ const myUser = computed(() => store.getMyUser());
 
 const threadMessages: Ref<ChatMessage[]> = ref([]);
 
-// const isLoading = ref(false);
-// const loadingColor = ref("accent")
+const isLoading = ref(false);
+let loadingTimeout: NodeJS.Timeout | undefined | null = null;
 
 const prevMessageCount = ref(0)
 
@@ -181,7 +175,6 @@ const onClickMsg = (message: ChatMessage) => {
 };
 
 const parseTextSnippets = (message: ChatMessage): string[] => {
-	console.log("ChatMessage.parseTextSnippets:", message.textSnippets);
 	const texts = message.textSnippets.flatMap((snippet: string) => {
 		return snippet.split("\n\n").map((line: string) => {
 			return line.trim();
@@ -297,11 +290,9 @@ watch(
 );
 
 watchEffect(() => {
-	smartNotify("Loading thread messages...");
 	const thread = store.getActiveThread();
 	let messages: ChatMessage[] = []
-	// isLoading.value = true;
-	// loadingColor.value = "accent"
+	isLoading.value = true;
 	try {
 		messages = thread.getMessageArray();
 		messages = parseMessageHistory(messages, {
@@ -335,6 +326,10 @@ watchEffect(() => {
 	}
 
 	threadMessages.value = messages;
+	if (loadingTimeout) clearTimeout(loadingTimeout);
+	loadingTimeout = setTimeout(() => {
+		isLoading.value = false;
+	}, 1500);
 });
 
 </script>

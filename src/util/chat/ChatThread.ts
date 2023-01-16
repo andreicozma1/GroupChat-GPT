@@ -3,6 +3,7 @@ import {getAppVersion} from "src/util/Utils";
 import {v4 as uuidv4} from "uuid";
 import {User} from "src/util/users/User";
 import {smartNotify} from "src/util/SmartNotify";
+import {parseDate} from "src/util/DateUtils";
 
 export interface ChatThreadPrefs {
 	hiddenUserIds: string[];
@@ -20,10 +21,10 @@ export class ChatThread {
 
 	public id: string;
 	public name: string = ChatThread.defaultThreadName;
-	private messageIdMap: { [key: string]: ChatMessage } = {};
 	public prefs: ChatThreadPrefs = ChatThread.defaultPrefs;
 	public appVersion: string = getAppVersion();
 	private joinedUserIds: string[] = [];
+	private messageIdMap: { [key: string]: ChatMessage } = {};
 
 	constructor(
 		name?: string,
@@ -52,7 +53,7 @@ export class ChatThread {
 		return this.joinedUserIds.map(getUserCallback).filter((u: User | undefined) => u !== undefined) as User[]
 	}
 
-	getMessagesIdsMap(): { [key: string]: ChatMessage } {
+	getMessageIdMap(): { [key: string]: ChatMessage } {
 		for (const messageId in this.messageIdMap) {
 			if (!(this.messageIdMap[messageId] instanceof ChatMessage)) {
 				console.warn("Prototype does not match ChatMessage");
@@ -64,21 +65,30 @@ export class ChatThread {
 		return this.messageIdMap;
 	}
 
-	getMessagesArray(): ChatMessage[] {
-		return Object.values(this.getMessagesIdsMap());
+	getMessageArray(): ChatMessage[] {
+		const messages: ChatMessage[] = Object.values(this.getMessageIdMap());
+		messages.sort((a: ChatMessage, b: ChatMessage) => {
+			const ad = parseDate(a.dateCreated).getTime();
+			const bd = parseDate(b.dateCreated).getTime();
+			return ad - bd;
+		});
+		return messages;
 	}
 
-	getMessagesArrayFromIds(messageIds: string[]): ChatMessage[] {
-		return messageIds.map((messageId: string) => this.messageIdMap[messageId])
+	getMessageArrayFromIds(messageIds: string[]): ChatMessage[] {
+		return messageIds.map((messageId: string) => this.getMessageIdMap()[messageId])
 			.filter((message: ChatMessage | undefined) => message !== undefined) as ChatMessage[];
 	}
 
 	addMessage(message: ChatMessage): void {
+		if (this.getMessageIdMap()[message.id]) {
+			delete this.messageIdMap[message.id];
+		}
 		this.messageIdMap[message.id] = message;
 	}
 
 	deleteMessage(messageId: string): void {
-		if (!this.messageIdMap[messageId]) {
+		if (!this.getMessageIdMap()[messageId]) {
 			smartNotify("An error occurred while deleting the message.");
 			console.error(
 				`An error occurred while deleting the message: ${messageId}`
@@ -118,7 +128,7 @@ export class ChatThread {
 		this.appVersion = getAppVersion();
 	}
 
-	private notify(message: string): void {
+	notify(message: string): void {
 		smartNotify(message, `Thread: ${this.name} (${this.id})`);
 	}
 }

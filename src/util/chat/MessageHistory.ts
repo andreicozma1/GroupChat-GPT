@@ -1,4 +1,3 @@
-import {parseDate} from "src/util/DateUtils";
 import {ChatMessage} from "src/util/chat/ChatMessage";
 
 // TODO: Make these configurable in UI in the future
@@ -38,11 +37,6 @@ export const parseMessageHistory = (
 			return false;
 		}
 		return true;
-	});
-	messages.sort((a: ChatMessage, b: ChatMessage) => {
-		const ad = parseDate(a.dateCreated).getTime();
-		const bd = parseDate(b.dateCreated).getTime();
-		return ad - bd;
 	});
 	console.log("getMessageHistory->original:", messages);
 	if (config.maxMessages) {

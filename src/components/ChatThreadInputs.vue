@@ -97,6 +97,7 @@ const sendMessage = () => {
 		if (!isTyping.value) {
 			console.log("=> userMsgObj:", {...userMsgObj.value});
 			if (userMsgObj.value !== null) {
+				userMsgObj.value.loading = false;
 				store.handleUserMessage(userMsgObj.value);
 				userMsgObj.value = null;
 			} else {

@@ -14,9 +14,9 @@
 
     <q-scroll-area ref="threadElem" :style="getScrollAreaStyle">
         <q-item-label v-bind="threadCaptionProps">
-            {{ getThreadMessages.length.toString() + ' messages' }}
+            {{ threadMessages.length.toString() + ' messages' }}
         </q-item-label>
-        <div v-for="msg in getThreadMessages"
+        <div v-for="msg in threadMessages"
              :key="msg.dateCreated"
              :style="msg.getStyle()">
             <q-chat-message :avatar="msg.userAvatarUrl"
@@ -26,7 +26,7 @@
                             size="6"
                             v-bind="msg"
                             @click="onClickMsg(msg)">
-                <div v-for="textSnippet in msg.parseTextSnippets()"
+                <div v-for="textSnippet in parseTextSnippets(msg)"
                      :key="textSnippet"
                      @click="copyClipboard(textSnippet)">
                     {{ textSnippet }}
@@ -143,7 +143,7 @@
 <script lang="ts" setup>
 import {getSeededQColor} from "src/util/Colors";
 import {copyClipboard, getAppVersion} from "src/util/Utils";
-import {computed, ref, watch} from "vue";
+import {computed, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr} from "src/util/DateUtils";
 import {parseMessageHistory} from "src/util/chat/MessageHistory";
@@ -163,10 +163,12 @@ const store = useChatStore();
 const threadElem: any = ref(null);
 const myUser = computed(() => store.getMyUser());
 
+const threadMessages: Ref<ChatMessage[]> = ref([]);
+
 // const isLoading = ref(false);
 // const loadingColor = ref("accent")
 
-let prevMessageCount = 0
+const prevMessageCount = ref(0)
 
 const threadCaptionProps = {
 	'class': "text-center q-py-md",
@@ -177,6 +179,17 @@ const onClickMsg = (message: ChatMessage) => {
 	console.log("onClickMsg:", {...message});
 	console.log("onClickMsg", {...message.apiResponse?.data?.data});
 };
+
+const parseTextSnippets = (message: ChatMessage): string[] => {
+	console.log("ChatMessage.parseTextSnippets:", message.textSnippets);
+	const texts = message.textSnippets.flatMap((snippet: string) => {
+		return snippet.split("\n\n").map((line: string) => {
+			return line.trim();
+		});
+	});
+	if ((!texts || texts.length === 0) && !message.loading) return [];
+	return texts;
+}
 
 const getUserName = (message: ChatMessage): string => {
 	const user: User = store.getUserById(message.userId);
@@ -283,14 +296,14 @@ watch(
 	}
 );
 
-const getThreadMessages = computed(() => {
+watchEffect(() => {
 	smartNotify("Loading thread messages...");
 	const thread = store.getActiveThread();
 	let messages: ChatMessage[] = []
 	// isLoading.value = true;
 	// loadingColor.value = "accent"
 	try {
-		messages = thread.getMessagesArray();
+		messages = thread.getMessageArray();
 		messages = parseMessageHistory(messages, {
 			forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
 			hiddenUserIds: thread.prefs.hiddenUserIds,
@@ -301,8 +314,8 @@ const getThreadMessages = computed(() => {
 			return !(thread.prefs.hideIgnoredMessages && message.isIgnored);
 		});
 		console.log("getThreadMessages->messages:", messages);
-		if (messages.length > prevMessageCount) scrollToBottom(1000);
-		prevMessageCount = messages.length;
+		if (messages.length > prevMessageCount.value) scrollToBottom(1000);
+		prevMessageCount.value = messages.length;
 	} catch (err: any) {
 		console.error("Error loading chat thread", err);
 		const threadVer = thread.appVersion?.trim();
@@ -320,11 +333,8 @@ const getThreadMessages = computed(() => {
 			"If you recently updated the app, you may need to clear local storage, or create a new thread.";
 		smartNotify(`Error loading a previously saved chat thread.`, caption);
 	}
-	// loadingColor.value = "positive";
-	// setTimeout(() => {
-	// 	isLoading.value = false;
-	// }, 1000);
-	return messages;
+
+	threadMessages.value = messages;
 });
 
 </script>

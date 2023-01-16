@@ -11,6 +11,7 @@ import {assistantFilter, UserCodex, UserCoordinator, UserDalle, UserDavinci,} fr
 import {UserCodexGen, UserDalleGen} from "src/util/users/Helpers";
 import {ChatMessage} from "src/util/chat/ChatMessage";
 import {ChatThread} from "src/util/chat/ChatThread";
+import {parseDate} from "src/util/DateUtils";
 
 const localStorageKey = "data";
 
@@ -110,6 +111,7 @@ export const useChatStore = defineStore("counter", {
 			console.warn("registerUser:", user);
 			smartNotify(`Registering user: "${user.id}"...`);
 			this.usersMap[user.id] = user;
+			this.saveData()
 			return this.usersMap[user.id]
 		},
 		getUserById(id: string): User {
@@ -135,6 +137,7 @@ export const useChatStore = defineStore("counter", {
 			this.threadsMap[thread.id] = thread;
 			// set the new thread as the active thread
 			this.threadData.activeThreadId = thread.id;
+			this.saveData()
 			return this.threadsMap[thread.id]
 		},
 		getThreadById(key: string) {
@@ -152,8 +155,8 @@ export const useChatStore = defineStore("counter", {
 		getActiveThread(): ChatThread {
 			console.warn("=".repeat(60));
 			console.warn("getActiveThread");
-			if (!this.activeThreadId) return this.registerThread(new ChatThread())
-			return this.getThreadById(this.activeThreadId);
+			if (!this.activeThreadId) return this.registerThread(new ChatThread()) as ChatThread;
+			return this.getThreadById(this.activeThreadId) as ChatThread;
 		},
 		/**************************************************************************************************************/
 		// Messages
@@ -168,13 +171,10 @@ export const useChatStore = defineStore("counter", {
 			const user: User = this.getUserById(message.userId);
 			const thread: ChatThread = this.getActiveThread();
 			thread.addMessage(message);
-
 			console.warn("*".repeat(40));
 
 			console.log("handleUserMessage->user:", user);
 			console.log("handleUserMessage->message:", message);
-
-			message.loading = true;
 
 			if (message.followupMsgIds.length > 0) {
 				message.followupMsgIds.forEach((id: string) => {
@@ -190,11 +190,11 @@ export const useChatStore = defineStore("counter", {
 				const prevMsgContextIds = message.apiResponse?.prompt?.messagesCtxIds;
 				if (prevMsgContextIds) {
 					// Re-generation from specified context
-					messages = thread.getMessagesArrayFromIds(prevMsgContextIds)
+					messages = thread.getMessageArrayFromIds(prevMsgContextIds)
 					// TODO: This will end up with less messages than expected if there are any undefined messages
 					ignoreCache = true;
 				} else {
-					messages = thread.getMessagesArray()
+					messages = thread.getMessageArray()
 				}
 				messages = parseMessageHistory(messages, {
 					hiddenUserIds:
@@ -205,11 +205,10 @@ export const useChatStore = defineStore("counter", {
 					maxDate: message.dateCreated,
 					excludeLoading: true,
 				});
+				message.loading = true;
 				const response = await this.generate(user, messages, thread, ignoreCache);
 				message.parseApiResponse(response);
 			}
-
-			message.loading = false;
 
 			const followups = message.textSnippets.flatMap((text: string) => {
 				const nextUsers = [];
@@ -250,13 +249,16 @@ export const useChatStore = defineStore("counter", {
 			for (const nextKey of followups) {
 				const nextMsg: ChatMessage = this.createMessageFromUserId(nextKey);
 				message.followupMsgIds.push(nextMsg.id);
-				nextMsg.dateCreated = message.dateCreated;
+				// increment the DateCreated from the previous message
+				// nextMsg.dateCreated = message.dateCreated;
+				nextMsg.dateCreated = new Date(parseDate(message.dateCreated).getTime() + 1);
 				if (thread.prefs.orderedResponses) {
 					await this.handleUserMessage(nextMsg);
 				} else {
 					this.handleUserMessage(nextMsg);
 				}
 			}
+			thread.addMessage(message);
 			this.saveData();
 		},
 		/**************************************************************************************************************/

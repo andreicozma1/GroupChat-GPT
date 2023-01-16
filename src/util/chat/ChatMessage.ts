@@ -51,7 +51,10 @@ export class ChatMessage {
 			console.error("Error generating response:", apiResponse.errorMsg);
 			this.textSnippets = ["[ERROR]" + "\n" + apiResponse.errorMsg];
 		}
+
+		this.loading = false;
 	}
+
 
 	containsKeywords(keywords: string[]): boolean {
 		const text: string = this.textSnippets.join(" ").toLowerCase();
@@ -72,15 +75,6 @@ export class ChatMessage {
 		this.isIgnored = this.isIgnored === undefined ? true : !this.isIgnored;
 	}
 
-	parseTextSnippets() {
-		const texts = this.textSnippets.flatMap((snippet: string) => {
-			return snippet.split("\n\n").map((line: string) => {
-				return line.trim();
-			});
-		});
-		if ((!texts || texts.length === 0) && !this.loading) return [];
-		return texts;
-	}
 
 	getStamp() {
 		// const what = isSentByMe(msg) ? "Sent" : "Received";

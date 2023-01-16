@@ -129,6 +129,6 @@ export class ChatThread {
 	}
 
 	notify(message: string): void {
-		smartNotify(message, `Thread: ${this.name} (${this.id})`);
+		smartNotify(message, `Thread: "${this.name}" (${this.id})`);
 	}
 }

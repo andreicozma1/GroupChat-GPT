@@ -4,7 +4,6 @@ export interface ItemizedListConfig {
 	valJoinStr?: string;
 	inline?: boolean;
 	commaSepMinChars?: number;
-	valPrefix?: string;
 }
 
 export const processItemizedList = (
@@ -12,11 +11,10 @@ export const processItemizedList = (
 	val: string | string[],
 	config?: ItemizedListConfig
 ): string => {
-	const keyStartChar: string = config?.keyPrefix || "#";
+	const commaSepMinChars = config?.commaSepMinChars || 40;
+	const keyPrefix: string = config?.keyPrefix || "#";
 	let valJoinStr: string = config?.valJoinStr || ", ";
 	let inline: boolean = config?.inline || true;
-	const valPrefix = config?.valPrefix?.trim();
-	const commaSepMinChars = config?.commaSepMinChars || 40;
 
 	// remove all underscores
 	key = key.replace(/_/g, " ");
@@ -32,13 +30,11 @@ export const processItemizedList = (
 	if (val.some((s: string) => s.length > commaSepMinChars)) {
 		valJoinStr = "\n";
 		inline = false;
-		if (valPrefix) {
-			val = val.map((s: string) => `- ${valPrefix} ${s.toLowerCase()}`);
-		} else {
-			val = val.map((s: string) => `- ${s.toLowerCase()}`);
-		}
+		val = val.map((s: string, i: number) => {
+			return `${i + 1}. ${s}`;
+		})
 	}
 	val = val.join(valJoinStr);
 
-	return [`${keyStartChar} ${key}:`, val].join(inline ? " " : "\n");
+	return [`${keyPrefix} ${key}:`, val].join(inline ? " " : "\n");
 };

@@ -87,6 +87,11 @@ export class PromptBuilder {
 			});
 		} else {
 			info.push(this.promptAssistantInfo(currentUser, "You"));
+			availableAssistants.filter(
+				(a: User) => a.id !== currentUser.id
+			).forEach((user: User) => {
+				info.push(this.promptAssistantInfo(user));
+			});
 		}
 
 		return [this.h1(header), ...info].join("\n\n");
@@ -166,9 +171,9 @@ export class PromptBuilder {
 	}
 
 	private promptAssistantInfo(user: User, parenthesesTag?: string): string {
-		parenthesesTag =
-			parenthesesTag === undefined ? "" : ` [${parenthesesTag.toUpperCase()}]`;
-		const header = `### ${user.name} (id: ${user.id}) ${parenthesesTag}:`;
+		let header = `### ${user.name} (id: ${user.id})`;
+		if (parenthesesTag) header += ` [${parenthesesTag.toUpperCase()}]`;
+		header += ":";
 
 		if (!user.promptConfig.traits) return header;
 
@@ -225,7 +230,7 @@ export class Prompt extends PromptBuilder {
 	}
 
 	public createAssistantPrompt(): string | undefined {
-		const start = `=== AI GROUP CHAT: ${this.threadName} ===`;
+		const start = `=== AI GROUP CHAT: "${this.threadName}" ===`;
 		const desc = [
 			"The following is a group-chat conversation between a human and several AI assistants.",
 			`Current Date-Time: ${dateToLocaleStr(new Date())}`,

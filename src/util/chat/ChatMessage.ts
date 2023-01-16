@@ -20,7 +20,7 @@ export class ChatMessage {
 	imageUrls: string[] = [];
 	apiResponse?: ApiResponse;
 
-	constructor(chatUser: User) {
+	constructor(chatUser?: User) {
 		this.userId = chatUser?.id || "unknown";
 		this.userName = chatUser?.name || "Unknown User";
 		this.userAvatarUrl = getRobohashUrl(this.userName);

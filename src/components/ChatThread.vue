@@ -146,10 +146,9 @@ import {copyClipboard, getAppVersion} from "src/util/Utils";
 import {computed, ref, watch} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr} from "src/util/DateUtils";
-import {getMessageHistory} from "src/util/chat/MessageHistory";
+import {parseMessageHistory} from "src/util/chat/MessageHistory";
 import {User} from "src/util/users/User";
 import {ChatMessage} from "src/util/chat/ChatMessage";
-import {ChatThread} from "src/util/chat/ChatThread";
 import {useChatStore} from "stores/chatStore";
 
 const props = defineProps({
@@ -162,6 +161,7 @@ const props = defineProps({
 
 const store = useChatStore();
 const threadElem: any = ref(null);
+const myUser = computed(() => store.getMyUser());
 
 // const isLoading = ref(false);
 // const loadingColor = ref("accent")
@@ -241,8 +241,7 @@ const restoreMessage = (message: ChatMessage) => {
 };
 
 const isSentByMe = (message: ChatMessage) => {
-	const humanUser = store.getMyUser();
-	return message.userId === humanUser.id && message.userName === humanUser.name;
+	return message.userId === myUser.value.id && message.userName === myUser.value.name;
 };
 
 const getMsgBgColor = (message: ChatMessage) => {
@@ -284,39 +283,32 @@ watch(
 	}
 );
 
-const parseThreadMessages = (thread: ChatThread): ChatMessage[] => {
-	let messages: ChatMessage[] = getMessageHistory(thread, {
-		forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
-		hiddenUserIds: thread.prefs.hiddenUserIds,
-		maxMessages: undefined,
-		maxDate: undefined,
-	});
-	console.log("parseThreadMessages->messages:", messages);
-
-	messages = messages.filter((message: ChatMessage) => {
-		return !(thread.prefs.hideIgnoredMessages && message.isIgnored);
-	});
-	console.log("parseThreadMessages->filtered:", messages);
-	return messages;
-};
-
-
 const getThreadMessages = computed(() => {
 	smartNotify("Loading thread messages...");
 	const thread = store.getActiveThread();
-	let threadMessages: ChatMessage[] = []
+	let messages: ChatMessage[] = []
 	// isLoading.value = true;
 	// loadingColor.value = "accent"
 	try {
-		threadMessages = parseThreadMessages(thread);
-		if (threadMessages.length > prevMessageCount) scrollToBottom(1000);
-		prevMessageCount = threadMessages.length;
+		messages = thread.getMessagesArray();
+		messages = parseMessageHistory(messages, {
+			forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
+			hiddenUserIds: thread.prefs.hiddenUserIds,
+			maxMessages: undefined,
+			maxDate: undefined,
+		});
+		messages = messages.filter((message: ChatMessage) => {
+			return !(thread.prefs.hideIgnoredMessages && message.isIgnored);
+		});
+		console.log("getThreadMessages->messages:", messages);
+		if (messages.length > prevMessageCount) scrollToBottom(1000);
+		prevMessageCount = messages.length;
 	} catch (err: any) {
 		console.error("Error loading chat thread", err);
 		const threadVer = thread.appVersion?.trim();
 		const appVer = getAppVersion();
-		console.log("Thread version:", threadVer);
-		console.log("App version:", appVer);
+		console.log("getThreadMessages->threadVer:", threadVer);
+		console.log("getThreadMessages->appVer:", appVer);
 		console.log(threadVer === appVer);
 		let caption: string;
 		if (threadVer && threadVer !== appVer) {
@@ -332,7 +324,7 @@ const getThreadMessages = computed(() => {
 	// setTimeout(() => {
 	// 	isLoading.value = false;
 	// }, 1000);
-	return threadMessages
+	return messages;
 });
 
 </script>

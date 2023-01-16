@@ -1,6 +1,5 @@
 import {parseDate} from "src/util/DateUtils";
 import {ChatMessage} from "src/util/chat/ChatMessage";
-import {ChatThread} from "src/util/chat/ChatThread";
 
 // TODO: Make these configurable in UI in the future
 export interface ChatMessageHistoryConfig {
@@ -17,12 +16,11 @@ export interface ChatMessageHistoryConfig {
 	excludeLoading?: boolean;
 }
 
-export const getMessageHistory = (
-	thread: ChatThread,
+export const parseMessageHistory = (
+	messages: ChatMessage[],
 	config: ChatMessageHistoryConfig
 ): ChatMessage[] => {
 	const excludeLoading = config.excludeLoading ?? false;
-	let messages: ChatMessage[] = Object.values(thread.messageIdMap);
 	// filter out messages whose textSnippets stripped and joined are empty
 	// unless the message has an image
 	messages = messages.filter((message: ChatMessage) => {
@@ -54,13 +52,14 @@ export const getMessageHistory = (
 	messages = messages.filter((message: ChatMessage) => {
 		if (config.maxDate && config.maxDate < message.dateCreated) return false;
 		if (config.minDate && config.minDate > message.dateCreated) return false;
-		if (
-			config.forceShowKeywords &&
-			message.containsKeywords(config.forceShowKeywords)
-		)
+		if (config.forceShowKeywords &&
+			message.containsKeywords(config.forceShowKeywords)) {
 			return true;
-		if (config.hiddenUserIds && config.hiddenUserIds.includes(message.userId))
+		}
+		if (config.hiddenUserIds &&
+			config.hiddenUserIds.includes(message.userId)) {
 			return false;
+		}
 		return true;
 	});
 

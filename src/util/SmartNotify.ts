@@ -60,8 +60,8 @@ export const smartNotify = (message: string, caption?: string) => {
 		}
 	}
 
-	console.warn("smartNotify->message", message);
-	if (caption) console.log("smartNotify->caption", caption);
+	console.warn("smartNotify->message:", message);
+	if (caption) console.log("smartNotify->caption:", caption);
 
 	notifyQueue.push({
 		color: color,

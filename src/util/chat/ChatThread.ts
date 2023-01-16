@@ -20,7 +20,7 @@ export class ChatThread {
 
 	public id: string;
 	public name: string = ChatThread.defaultThreadName;
-	public messageIdMap: { [key: string]: ChatMessage } = {};
+	private messageIdMap: { [key: string]: ChatMessage } = {};
 	public prefs: ChatThreadPrefs = ChatThread.defaultPrefs;
 	public appVersion: string = getAppVersion();
 	private joinedUserIds: string[] = [];
@@ -52,6 +52,31 @@ export class ChatThread {
 		return this.joinedUserIds.map(getUserCallback).filter((u: User | undefined) => u !== undefined) as User[]
 	}
 
+	getMessagesIdsMap(): { [key: string]: ChatMessage } {
+		for (const messageId in this.messageIdMap) {
+			if (!(this.messageIdMap[messageId] instanceof ChatMessage)) {
+				console.warn("Prototype does not match ChatMessage");
+				console.log("getMessagesIdsMap->before:", this.messageIdMap[messageId]);
+				this.messageIdMap[messageId] = Object.assign(new ChatMessage(), this.messageIdMap[messageId]);
+				console.log("getMessagesIdsMap->after:", this.messageIdMap[messageId]);
+			}
+		}
+		return this.messageIdMap;
+	}
+
+	getMessagesArray(): ChatMessage[] {
+		return Object.values(this.getMessagesIdsMap());
+	}
+
+	getMessagesArrayFromIds(messageIds: string[]): ChatMessage[] {
+		return messageIds.map((messageId: string) => this.messageIdMap[messageId])
+			.filter((message: ChatMessage | undefined) => message !== undefined) as ChatMessage[];
+	}
+
+	addMessage(message: ChatMessage): void {
+		this.messageIdMap[message.id] = message;
+	}
+
 	deleteMessage(messageId: string): void {
 		if (!this.messageIdMap[messageId]) {
 			smartNotify("An error occurred while deleting the message.");
@@ -67,6 +92,7 @@ export class ChatThread {
 		delete this.messageIdMap[messageId];
 		this.notify(`Deleted message: ${messageId}`);
 	}
+
 
 	clearMessages(): void {
 		this.notify('Clearing messages');

@@ -3,7 +3,7 @@ import {LocalStorage} from "quasar";
 import {rHtmlTagWithContent} from "src/util/Utils";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
-import {getMessageHistory} from "src/util/chat/MessageHistory";
+import {parseMessageHistory} from "src/util/chat/MessageHistory";
 import {Prompt} from "src/util/prompt/Prompt";
 import {User, UserTypes} from "src/util/users/User";
 import {UserHuman} from "src/util/users/UserHuman";
@@ -21,61 +21,61 @@ export interface ApiResponse {
 	data: any;
 }
 
-// const DefaultThread = {
-// 	messageIdMap: {},
-// 	appVersion: getAppVersion(),
-// 	joinedUserIds: [],
-// 	prefs: {
-// 		hiddenUserIds: [],
-// 		dontShowMessagesHiddenInPrompts: false,
-// 		orderedResponses: true,
-// 	},
-// };
+class ChatStoreState {
 
-interface ChatStoreState {
 	userData: {
 		usersMap: Record<string, User>;
 		myUserId: string;
-	};
+	} = ChatStoreState.getDefaultUsersData();
 	threadData: {
 		threadsMap: Record<string, ChatThread>;
 		activeThreadId: string | undefined;
 		defaultThreadName: string;
-	};
-	cachedResponses: Record<string, any>;
+	} = ChatStoreState.getDefaultThreadsData();
+	cachedResponses: Record<string, any> = {};
+
+	reset() {
+		this.userData = ChatStoreState.getDefaultUsersData();
+		this.threadData = ChatStoreState.getDefaultThreadsData();
+		this.cachedResponses = {};
+	}
+
+	public static getDefaultUsersData() {
+		return {
+			usersMap: {
+				coordinator: new UserCoordinator(),
+				davinci: new UserDavinci(),
+				// DALL-E
+				dalle: new UserDalle(),
+				dalle_gen: new UserDalleGen(),
+				// Codex
+				codex: new UserCodex(),
+				codex_gen: new UserCodexGen(),
+			},
+			myUserId: "human",
+		}
+	}
+
+	public static getDefaultThreadsData() {
+		return {
+			threadsMap: {},
+			activeThreadId: undefined,
+			defaultThreadName: "General",
+		};
+	}
 }
 
-const getDefaultUsersState = (): ChatStoreState["userData"] => {
-	return {
-		usersMap: {
-			coordinator: new UserCoordinator(),
-			davinci: new UserDavinci(),
-			// DALL-E
-			dalle: new UserDalle(),
-			dalle_gen: new UserDalleGen(),
-			// Codex
-			codex: new UserCodex(),
-			codex_gen: new UserCodexGen(),
-		},
-		myUserId: "human",
-	};
-};
 
-const getDefaultThreadState = (): ChatStoreState["threadData"] => {
-	return {
-		threadsMap: {},
-		activeThreadId: undefined,
-		defaultThreadName: "General",
-	};
-};
+const getLocalStorageData = (): ChatStoreState => {
+	const item: string | null = LocalStorage.getItem(localStorageKey)
+	const state = new ChatStoreState()
+	if (!item) return state;
+	Object.assign(state, JSON.parse(item));
+	return state;
+}
 
 export const useChatStore = defineStore("counter", {
-	state: (): ChatStoreState => ({
-		userData: getDefaultUsersState(),
-		threadData: getDefaultThreadState(),
-		cachedResponses: {},
-		...JSON.parse(LocalStorage.getItem(localStorageKey) || "{}"),
-	}),
+	state: (): ChatStoreState => (getLocalStorageData()),
 	getters: {
 		/**************************************************************************************************************/
 		// Users
@@ -110,19 +110,17 @@ export const useChatStore = defineStore("counter", {
 			console.warn("registerUser:", user);
 			smartNotify(`Registering user: "${user.id}"...`);
 			this.usersMap[user.id] = user;
-			return user
+			return this.usersMap[user.id]
 		},
 		getUserById(id: string): User {
-			console.warn("getUserById:", id);
-			const user = this.usersMap[id]
-			if (!user) smartNotify(`User not found: ${id}`);
-			return user
+			// console.warn("getUserById:", id);
+			if (!this.usersMap[id]) smartNotify(`User not found: ${id}`);
+			return this.usersMap[id]
 		},
 		getMyUser(): User {
 			console.warn("getMyUser");
-			const user = this.getUserById(this.myUserId);
-			if (!user) return this.registerUser(new UserHuman(this.myUserId));
-			return user
+			if (!this.getUserById(this.myUserId)) return this.registerUser(new UserHuman(this.myUserId));
+			return this.getUserById(this.myUserId);
 		},
 		/**************************************************************************************************************/
 		// Threads
@@ -137,24 +135,25 @@ export const useChatStore = defineStore("counter", {
 			this.threadsMap[thread.id] = thread;
 			// set the new thread as the active thread
 			this.threadData.activeThreadId = thread.id;
-			return thread
+			return this.threadsMap[thread.id]
 		},
 		getThreadById(key: string) {
 			console.warn("getThreadById:", key);
-			const thread = this.threadsMap[key];
-			const joinedAssistants = thread.getJoinedUsers(this.getUserById).filter(assistantFilter);
+			if (!(this.threadsMap[key] instanceof ChatThread)) {
+				this.threadsMap[key] = Object.assign(ChatThread.prototype, this.threadsMap[key]);
+			}
+			const joinedAssistants = this.threadsMap[key].getJoinedUsers(this.getUserById).filter(assistantFilter);
 			if (joinedAssistants.length === 0) {
 				smartNotify("Warning: There are no assistants in this thread!",
 					"You can add assistants in the thread preferences menu.");
 			}
-			return thread;
+			return this.threadsMap[key];
 		},
 		getActiveThread(): ChatThread {
 			console.warn("=".repeat(60));
 			console.warn("getActiveThread");
-			const activeThreadId = this.activeThreadId;
-			if (!activeThreadId) return this.registerThread(new ChatThread())
-			return this.getThreadById(activeThreadId);
+			if (!this.activeThreadId) return this.registerThread(new ChatThread())
+			return this.getThreadById(this.activeThreadId);
 		},
 		/**************************************************************************************************************/
 		// Messages
@@ -164,32 +163,11 @@ export const useChatStore = defineStore("counter", {
 			const cfg: User = this.getUserById(id);
 			return new ChatMessage(cfg);
 		},
-		deleteMessage(messageId: string, silent = false): void {
-			const thread = this.getActiveThread();
-			if (!thread.messageIdMap[messageId]) {
-				if (!silent) {
-					smartNotify("An error occurred while deleting the message.");
-				}
-				console.error(
-					`An error occurred while deleting the message: ${messageId}`
-				);
-				return;
-			}
-			const followUpIds = thread.messageIdMap[messageId].followupMsgIds;
-			if (followUpIds) {
-				for (let i = 0; i < followUpIds.length; i++) {
-					this.deleteMessage(followUpIds[i], true);
-				}
-			}
-			delete thread.messageIdMap[messageId];
-			this.saveData();
-			smartNotify("Successfully deleted message.");
-		},
+
 		async handleUserMessage(message: ChatMessage) {
 			const user: User = this.getUserById(message.userId);
 			const thread: ChatThread = this.getActiveThread();
-			thread.messageIdMap[message.id] = message;
-			this.saveData();
+			thread.addMessage(message);
 
 			console.warn("*".repeat(40));
 
@@ -200,36 +178,34 @@ export const useChatStore = defineStore("counter", {
 
 			if (message.followupMsgIds.length > 0) {
 				message.followupMsgIds.forEach((id: string) => {
-					this.deleteMessage(id, true);
+					thread.deleteMessage(id);
 				});
 				message.followupMsgIds = [];
 			}
 
 			if (user.type !== UserTypes.HUMAN) {
-				const msgHistIds = message.apiResponse?.prompt?.messagesCtxIds;
-				let ignoreCache =
-					user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
-				let msgHist;
-				if (!msgHistIds) {
-					// First-time generation
-					msgHist = getMessageHistory(thread, {
-						hiddenUserIds:
-							user.id !== this.userData.usersMap.coordinator.id
-								? [this.userData.usersMap.coordinator.id]
-								: [],
-						maxMessages: 10,
-						maxDate: message.dateCreated,
-						excludeLoading: true,
-					});
-				} else {
+				let messages: ChatMessage[];
+				let ignoreCache = user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
+
+				const prevMsgContextIds = message.apiResponse?.prompt?.messagesCtxIds;
+				if (prevMsgContextIds) {
 					// Re-generation from specified context
-					msgHist = msgHistIds.map((id: string) => thread.messageIdMap[id]);
-					// if there are any undefined messages, remove them
-					msgHist = msgHist.filter((m: ChatMessage) => m !== undefined);
+					messages = thread.getMessagesArrayFromIds(prevMsgContextIds)
 					// TODO: This will end up with less messages than expected if there are any undefined messages
 					ignoreCache = true;
+				} else {
+					messages = thread.getMessagesArray()
 				}
-				const response = await this.generate(user, msgHist, ignoreCache);
+				messages = parseMessageHistory(messages, {
+					hiddenUserIds:
+						user.id !== this.userData.usersMap.coordinator.id
+							? [this.userData.usersMap.coordinator.id]
+							: [],
+					maxMessages: 10,
+					maxDate: message.dateCreated,
+					excludeLoading: true,
+				});
+				const response = await this.generate(user, messages, thread, ignoreCache);
 				message.parseApiResponse(response);
 			}
 
@@ -248,9 +224,6 @@ export const useChatStore = defineStore("counter", {
 					);
 				}
 				const prompts = text.match(rHtmlTagWithContent);
-
-				console.warn(text);
-				console.warn(prompts);
 				if (prompts) {
 					nextUsers.push(
 						...prompts
@@ -295,6 +268,7 @@ export const useChatStore = defineStore("counter", {
 		async generate(
 			user: User,
 			msgHist: ChatMessage[],
+			thread: ChatThread,
 			ignoreCache?: boolean
 		): Promise<ApiResponse> {
 			ignoreCache = ignoreCache ?? false;
@@ -318,7 +292,7 @@ export const useChatStore = defineStore("counter", {
 			const prompt = new Prompt(
 				// this.currentThreadName,
 				// this.humanUserName,
-				this.getActiveThread().name,
+				thread.name,
 				this.getMyUser().name,
 				user,
 				this.usersMap,
@@ -388,13 +362,13 @@ export const useChatStore = defineStore("counter", {
 		},
 		resetAllThreads() {
 			smartNotify(`Resetting all threads`);
-			this.threadData = getDefaultThreadState();
+			this.threadData = ChatStoreState.getDefaultThreadsData()
 			this.saveData();
 			return this.threadData;
 		},
 		resetAllUsers() {
 			smartNotify(`Resetting all users`);
-			this.userData = getDefaultUsersState();
+			this.userData = ChatStoreState.getDefaultUsersData()
 			this.saveData();
 			return this.userData;
 		},

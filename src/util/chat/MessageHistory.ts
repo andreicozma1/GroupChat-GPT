@@ -38,10 +38,10 @@ export const parseMessageHistory = (
 		}
 		return true;
 	});
-	console.log("getMessageHistory->original:", messages);
+	// console.log("getMessageHistory->original:", messages);
 	if (config.maxMessages) {
 		messages = messages.slice(-config.maxMessages);
-		console.log("getMessageHistory->maxMessages:", messages);
+		// console.log("getMessageHistory->maxMessages:", messages);
 	}
 	messages = messages.filter((message: ChatMessage) => {
 		if (config.maxDate && config.maxDate < message.dateCreated) return false;
@@ -57,6 +57,6 @@ export const parseMessageHistory = (
 		return true;
 	});
 
-	console.log("getMessageHistory->filter:", messages);
+	// console.log("getMessageHistory->filter:", messages);
 	return messages;
 };

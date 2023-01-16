@@ -304,7 +304,7 @@ watchEffect(() => {
 		messages = messages.filter((message: ChatMessage) => {
 			return !(thread.prefs.hideIgnoredMessages && message.isIgnored);
 		});
-		console.log("getThreadMessages->messages:", messages);
+		// console.log("getThreadMessages->messages:", messages);
 		if (messages.length > prevMessageCount.value) scrollToBottom(1000);
 		prevMessageCount.value = messages.length;
 	} catch (err: any) {

@@ -23,7 +23,29 @@
                 <div v-for="textSnippet in parseTextSnippets(msg)"
                      :key="textSnippet"
                      @click="copyClipboard(textSnippet)">
-                    {{ textSnippet }}
+                    <div v-for="text in textSnippet.split('\n')"
+                         :key="text">
+                        <!--                        handle showing links -->
+                        <!--                        links can either be inline with other text or on their own line -->
+                        <!--                        Only the link should use an achor tag -->
+                        <span v-if="text.includes('http')">
+                            <span v-for="chunk in text.split(' ')" :key="chunk"
+                                  style="padding-right: 3.5px">
+                                <a v-if="chunk.includes('http')"
+                                   :href="chunk"
+                                   target="_blank">
+                                    {{ chunk }}
+                                    <q-tooltip>{{ chunk }}</q-tooltip>
+                                </a>
+                                <span v-else>
+                                    {{ chunk }}
+                                </span>
+                            </span>
+                        </span>
+                        <span v-else>
+                            {{ text }}
+                        </span>
+                    </div>
                     <q-tooltip :delay="750">
                         {{ msg.getTextHoverHint(textSnippet) }}
                     </q-tooltip>

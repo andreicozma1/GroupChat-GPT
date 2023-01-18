@@ -17,6 +17,7 @@ const localStorageKey = "data";
 
 export interface ApiResponse {
 	fromCache: boolean;
+	cacheIgnored: boolean;
 	errorMsg: string | undefined;
 	prompt: AssistantPrompt;
 	data: any;
@@ -325,20 +326,22 @@ export const useChatStore = defineStore("chatStore", {
 						"\n" + "Data: " + JSON.stringify(error.response.data, null, 4);
 				}
 				return {
-					cached: false,
+					fromCache: false,
+					cacheIgnored: ignoreCache,
 					errorMsg: errorMsg,
 					prompt: prompt,
 					data: undefined,
-				};
+				} as ApiResponse;
 			}
 			this.cachedResponses[prompt.hash] = response;
 
 			return {
-				cached: cached,
+				fromCache: cached,
+				cacheIgnored: ignoreCache,
 				errorMsg: undefined,
 				prompt: prompt,
 				data: this.cachedResponses[prompt.hash].data,
-			};
+			} as ApiResponse;
 		},
 		/**************************************************************************************************************/
 		/* DATA & STORAGE

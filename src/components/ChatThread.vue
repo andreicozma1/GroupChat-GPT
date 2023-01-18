@@ -56,7 +56,7 @@
 
                 <template v-slot:stamp>
                     <div class="row items-center">
-                        <q-btn :disable="!msg.canRefresh()"
+                        <q-btn :disable="!msg.canRegenerate()"
                                :icon="getUserIcon(msg)"
                                class="q-ma-none q-pa-none"
                                color="blue-grey-8"
@@ -65,7 +65,7 @@
                                round
                                size="xs"
                                @click="regenMessage(msg)">
-                            <q-tooltip v-if="msg.canRefresh()">
+                            <q-tooltip v-if="msg.canRegenerate()">
                                 Re-generate message ({{ msg.userId }})
                             </q-tooltip>
                             <q-tooltip v-else>
@@ -140,7 +140,7 @@ import {copyClipboard, getAppVersion} from "src/util/Utils";
 import {computed, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr} from "src/util/DateUtils";
-import {parseMessageHistory} from "src/util/chat/MessageHistory";
+import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import {User} from "src/util/users/User";
 import {ChatMessage} from "src/util/chat/ChatMessage";
 import {useChatStore} from "stores/chatStore";
@@ -223,10 +223,6 @@ const editMessage = (message: ChatMessage) => {
 const regenMessage = (message: ChatMessage) => {
 	console.warn("*".repeat(40));
 	console.log("regenMessage->message:", {...message});
-	console.log(
-		"regenMessage->message.apiResponse?.prompt.messagesCtxId:",
-		message.apiResponse?.prompt.messagesCtxIds
-	);
 	store.handleUserMessage(message);
 };
 
@@ -294,10 +290,10 @@ watchEffect(() => {
 	let messages: ChatMessage[] = []
 	isLoading.value = true;
 	try {
-		messages = thread.getMessageArray();
-		messages = parseMessageHistory(messages, {
+		messages = thread.getMessagesArray();
+		messages = parseMessagesHistory(messages, {
 			forceShowKeywords: ["[ERROR]", "[WARNING]", "[INFO]"],
-			hiddenUserIds: thread.prefs.hiddenUserIds,
+			excludeUserIds: thread.prefs.hiddenUserIds,
 			maxMessages: undefined,
 			maxDate: undefined,
 		});

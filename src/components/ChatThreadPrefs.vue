@@ -88,6 +88,7 @@ const isUserVisible = (user: User): boolean => {
 };
 
 const toggleUserVisibility = (user: User) => {
+	console.log("toggleUserVisibility->user:", user);
 	const userId = user.id;
 	const thread: ChatThread = activeThread.value;
 	if (isUserVisible(user)) {

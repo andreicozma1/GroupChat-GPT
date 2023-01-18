@@ -1,6 +1,6 @@
 import {User, UserTypes} from "src/util/users/User";
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
-import {getCodeBlock, getNewlineSeparated} from "src/util/TextUtils";
+import {newlineSeparated, wrapInCodeBlock} from "src/util/TextUtils";
 
 export class UserDalleGen extends User {
 	constructor() {
@@ -26,25 +26,25 @@ export class UserCodexGen extends User {
 		this.promptConfig.examples = [
 			// TODO: Use LeetCode Examples
 			// ------------------------------------------------------------
-			getNewlineSeparated(
+			newlineSeparated(
 				"Language: Python",
 				"1. Write a function that multiplies two numbers together.",
 				"2. Run the an example with the numbers 5 and 6.",
 				"3. Print the result."
 			),
 			// ------------------------------------------------------------
-			getNewlineSeparated(
+			newlineSeparated(
 				"# Multiplying Numbers",
 				"Language: Python",
 				"## Function Definition",
 				"First, we define a function called `multiply`, which takes two parameters, `a` and `b`."
 			) +
-			getCodeBlock("python", "def multiply(a, b):", "\treturn a * b") +
-			getNewlineSeparated(
+			wrapInCodeBlock("python", "def multiply(a, b):", "\treturn a * b") +
+			newlineSeparated(
 				"## Example",
 				"Next, run the function with the numbers 5 and 6, and print the result."
 			) +
-			getCodeBlock("python", "result = multiply(5, 6)", "print(result)"),
+			wrapInCodeBlock("python", "result = multiply(5, 6)", "print(result)"),
 			// ------------------------------------------------------------
 		];
 		this.showInMembersInfo = false;

@@ -9,35 +9,27 @@ export interface ChatMessageHistoryConfig {
 	// only return messages after this date. If not set, it will be ignored
 	minDate?: string | number | Date;
 	// don't return messages from these users, unless the message contains keywords in forceShowKeywords
-	hiddenUserIds?: string[];
+	excludeUserIds?: string[];
 	// always return messages with these keywords,  regardless of whether the message is from a user in hiddenUserIds
 	forceShowKeywords?: string[];
 	excludeLoading?: boolean;
 	excludeNoText?: boolean;
+	excludeIgnored?: boolean;
 }
 
-export const parseMessageHistory = (
+export const parseMessagesHistory = (
 	messages: ChatMessage[],
 	config: ChatMessageHistoryConfig
 ): ChatMessage[] => {
 	const excludeLoading = config.excludeLoading ?? false;
 	const excludeNoText = config.excludeNoText ?? false;
+	const excludeIgnored = config.excludeIgnored ?? false;
 	// filter out messages whose textSnippets stripped and joined are empty
 	// unless the message has an image
 	messages = messages.filter((message: ChatMessage) => {
-		const textSnippets: string = message.textSnippets
-			.map((snippet: string) => snippet.trim())
-			.join("");
-		if (excludeNoText && textSnippets.length === 0) return false;
-		const imageUrls: string = message.imageUrls
-			.map((url: string) => url.trim())
-			.join("");
-		if (textSnippets.length === 0 &&
-			imageUrls.length === 0 &&
-			(!message.loading || excludeLoading)
-		) {
-			return false;
-		}
+		if (excludeLoading && message.loading) return false;
+		if (excludeIgnored && message.isIgnored) return false;
+		if (excludeNoText && !message.hasTextSnippets()) return false;
 		return true;
 	});
 	// console.log("getMessageHistory->original:", messages);
@@ -52,8 +44,8 @@ export const parseMessageHistory = (
 			message.containsKeywords(config.forceShowKeywords)) {
 			return true;
 		}
-		if (config.hiddenUserIds &&
-			config.hiddenUserIds.includes(message.userId)) {
+		if (config.excludeUserIds &&
+			config.excludeUserIds.includes(message.userId)) {
 			return false;
 		}
 		return true;

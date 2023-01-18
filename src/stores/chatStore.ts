@@ -3,8 +3,8 @@ import {LocalStorage} from "quasar";
 import {rHtmlTagStart, rHtmlTagWithContent} from "src/util/Utils";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
-import {parseMessageHistory} from "src/util/chat/MessageHistory";
-import {Prompt} from "src/util/prompt/Prompt";
+import {parseMessagesHistory} from "src/util/chat/MessageHistory";
+import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
 import {User, UserTypes} from "src/util/users/User";
 import {UserHuman} from "src/util/users/UserHuman";
 import {assistantFilter, UserCodex, UserCoordinator, UserDalle, UserDavinci,} from "src/util/users/Assistant";
@@ -18,13 +18,8 @@ const localStorageKey = "data";
 export interface ApiResponse {
 	cached: boolean;
 	errorMsg: string | undefined;
-	prompt: Prompt;
+	prompt: AssistantPrompt;
 	data: any;
-}
-
-interface FollowUp {
-	userId: string;
-	prompt?: string
 }
 
 class ChatStoreState {
@@ -39,12 +34,6 @@ class ChatStoreState {
 		defaultThreadName: string;
 	} = ChatStoreState.getDefaultThreadsData();
 	cachedResponses: Record<string, any> = {};
-
-	reset() {
-		this.userData = ChatStoreState.getDefaultUsersData();
-		this.threadData = ChatStoreState.getDefaultThreadsData();
-		this.cachedResponses = {};
-	}
 
 	public static getDefaultUsersData() {
 		return {
@@ -68,6 +57,12 @@ class ChatStoreState {
 			activeThreadId: undefined,
 			defaultThreadName: "General",
 		};
+	}
+
+	reset() {
+		this.userData = ChatStoreState.getDefaultUsersData();
+		this.threadData = ChatStoreState.getDefaultThreadsData();
+		this.cachedResponses = {};
 	}
 }
 
@@ -195,14 +190,14 @@ export const useChatStore = defineStore("chatStore", {
 				const prevMsgContextIds = message.apiResponse?.prompt?.messagesCtxIds;
 				if (prevMsgContextIds) {
 					// Re-generation from specified context
-					messages = thread.getMessageArrayFromIds(prevMsgContextIds)
+					messages = thread.getMessagesArrayFromIds(prevMsgContextIds)
 					// TODO: This will end up with less messages than expected if there are any undefined messages
-					ignoreCache = true;
+					ignoreCache = false;
 				} else {
-					messages = thread.getMessageArray()
+					messages = thread.getMessagesArray()
 				}
-				messages = parseMessageHistory(messages, {
-					hiddenUserIds:
+				messages = parseMessagesHistory(messages, {
+					excludeUserIds:
 						user.id !== this.userData.usersMap.coordinator.id
 							? [this.userData.usersMap.coordinator.id]
 							: [],
@@ -210,6 +205,7 @@ export const useChatStore = defineStore("chatStore", {
 					maxDate: message.dateCreated,
 					excludeLoading: true,
 					excludeNoText: true,
+					excludeIgnored: true,
 				});
 				message.loading = true;
 				const response = await this.generate(user, messages, thread, ignoreCache);
@@ -267,7 +263,7 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 		// API Responses
 		/**************************************************************************************************************/
-		getCachedResponseFromPrompt(prompt: Prompt): any {
+		getCachedResponseFromPrompt(prompt: AssistantPrompt): any {
 			return this.cachedResponses[prompt.hash];
 		},
 		async generate(
@@ -281,7 +277,6 @@ export const useChatStore = defineStore("chatStore", {
 			console.log("generate->actor:", user);
 			console.log("generate->ignoreCache:", ignoreCache);
 
-			msgHist = msgHist.filter((m: ChatMessage) => !m.isIgnored);
 			// const contextIds: string[] = ;
 			// console.log("generate->contextIds:", contextIds);
 
@@ -294,7 +289,7 @@ export const useChatStore = defineStore("chatStore", {
 				);
 			}
 
-			const prompt = new Prompt(
+			const prompt = new AssistantPrompt(
 				// this.currentThreadName,
 				// this.humanUserName,
 				thread.name,

@@ -63,11 +63,16 @@ export class ChatMessage {
 		);
 	}
 
-	canRefresh() {
+	hasTextSnippets() {
+		return this.textSnippets.join("").trim().length > 0;
+	}
+
+	canRegenerate() {
 		if (this.shouldDelete) return false;
-		const msgIds = this.apiResponse?.prompt.messagesCtxIds;
-		if (msgIds) return msgIds.length > 0;
-		return false;
+		return true
+		// const msgIds = this.apiResponse?.prompt.messagesCtxIds;
+		// if (msgIds) return msgIds.length > 0;
+		// return false;
 	}
 
 	toggleIgnored() {

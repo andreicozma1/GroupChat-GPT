@@ -27,3 +27,11 @@ export const createRegexHtmlTagWithContent = (tag: string) => {
 	return new RegExp(`<${tag}>(.+?)</${tag}>`, "gis");
 }
 
+export const createRegexHtmlTagStart = (tag: string) => {
+	return new RegExp(`<${tag}>`, "gi");
+}
+
+export const createRegexHtmlTagEnd = (tag: string) => {
+	return new RegExp(`</${tag}>`, "gi");
+}
+

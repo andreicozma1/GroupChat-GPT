@@ -1,11 +1,9 @@
-import {smartNotify} from "src/util/SmartNotify";
-import {User} from "src/util/users/User";
-import {wrapInTag} from "src/util/TextUtils";
-import {processItemizedList} from "src/util/ItemizedList";
-import {dateToLocaleStr} from "src/util/DateUtils";
 import {PromptConfig} from "src/util/prompt/PromptModels";
-import {createRegexHtmlTagWithContent, rHtmlTagEnd, rHtmlTagStart, rHtmlTagWithContent,} from "src/util/Utils";
 import {ChatMessage} from "src/util/chat/ChatMessage";
+import {createRegexHtmlTagWithContent, rHtmlTagWithContent} from "src/util/Utils";
+import {User} from "src/util/users/User";
+import {processItemizedList} from "src/util/ItemizedList";
+import {wrapWithHtmlTag} from "src/util/TextUtils";
 
 export class PromptBuilder {
 	constructor(protected promptConfig: PromptConfig) {}
@@ -31,23 +29,6 @@ export class PromptBuilder {
 		});
 	}
 
-	public static getHash = (prompt: Prompt | string): string => {
-		const hashStr = "undefined";
-		let promptText = typeof prompt === "string" ? prompt : prompt.text;
-		// lowercase, remove all punctuation
-		promptText = promptText.toLowerCase();
-		promptText = promptText.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
-		promptText = promptText.trim();
-		if (promptText.length === 0) return hashStr;
-
-		let hashInt = 0;
-		for (let i = 0; i < promptText.length; i++) {
-			const char = promptText.charCodeAt(i);
-			hashInt = (hashInt << 5) - hashInt + char;
-			hashInt = hashInt & hashInt;
-		}
-		return hashInt.toString();
-	};
 
 	buildPrompt(...promptParts: string[]): string {
 		if (this.promptConfig.responseHeader)
@@ -124,10 +105,10 @@ export class PromptBuilder {
 				let msgPrompt = example.trim();
 				const isQuery: boolean = i % 2 === 0;
 				if (isQuery && this.promptConfig.queryWrapTag) {
-					msgPrompt = wrapInTag(this.promptConfig.queryWrapTag, msgPrompt);
+					msgPrompt = wrapWithHtmlTag(this.promptConfig.queryWrapTag, msgPrompt);
 				}
 				if (!isQuery && this.promptConfig.responseWrapTag) {
-					msgPrompt = wrapInTag(this.promptConfig.responseWrapTag, msgPrompt);
+					msgPrompt = wrapWithHtmlTag(this.promptConfig.responseWrapTag, msgPrompt);
 				}
 				const identifier = isQuery
 					? this.promptConfig.exampleQueryHeader ?? exampleQueryHeaderFallback
@@ -152,11 +133,11 @@ export class PromptBuilder {
 				const isQuery = i % 2 === 0;
 				if (isQuery && this.promptConfig.queryWrapTag) {
 					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
-					msgPrompt = wrapInTag(this.promptConfig.queryWrapTag, msgPrompt);
+					msgPrompt = wrapWithHtmlTag(this.promptConfig.queryWrapTag, msgPrompt);
 				}
 				if (!isQuery && this.promptConfig.responseWrapTag) {
 					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
-					msgPrompt = wrapInTag(this.promptConfig.responseWrapTag, msgPrompt);
+					msgPrompt = wrapWithHtmlTag(this.promptConfig.responseWrapTag, msgPrompt);
 				}
 				msgPrompt = `### ${msg.userName}:\n${msgPrompt}`;
 				return msgPrompt;
@@ -164,10 +145,6 @@ export class PromptBuilder {
 			.join("\n\n");
 
 		return [this.h1(header), res].join("\n");
-	}
-
-	private h1(header: string) {
-		return `=== ${header} ===`;
 	}
 
 	private promptAssistantInfo(user: User, parenthesesTag?: string): string {
@@ -188,100 +165,7 @@ export class PromptBuilder {
 		return [header, ...info].join("\n");
 	}
 
-	public static removeHtmlTags(text: string): string {
-		text = text.replace(rHtmlTagStart, "");
-		text = text.replace(rHtmlTagEnd, "");
-		return text.trim();
-	}
-}
-
-export class Prompt extends PromptBuilder {
-	public text: string;
-	public hash: string;
-	public messagesCtxIds: string[];
-	public createTextPrompt: () => string;
-
-	// create a constructor
-	constructor(
-		public threadName: string,
-		public humanUserName: string,
-		public user: User,
-		public usersMap: { [key: string]: User },
-		public messagesCtx: ChatMessage[]
-	) {
-		super(user.promptConfig);
-		this.messagesCtxIds = messagesCtx.map((m: ChatMessage) => m.id);
-		// promptType if a function part of this class.
-		this.createTextPrompt = Object.getPrototypeOf(this)[this.promptConfig.promptType];
-		console.log(Object.getPrototypeOf(this));
-		if (this.createTextPrompt === undefined) {
-			const promptTypeDefault = "createAssistantPrompt";
-			console.error(
-				`Prompt type not found: ${this.promptConfig.promptType}. Defaulting to ${promptTypeDefault}`
-			);
-			smartNotify(
-				`Prompt type not found: ${this.promptConfig.promptType}. Defaulting to ${promptTypeDefault}`
-			);
-			this.createTextPrompt = Object.getPrototypeOf(this)[promptTypeDefault];
-		}
-		this.text = this.createTextPrompt();
-		this.hash = PromptBuilder.getHash(this);
-	}
-
-	public createAssistantPrompt(): string | undefined {
-		const start = `=== AI GROUP CHAT: "${this.threadName}" ===`;
-		const desc = [
-			"The following is a group-chat conversation between a human and several AI assistants.",
-			`Current Date-Time: ${dateToLocaleStr(new Date())}`,
-		];
-
-		const members = this.promptMembersInfo(this.user, this.usersMap);
-		const rules = this.getPromptRules();
-		const examples = this.getPromptExamples(this.humanUserName);
-		const conv = this.getPromptConversation(this.messagesCtx);
-
-		return this.buildPrompt(
-			start,
-			desc.join("\n"),
-			members,
-			rules,
-			examples,
-			conv
-		);
-	}
-
-	public createPromptDalleGen(): string | undefined {
-		// now get the actual textSnippet that contains the html tag
-		const allSnippets = this.messagesCtx.flatMap((m: ChatMessage) => m.textSnippets);
-		const prompts = PromptBuilder.filterSnippetsWithTags(allSnippets, "dalle_gen");
-
-		if (prompts.length === 0) {
-			smartNotify("Prompt not found")
-			return undefined;
-		}
-
-		const prompt = PromptBuilder.removeHtmlTags(prompts[prompts.length - 1]);
-
-		return prompt;
-	}
-
-	public createPromptCodexGen(): string | undefined {
-		const start = "### CODE GENERATION ###\n";
-
-		const rules = this.getPromptRules();
-
-		const examples = this.getPromptExamples();
-
-		const allSnippets = this.messagesCtx.flatMap((m: ChatMessage) => m.textSnippets);
-		const prompts = PromptBuilder.filterSnippetsWithTags(allSnippets, "codex_gen");
-
-		if (prompts.length === 0) {
-			smartNotify("Prompt not found")
-			return undefined;
-		}
-
-		const prompt = PromptBuilder.removeHtmlTags(prompts[prompts.length - 1]);
-
-		return this.buildPrompt(start, rules, examples, prompt);
+	private h1(header: string) {
+		return `=== ${header} ===`;
 	}
 }

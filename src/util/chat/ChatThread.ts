@@ -65,7 +65,7 @@ export class ChatThread {
 		return this.messageIdMap;
 	}
 
-	getMessageArray(): ChatMessage[] {
+	getMessagesArray(): ChatMessage[] {
 		const messages: ChatMessage[] = Object.values(this.getMessageIdMap());
 		messages.sort((a: ChatMessage, b: ChatMessage) => {
 			const ad = parseDate(a.dateCreated).getTime();
@@ -75,7 +75,7 @@ export class ChatThread {
 		return messages;
 	}
 
-	getMessageArrayFromIds(messageIds: string[]): ChatMessage[] {
+	getMessagesArrayFromIds(messageIds: string[]): ChatMessage[] {
 		return messageIds.map((messageId: string) => this.getMessageIdMap()[messageId])
 			.filter((message: ChatMessage | undefined) => message !== undefined) as ChatMessage[];
 	}

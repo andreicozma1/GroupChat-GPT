@@ -16,7 +16,7 @@ import {parseDate} from "src/util/DateUtils";
 const localStorageKey = "data";
 
 export interface ApiResponse {
-	cached: boolean;
+	fromCache: boolean;
 	errorMsg: string | undefined;
 	prompt: AssistantPrompt;
 	data: any;
@@ -167,7 +167,7 @@ export const useChatStore = defineStore("chatStore", {
 			return new ChatMessage(cfg);
 		},
 
-		async handleUserMessage(message: ChatMessage) {
+		async handleUserMessage(message: ChatMessage, ignoreCache = false) {
 			const user: User = this.getUserById(message.userId);
 			const thread: ChatThread = this.getActiveThread();
 			thread.addMessage(message);
@@ -185,14 +185,12 @@ export const useChatStore = defineStore("chatStore", {
 
 			if (user.type !== UserTypes.HUMAN) {
 				let messages: ChatMessage[];
-				let ignoreCache = user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
 
 				const prevMsgContextIds = message.apiResponse?.prompt?.messagesCtxIds;
 				if (prevMsgContextIds) {
 					// Re-generation from specified context
 					messages = thread.getMessagesArrayFromIds(prevMsgContextIds)
 					// TODO: This will end up with less messages than expected if there are any undefined messages
-					ignoreCache = false;
 				} else {
 					messages = thread.getMessagesArray()
 				}
@@ -208,6 +206,7 @@ export const useChatStore = defineStore("chatStore", {
 					excludeIgnored: true,
 				});
 				message.loading = true;
+
 				const response = await this.generate(user, messages, thread, ignoreCache);
 				message.parseApiResponse(response);
 			}
@@ -252,9 +251,9 @@ export const useChatStore = defineStore("chatStore", {
 				// nextMsg.dateCreated = message.dateCreated;
 				nextMsg.dateCreated = new Date(parseDate(message.dateCreated).getTime() + 1);
 				if (thread.prefs.orderedResponses) {
-					await this.handleUserMessage(nextMsg);
+					await this.handleUserMessage(nextMsg, ignoreCache);
 				} else {
-					this.handleUserMessage(nextMsg);
+					this.handleUserMessage(nextMsg, ignoreCache);
 				}
 			}
 			thread.addMessage(message);
@@ -273,6 +272,7 @@ export const useChatStore = defineStore("chatStore", {
 			ignoreCache?: boolean
 		): Promise<ApiResponse> {
 			ignoreCache = ignoreCache ?? false;
+			ignoreCache = user.alwaysIgnoreCache === undefined ? ignoreCache : user.alwaysIgnoreCache;
 			console.warn("-".repeat(20));
 			console.log("generate->actor:", user);
 			console.log("generate->ignoreCache:", ignoreCache);

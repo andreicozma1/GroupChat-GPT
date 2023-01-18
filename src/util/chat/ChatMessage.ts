@@ -87,7 +87,7 @@ export class ChatMessage {
 		// let res = `${what} ${on}`;
 		let res = `${on}`;
 		// if (msg.isCompRegen) res = `* ${res}`;
-		if (this.apiResponse?.cached) res = `${res} (cached)`;
+		if (this.apiResponse?.fromCache) res = `${res} (from cache)`;
 		return res;
 	}
 

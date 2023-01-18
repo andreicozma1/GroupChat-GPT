@@ -13,7 +13,7 @@ export const getSingularOrPlural = (singularStr: string, count: number) => {
 };
 
 
-export const wrapWithHtmlTag = (tag: string, ...msgPrompt: string[]) => {
+export const wrapInHtmlTag = (tag: string, ...msgPrompt: string[]) => {
 	return [`<${tag}>`, ...msgPrompt, `</${tag}>`].join("\n");
 };
 

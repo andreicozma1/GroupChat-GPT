@@ -16,7 +16,7 @@ export class User {
 		ApiRequestConfigTypes.CONVERSATION;
 	promptConfig: PromptConfig;
 	showInMembersInfo = true;
-	shouldIgnoreCache = false;
+	alwaysIgnoreCache = false;
 	requiresUserIds: string[] = [];
 	defaultJoin = false;
 

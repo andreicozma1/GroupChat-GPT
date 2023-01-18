@@ -1,6 +1,6 @@
 import {User, UserTypes} from "src/util/users/User";
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
-import {wrapWithHtmlTag} from "src/util/TextUtils";
+import {wrapInHtmlTag} from "src/util/TextUtils";
 
 export const assistantFilter = (user?: User) => !user || user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER;
 
@@ -60,14 +60,14 @@ export class UserDalle extends Assistant {
 			"Do you want to see a specific color or breed? Like a black cat or a tabby?\n" +
 			"Also, should the cat be sitting, standing, or perhaps playing with a ball of yarn?\n" +
 			"Let me know if there is anything else you want to add.\n" +
-			wrapWithHtmlTag("dalle_gen", "A picture of a cat."),
+			wrapInHtmlTag("dalle_gen", "A picture of a cat."),
 			// ------------------------------------------------------------
 			"Tabby, sitting on a chair. Also, give it a cowboy hat.",
 			// ------------------------------------------------------------
 			"Sure, I can do that.\n" +
 			"Do you have any specific artistic styles in mind? Like a cartoon, oil painting, or realistic style?\n" +
 			"I can also try to imitate a specific artist.\n" +
-			wrapWithHtmlTag(
+			wrapInHtmlTag(
 				"dalle_gen",
 				"A picture of a tabby cat, sitting on a chair, wearing a cowboy hat."
 			),
@@ -75,7 +75,7 @@ export class UserDalle extends Assistant {
 			"Surprise me!",
 			// ------------------------------------------------------------
 			"How about a cartoon style?\n" +
-			wrapWithHtmlTag(
+			wrapInHtmlTag(
 				"dalle_gen",
 				"A picture of a tabby cat, sitting on a chair, wearing a cowboy hat, cartoon style."
 			),
@@ -110,7 +110,7 @@ export class UserCodex extends Assistant {
 			// ------------------------------------------------------------
 			"Sure, I can do that.\n" +
 			"Do you want it to run an example and print the result? If so, what should the numbers be?\n" +
-			wrapWithHtmlTag(
+			wrapInHtmlTag(
 				"codex_gen",
 				"Language: Python",
 				"1. Write a function that can add any numbers together."
@@ -119,7 +119,7 @@ export class UserCodex extends Assistant {
 			"Yes, use 5 and 6.",
 			// ------------------------------------------------------------
 			"Working on it!\n" +
-			wrapWithHtmlTag(
+			wrapInHtmlTag(
 				"codex_gen",
 				"Language: Python",
 				"1. Write a function that can add any numbers together.",

@@ -223,7 +223,7 @@ const editMessage = (message: ChatMessage) => {
 const regenMessage = (message: ChatMessage) => {
 	console.warn("*".repeat(40));
 	console.log("regenMessage->message:", {...message});
-	store.handleUserMessage(message);
+	store.handleUserMessage(message, true);
 };
 
 const deleteMessage = (message: ChatMessage) => {

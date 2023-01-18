@@ -1,6 +1,6 @@
 import {smartNotify} from "src/util/SmartNotify";
 import {User} from "src/util/users/User";
-import {getTextHash, removeAllHtmlTags, removeSpecifiedHtmlTags} from "src/util/TextUtils";
+import {getTextHash, removeAllHtmlTags, removeSpecifiedHtmlTags, wrapInHtmlTag} from "src/util/TextUtils";
 import {dateToLocaleStr} from "src/util/DateUtils";
 import {ChatMessage} from "src/util/chat/ChatMessage";
 import {PromptBuilder} from "src/util/prompt/PromptBuilder";
@@ -43,7 +43,7 @@ export class AssistantPrompt extends PromptBuilder {
 		const start = `=== AI GROUP CHAT: "${this.threadName}" ===`;
 		const desc = [
 			"The following is a group-chat conversation between a human and several AI assistants.",
-			`Current Date-Time: ${dateToLocaleStr(new Date())}`,
+			wrapInHtmlTag("nocache", `Current Date-Time: ${dateToLocaleStr(new Date())}`),
 		];
 
 		const members = this.promptMembersInfo(this.user, this.usersMap);

@@ -3,7 +3,7 @@ import {ChatMessage} from "src/util/chat/ChatMessage";
 import {createRegexHtmlTagWithContent, rHtmlTagWithContent} from "src/util/Utils";
 import {User} from "src/util/users/User";
 import {processItemizedList} from "src/util/ItemizedList";
-import {wrapWithHtmlTag} from "src/util/TextUtils";
+import {wrapInHtmlTag} from "src/util/TextUtils";
 
 export class PromptBuilder {
 	constructor(protected promptConfig: PromptConfig) {}
@@ -105,10 +105,10 @@ export class PromptBuilder {
 				let msgPrompt = example.trim();
 				const isQuery: boolean = i % 2 === 0;
 				if (isQuery && this.promptConfig.queryWrapTag) {
-					msgPrompt = wrapWithHtmlTag(this.promptConfig.queryWrapTag, msgPrompt);
+					msgPrompt = wrapInHtmlTag(this.promptConfig.queryWrapTag, msgPrompt);
 				}
 				if (!isQuery && this.promptConfig.responseWrapTag) {
-					msgPrompt = wrapWithHtmlTag(this.promptConfig.responseWrapTag, msgPrompt);
+					msgPrompt = wrapInHtmlTag(this.promptConfig.responseWrapTag, msgPrompt);
 				}
 				const identifier = isQuery
 					? this.promptConfig.exampleQueryHeader ?? exampleQueryHeaderFallback
@@ -133,11 +133,11 @@ export class PromptBuilder {
 				const isQuery = i % 2 === 0;
 				if (isQuery && this.promptConfig.queryWrapTag) {
 					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
-					msgPrompt = wrapWithHtmlTag(this.promptConfig.queryWrapTag, msgPrompt);
+					msgPrompt = wrapInHtmlTag(this.promptConfig.queryWrapTag, msgPrompt);
 				}
 				if (!isQuery && this.promptConfig.responseWrapTag) {
 					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
-					msgPrompt = wrapWithHtmlTag(this.promptConfig.responseWrapTag, msgPrompt);
+					msgPrompt = wrapInHtmlTag(this.promptConfig.responseWrapTag, msgPrompt);
 				}
 				msgPrompt = `### ${msg.userName}:\n${msgPrompt}`;
 				return msgPrompt;

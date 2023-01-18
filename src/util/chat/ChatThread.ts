@@ -76,8 +76,14 @@ export class ChatThread {
 	}
 
 	getMessagesArrayFromIds(messageIds: string[]): ChatMessage[] {
-		return messageIds.map((messageId: string) => this.getMessageIdMap()[messageId])
-			.filter((message: ChatMessage | undefined) => message !== undefined) as ChatMessage[];
+		const messages: ChatMessage[] = messageIds.map((messageId: string) => this.getMessageIdMap()[messageId])
+			.filter((message: ChatMessage | undefined) => message !== undefined)
+		messages.sort((a: ChatMessage, b: ChatMessage) => {
+			const ad = parseDate(a.dateCreated).getTime();
+			const bd = parseDate(b.dateCreated).getTime();
+			return ad - bd;
+		});
+		return messages;
 	}
 
 	addMessage(message: ChatMessage): void {

@@ -21,8 +21,8 @@ export class ChatMessage {
 		this.userId = chatUser?.id || "unknown";
 		this.userName = chatUser?.name || "Unknown User";
 		this.userAvatarUrl = getRobohashUrl(this.userName);
-		this.loading = true;
 		this.isIgnored = chatUser?.defaultIgnored ?? false;
+		this.loading = true;
 	}
 
 	parseApiResponse(apiResponse: ApiResponse) {

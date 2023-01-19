@@ -25,11 +25,6 @@ export interface ApiResponse {
 	data: any;
 }
 
-export interface UIPref {
-	title: string;
-	value: any;
-}
-
 export const useChatStore = defineStore("chatStore", {
 	state: () => ChatStoreState.getDefault(),
 	getters: {

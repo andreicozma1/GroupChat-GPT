@@ -1,11 +1,8 @@
-import {UIPref} from "stores/chatStore";
+import {UIPref, UIPrefMinMax} from "src/util/UIPref";
 
 export interface ChatStoreGlobalPrefs {
 	ignoredMessageOpacity: UIPref;
-	contextMessageOpacity: {
-		min: UIPref;
-		max: UIPref;
-	}
+	contextMessageOpacity: UIPrefMinMax;
 }
 
 const getDefault = (): ChatStoreGlobalPrefs => {
@@ -15,14 +12,9 @@ const getDefault = (): ChatStoreGlobalPrefs => {
 			value: 0.4,
 		},
 		contextMessageOpacity: {
-			min: {
-				title: "Context Message Opacity (Min)",
-				value: 0.1,
-			},
-			max: {
-				title: "Context Message Opacity (Max)",
-				value: 0.3,
-			}
+			title: "Context Message Opacity (Min)",
+			min: 0.1,
+			max: 0.2,
 		}
 	}
 }

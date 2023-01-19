@@ -10,7 +10,8 @@
         </q-item-label>
         <div v-for="msg in threadMessages"
              :key="msg.id">
-            <CustomChatMessage :msgId="msg.id"/>
+            <!--            <CustomChatMessage :msgId="msg.id"/>-->
+            <CustomChatMessage :loading="msg.loading" :model-value="msg"/>
         </div>
     </q-scroll-area>
 </template>

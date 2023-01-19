@@ -1,11 +1,11 @@
 <template>
-    <q-chat-message :avatar="msg.userAvatarUrl"
+    <q-chat-message :avatar="modelValue.userAvatarUrl"
                     :bg-color="bgColor"
                     :name="userName"
                     :sent="isSentByMe"
                     :style="style"
                     size="6"
-                    v-bind="msg"
+                    v-bind="modelValue"
                     @click="onClickMsg">
         <div v-for="textSnippet in parsedTextSnippets"
              :key="textSnippet"
@@ -35,8 +35,8 @@
             </q-tooltip>
         </div>
 
-        <div v-if="msg.imageUrls.length > 0">
-            <q-card v-for="imageUrl in msg.imageUrls"
+        <div v-if="modelValue.imageUrls.length > 0">
+            <q-card v-for="imageUrl in modelValue.imageUrls"
                     :key="imageUrl"
                     class="bg-grey-1"
                     flat>
@@ -53,7 +53,7 @@
             </q-card>
         </div>
 
-        <div v-if="msg.loading">
+        <div v-if="loading">
             <q-spinner-dots class="q-ml-md" color="primary" size="2em"/>
             <q-tooltip :delay="750">
                 {{ getLoadingHoverHint }}
@@ -72,10 +72,10 @@
                        size="xs"
                        @click="regenMessage">
                     <q-tooltip v-if="canRegenerate()">
-                        Re-generate message ({{ msg.userId }})
+                        Re-generate message ({{ modelValue.userId }})
                     </q-tooltip>
                     <q-tooltip v-else>
-                        This message cannot be re-generated ({{ msg.userId }})
+                        This message cannot be re-generated ({{ modelValue.userId }})
                     </q-tooltip>
                 </q-btn>
 
@@ -101,15 +101,15 @@
                     <q-tooltip> Edit message</q-tooltip>
                 </q-btn>
                 <q-btn v-if="!shouldDelete"
-                       :icon="msg.isIgnored ? 'visibility' : 'visibility_off'"
+                       :icon="modelValue.isIgnored ? 'visibility' : 'visibility_off'"
                        color="blue-grey-8"
                        dense
                        flat
                        round
                        size="xs"
-                       @click="msg.toggleIgnored()">
+                       @click="modelValue.toggleIgnored()">
                     <q-tooltip>
-                        {{ msg.isIgnored ? "Use message" : "Ignore message" }}
+                        {{ modelValue.isIgnored ? "Use message" : "Ignore message" }}
                     </q-tooltip>
                 </q-btn>
                 <q-btn :color="shouldDelete ? 'black' : 'blue-grey-8'"
@@ -143,14 +143,22 @@ import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {getSeededQColor} from "src/util/Colors";
 import {useChatStore} from "stores/chatStore";
-import {computed, ComputedRef, PropType, ref} from "vue";
+import {computed, PropType, ref} from "vue";
 import {copyClipboard} from "src/util/Utils";
 import {getSingularOrPlural} from "src/util/TextUtils";
 import {ChatMessage} from "src/util/chat/ChatMessage";
 
 const props = defineProps({
-	msgId: {
-		type: String as PropType<string>,
+	// msgId: {
+	// 	type: String as PropType<string>,
+	// 	required: true
+	// }
+	modelValue: {
+		type: Object as PropType<ChatMessage>,
+		required: true
+	},
+	loading: {
+		type: Boolean as PropType<boolean>,
 		required: true
 	}
 });
@@ -159,26 +167,26 @@ const store = useChatStore();
 
 const shouldDelete = ref(false);
 
-const msg: ComputedRef<ChatMessage> = computed(() => store.getActiveThread().getMessageIdMap()[props.msgId]);
+// const msg: ComputedRef<ChatMessage> = computed(() => store.getActiveThread().getMessageIdMap()[props.msgId]);
 
 const onClickMsg = () => {
-	console.log("onClickMsg:", {...msg.value});
-	console.log("onClickMsg", {...msg.value.apiResponse?.data?.data});
+	console.log("onClickMsg:", {...props.modelValue});
+	console.log("onClickMsg", {...props.modelValue.apiResponse?.data?.data});
 };
 
 const parsedTextSnippets = computed((): string[] => {
-	const texts = msg.value.textSnippets.flatMap((snippet: string) => {
+	const texts = props.modelValue.textSnippets.flatMap((snippet: string) => {
 		return snippet.split("\n\n").map((line: string) => {
 			return line.trim();
 		});
 	});
-	if ((!texts || texts.length === 0) && !msg.value.loading) return [];
+	if ((!texts || texts.length === 0) && !props.loading) return [];
 	return texts;
 })
 
 const editMessage = () => {
 	smartNotify(`Message editing is not yet implemented`);
-	console.warn("=> edit:", {...msg.value});
+	console.warn("=> edit:", {...props.modelValue});
 	// comp.editMessage(msg);
 };
 
@@ -192,15 +200,15 @@ const canRegenerate = () => {
 
 const regenMessage = () => {
 	console.warn("*".repeat(40));
-	console.log("regenMessage->message:", {...msg.value});
-	store.handleUserMessage(msg.value, true);
+	console.log("regenMessage->message:", {...props.modelValue});
+	store.handleUserMessage(props.modelValue, true);
 };
 
 const deleteMessage = () => {
-	console.warn("=> delete:", {...msg.value});
+	console.warn("=> delete:", {...props.modelValue});
 	// 2nd click - confirmation and delete
 	if (shouldDelete.value) {
-		store.getActiveThread().deleteMessage(msg.value.id);
+		store.getActiveThread().deleteMessage(props.modelValue.id);
 		return;
 	}
 	// 1st click - will need 2nd click to confirm
@@ -208,26 +216,26 @@ const deleteMessage = () => {
 };
 
 const restoreMessage = () => {
-	console.warn("=> restore:", {...msg.value});
+	console.warn("=> restore:", {...props.modelValue});
 	shouldDelete.value = false;
 };
 
 const isSentByMe = computed(() => {
 	const myUser = store.getMyUser();
-	return msg.value.userId === myUser.id && msg.value.userName === myUser.name;
+	return props.modelValue.userId === myUser.id && props.modelValue.userName === myUser.name;
 })
 
 const userName = computed((): string => {
-	const user: User = store.getUserById(msg.value.userId);
+	const user: User = store.getUserById(props.modelValue.userId);
 	// return `${user.name} (${user.id})`;
 	return user.name;
 })
 
 const typeIcon = computed(() => {
-	const user: User = store.getUserById(msg.value.userId);
+	const user: User = store.getUserById(props.modelValue.userId);
 	if (!user) {
 		const ic = 'send'
-		console.error(`User "${msg.value.userId}" not found. Using default icon: '${ic}'`);
+		console.error(`User "${props.modelValue.userId}" not found. Using default icon: '${ic}'`);
 		return ic;
 	}
 	if (!user.icon) {
@@ -240,25 +248,25 @@ const typeIcon = computed(() => {
 
 const getStamp = computed(() => {
 	// const what = isSentByMe(msg) ? "Sent" : "Received";
-	const on = dateToTimeAgo(msg.value.dateCreated);
+	const on = dateToTimeAgo(props.modelValue.dateCreated);
 	// let res = `${what} ${on}`;
 	let res = `${on}`;
 	// if (msg.isCompRegen) res = `* ${res}`;
-	if (msg.value.apiResponse?.fromCache) res = `${res} (from cache)`;
-	if (msg.value.apiResponse?.cacheIgnored) res = `${res} (cache ignored)`;
+	if (props.modelValue.apiResponse?.fromCache) res = `${res} (from cache)`;
+	if (props.modelValue.apiResponse?.cacheIgnored) res = `${res} (cache ignored)`;
 	return res;
 })
 
 const getTextHoverHint = (textSnippet?: string) => {
-	const numTexts = msg.value.textSnippets?.length ?? 0;
-	const numImages = msg.value.imageUrls?.length ?? 0;
+	const numTexts = props.modelValue.textSnippets?.length ?? 0;
+	const numImages = props.modelValue.imageUrls?.length ?? 0;
 	// const who = (isSentByMe(this) ? "You" : this.userName) + ` (${this.userId})`
-	const who = msg.value.userName + ` (${msg.value.userId})`;
+	const who = props.modelValue.userName + ` (${props.modelValue.userId})`;
 	const what = `${numTexts} ${getSingularOrPlural(
 		"text",
 		numTexts
 	)} and ${numImages} ${getSingularOrPlural("image", numImages)}`;
-	const when = dateToLocaleStr(msg.value.dateCreated);
+	const when = dateToLocaleStr(props.modelValue.dateCreated);
 	return `${who} sent ${what} on ${when}`;
 	// return message.response?.prompt.text ?? fallback;
 }
@@ -272,21 +280,21 @@ const getLoadingHoverHint = computed(() => {
 })
 
 const hoverHint = computed(() => {
-	const when = dateToLocaleStr(msg.value.dateCreated);
+	const when = dateToLocaleStr(props.modelValue.dateCreated);
 	const what = isSentByMe.value ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated = msg.value.apiResponse?.data?.data?.created * 1000;
+	const dateGenerated = props.modelValue.apiResponse?.data?.data?.created * 1000;
 	if (dateGenerated) res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 	return res;
 });
 
 const bgColor = computed(() => {
 	if (shouldDelete.value) return "red-2";
-	return isSentByMe.value ? null : getSeededQColor(msg.value.userName, 1, 2);
+	return isSentByMe.value ? null : getSeededQColor(props.modelValue.userName, 1, 2);
 });
 
 const style = computed(() => {
-	if (msg.value.isIgnored)
+	if (props.modelValue.isIgnored)
 		return {
 			opacity: 0.5,
 			// textDecoration: "line-through",

@@ -9,8 +9,8 @@
             {{ threadMessages.length.toString() + ' messages' }}
         </q-item-label>
         <div v-for="msg in threadMessages"
-             :key="msg.dateCreated">
-            <CustomChatMessage :msg="msg"/>
+             :key="msg.id">
+            <CustomChatMessage :msgId="msg.id"/>
         </div>
     </q-scroll-area>
 </template>

@@ -141,43 +141,44 @@
 import {User} from "src/util/users/User";
 import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {smartNotify} from "src/util/SmartNotify";
-import {ChatMessage} from "src/util/chat/ChatMessage";
 import {getSeededQColor} from "src/util/Colors";
 import {useChatStore} from "stores/chatStore";
-import {computed, PropType, ref} from "vue";
+import {computed, ComputedRef, PropType, ref} from "vue";
 import {copyClipboard} from "src/util/Utils";
 import {getSingularOrPlural} from "src/util/TextUtils";
+import {ChatMessage} from "src/util/chat/ChatMessage";
+
+const props = defineProps({
+	msgId: {
+		type: String as PropType<string>,
+		required: true
+	}
+});
 
 const store = useChatStore();
 
 const shouldDelete = ref(false);
 
-const props = defineProps({
-	msg: {
-		type: Object as PropType<ChatMessage>,
-		required: true
-	}
-});
+const msg: ComputedRef<ChatMessage> = computed(() => store.getActiveThread().getMessageIdMap()[props.msgId]);
 
 const onClickMsg = () => {
-	console.log("onClickMsg:", {...props.msg});
-	console.log("onClickMsg", {...props.msg.apiResponse?.data?.data});
+	console.log("onClickMsg:", {...msg.value});
+	console.log("onClickMsg", {...msg.value.apiResponse?.data?.data});
 };
 
 const parsedTextSnippets = computed((): string[] => {
-	const texts = props.msg.textSnippets.flatMap((snippet: string) => {
+	const texts = msg.value.textSnippets.flatMap((snippet: string) => {
 		return snippet.split("\n\n").map((line: string) => {
 			return line.trim();
 		});
 	});
-	if ((!texts || texts.length === 0) && !props.msg.loading) return [];
+	if ((!texts || texts.length === 0) && !msg.value.loading) return [];
 	return texts;
 })
 
-
 const editMessage = () => {
 	smartNotify(`Message editing is not yet implemented`);
-	console.warn("=> edit:", {...props.msg});
+	console.warn("=> edit:", {...msg.value});
 	// comp.editMessage(msg);
 };
 
@@ -191,15 +192,15 @@ const canRegenerate = () => {
 
 const regenMessage = () => {
 	console.warn("*".repeat(40));
-	console.log("regenMessage->message:", {...props.msg});
-	store.handleUserMessage(props.msg, true);
+	console.log("regenMessage->message:", {...msg.value});
+	store.handleUserMessage(msg.value, true);
 };
 
 const deleteMessage = () => {
-	console.warn("=> delete:", {...props.msg});
+	console.warn("=> delete:", {...msg.value});
 	// 2nd click - confirmation and delete
 	if (shouldDelete.value) {
-		store.getActiveThread().deleteMessage(props.msg.id);
+		store.getActiveThread().deleteMessage(msg.value.id);
 		return;
 	}
 	// 1st click - will need 2nd click to confirm
@@ -207,26 +208,26 @@ const deleteMessage = () => {
 };
 
 const restoreMessage = () => {
-	console.warn("=> restore:", {...props.msg});
+	console.warn("=> restore:", {...msg.value});
 	shouldDelete.value = false;
 };
 
 const isSentByMe = computed(() => {
 	const myUser = store.getMyUser();
-	return props.msg.userId === myUser.id && props.msg.userName === myUser.name;
+	return msg.value.userId === myUser.id && msg.value.userName === myUser.name;
 })
 
 const userName = computed((): string => {
-	const user: User = store.getUserById(props.msg.userId);
+	const user: User = store.getUserById(msg.value.userId);
 	// return `${user.name} (${user.id})`;
 	return user.name;
 })
 
 const typeIcon = computed(() => {
-	const user: User = store.getUserById(props.msg.userId);
+	const user: User = store.getUserById(msg.value.userId);
 	if (!user) {
 		const ic = 'send'
-		console.error(`User "${props.msg.userId}" not found. Using default icon: '${ic}'`);
+		console.error(`User "${msg.value.userId}" not found. Using default icon: '${ic}'`);
 		return ic;
 	}
 	if (!user.icon) {
@@ -239,25 +240,25 @@ const typeIcon = computed(() => {
 
 const getStamp = computed(() => {
 	// const what = isSentByMe(msg) ? "Sent" : "Received";
-	const on = dateToTimeAgo(props.msg.dateCreated);
+	const on = dateToTimeAgo(msg.value.dateCreated);
 	// let res = `${what} ${on}`;
 	let res = `${on}`;
 	// if (msg.isCompRegen) res = `* ${res}`;
-	if (props.msg.apiResponse?.fromCache) res = `${res} (from cache)`;
-	if (props.msg.apiResponse?.cacheIgnored) res = `${res} (cache ignored)`;
+	if (msg.value.apiResponse?.fromCache) res = `${res} (from cache)`;
+	if (msg.value.apiResponse?.cacheIgnored) res = `${res} (cache ignored)`;
 	return res;
 })
 
 const getTextHoverHint = (textSnippet?: string) => {
-	const numTexts = props.msg.textSnippets?.length ?? 0;
-	const numImages = props.msg.imageUrls?.length ?? 0;
+	const numTexts = msg.value.textSnippets?.length ?? 0;
+	const numImages = msg.value.imageUrls?.length ?? 0;
 	// const who = (isSentByMe(this) ? "You" : this.userName) + ` (${this.userId})`
-	const who = props.msg.userName + ` (${props.msg.userId})`;
+	const who = msg.value.userName + ` (${msg.value.userId})`;
 	const what = `${numTexts} ${getSingularOrPlural(
 		"text",
 		numTexts
 	)} and ${numImages} ${getSingularOrPlural("image", numImages)}`;
-	const when = dateToLocaleStr(props.msg.dateCreated);
+	const when = dateToLocaleStr(msg.value.dateCreated);
 	return `${who} sent ${what} on ${when}`;
 	// return message.response?.prompt.text ?? fallback;
 }
@@ -271,21 +272,21 @@ const getLoadingHoverHint = computed(() => {
 })
 
 const hoverHint = computed(() => {
-	const when = dateToLocaleStr(props.msg.dateCreated);
+	const when = dateToLocaleStr(msg.value.dateCreated);
 	const what = isSentByMe.value ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated = props.msg.apiResponse?.data?.data?.created * 1000;
+	const dateGenerated = msg.value.apiResponse?.data?.data?.created * 1000;
 	if (dateGenerated) res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 	return res;
 });
 
 const bgColor = computed(() => {
 	if (shouldDelete.value) return "red-2";
-	return isSentByMe.value ? null : getSeededQColor(props.msg.userName, 1, 2);
+	return isSentByMe.value ? null : getSeededQColor(msg.value.userName, 1, 2);
 });
 
 const style = computed(() => {
-	if (props.msg.isIgnored)
+	if (msg.value.isIgnored)
 		return {
 			opacity: 0.5,
 			// textDecoration: "line-through",

@@ -10,7 +10,7 @@
             />
             <q-toolbar-title> GroupChat-GPT</q-toolbar-title>
             <ChatThreadPrefs />
-            <div class="q-ml-sm">Quasar v{{ $q.version }}</div>
+            <!--            <div class="q-ml-sm">Quasar v{{ $q.version }}</div>-->
         </q-toolbar>
     </q-header>
 

@@ -187,14 +187,14 @@ export const useChatStore = defineStore("chatStore", {
 			if (user.type !== UserTypes.HUMAN) {
 				let messages: ChatMessage[];
 
-				const prevMsgContextIds = message.apiResponse?.prompt?.messagesCtxIds;
-				if (prevMsgContextIds) {
-					// Re-generation from specified context
-					messages = thread.getMessagesArrayFromIds(prevMsgContextIds)
-					// TODO: This will end up with less messages than expected if there are any undefined messages
-				} else {
-					messages = thread.getMessagesArray()
-				}
+				// const prevMsgContextIds = message.apiResponse?.prompt?.messagesCtxIds;
+				// if (prevMsgContextIds) {
+				// Re-generation from specified context
+				// messages = thread.getMessagesArrayFromIds(prevMsgContextIds)
+				// TODO: This will end up with less messages than expected if there are any undefined messages
+				// } else {
+				messages = thread.getMessagesArray()
+				// }
 				messages = parseMessagesHistory(messages, {
 					excludeUserIds:
 						user.id !== this.userData.usersMap.coordinator.id
@@ -303,7 +303,7 @@ export const useChatStore = defineStore("chatStore", {
 			console.log("generate->prompt:", prompt);
 			console.log("generate->prompt.hash:", prompt.hash);
 			console.log("generate->prompt.text:");
-			console.log(prompt.text);
+			console.log(prompt.finalPromptText);
 
 			// if we already have a response for this prompt, return it
 			let response;
@@ -314,7 +314,7 @@ export const useChatStore = defineStore("chatStore", {
 					response = cachedResponse;
 					cached = true;
 				} else {
-					response = await makeApiRequest(user.apiReqConfig, prompt.text);
+					response = await makeApiRequest(user.apiReqConfig, prompt.finalPromptText);
 					cached = false;
 				}
 			} catch (error: any) {

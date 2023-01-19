@@ -6,21 +6,35 @@ import {ChatMessage} from "src/util/chat/ChatMessage";
 import {PromptBuilder} from "src/util/prompt/PromptBuilder";
 
 export class AssistantPrompt extends PromptBuilder {
-	public text: string;
-	public hash: string;
-	public messagesCtxIds: string[];
+
+	public messageContextIds: string[];
+	public allTextSnippets: string[] = [];
 	public createTextPrompt: () => string;
+
+	public finalPromptText: string;
+	public hash: string;
+	public tRules: string;
+	public tMembers: string;
+	public tExamples: string;
+	public tConversation: string;
 
 	// create a constructor
 	constructor(
 		public threadName: string,
 		public humanUserName: string,
 		public user: User,
-		public usersMap: { [key: string]: User },
-		public messagesCtx: ChatMessage[]
+		usersMap: { [key: string]: User },
+		messagesCtx: ChatMessage[]
 	) {
 		super(user.promptConfig);
-		this.messagesCtxIds = messagesCtx.map((m: ChatMessage) => m.id);
+		this.messageContextIds = messagesCtx.map((m: ChatMessage) => m.id);
+		this.allTextSnippets = messagesCtx.flatMap((m: ChatMessage) => m.textSnippets);
+
+		this.tMembers = this.promptMembersInfo(this.user, usersMap);
+		this.tRules = this.getPromptRules();
+		this.tExamples = this.getPromptExamples(this.humanUserName);
+		this.tConversation = this.getPromptConversation(messagesCtx);
+
 		// promptType if a function part of this class.
 		this.createTextPrompt = Object.getPrototypeOf(this)[this.promptConfig.promptType];
 		console.log(Object.getPrototypeOf(this));
@@ -36,7 +50,7 @@ export class AssistantPrompt extends PromptBuilder {
 		}
 		const text = this.createTextPrompt();
 		this.hash = getTextHash(removeSpecifiedHtmlTags(text, "nocache", true));
-		this.text = removeSpecifiedHtmlTags(text, "nocache", false);
+		this.finalPromptText = removeSpecifiedHtmlTags(text, "nocache", false);
 	}
 
 	public createAssistantPrompt(): string | undefined {
@@ -46,25 +60,20 @@ export class AssistantPrompt extends PromptBuilder {
 			wrapInHtmlTag("nocache", `Current Date-Time: ${dateToLocaleStr(new Date())}`),
 		];
 
-		const members = this.promptMembersInfo(this.user, this.usersMap);
-		const rules = this.getPromptRules();
-		const examples = this.getPromptExamples(this.humanUserName);
-		const conv = this.getPromptConversation(this.messagesCtx);
-
 		return this.buildPrompt(
 			start,
 			desc.join("\n"),
-			members,
-			rules,
-			examples,
-			conv
+			this.tMembers,
+			this.tRules,
+			this.tExamples,
+			this.tConversation
 		);
 	}
 
 	public createPromptDalleGen(): string | undefined {
 		// now get the actual textSnippet that contains the html tag
-		const allSnippets = this.messagesCtx.flatMap((m: ChatMessage) => m.textSnippets);
-		const prompts = PromptBuilder.filterSnippetsWithTags(allSnippets, "dalle_gen");
+
+		const prompts = PromptBuilder.filterSnippetsWithTags(this.allTextSnippets, "dalle_gen");
 
 		if (prompts.length === 0) {
 			smartNotify("Prompt not found")
@@ -83,8 +92,7 @@ export class AssistantPrompt extends PromptBuilder {
 
 		const examples = this.getPromptExamples();
 
-		const allSnippets = this.messagesCtx.flatMap((m: ChatMessage) => m.textSnippets);
-		const prompts = PromptBuilder.filterSnippetsWithTags(allSnippets, "codex_gen");
+		const prompts = PromptBuilder.filterSnippetsWithTags(this.allTextSnippets, "codex_gen");
 
 		if (prompts.length === 0) {
 			smartNotify("Prompt not found")

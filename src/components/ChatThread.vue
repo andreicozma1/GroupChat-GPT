@@ -60,10 +60,10 @@ const msgContextParentId: Ref<string | null> = ref(null);
 const msgContextIds: Ref<string[]> = ref([])
 
 const onMsgMouseOver = (msg: ChatMessage) => {
-	// console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messagesCtxIds);
-	if (msg.apiResponse?.prompt.messagesCtxIds) {
+	// console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messageContextIds);
+	if (msg.apiResponse?.prompt.messageContextIds) {
 		msgContextParentId.value = msg.id;
-		msgContextIds.value = msg.apiResponse.prompt.messagesCtxIds;
+		msgContextIds.value = msg.apiResponse.prompt.messageContextIds;
 	} else {
 		console.warn("onMsgMouseOver: no context ids found for msg: ", msg);
 		// smartNotify("Warning: Message context not found");

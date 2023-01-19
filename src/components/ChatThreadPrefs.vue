@@ -1,9 +1,10 @@
 <template>
-    <q-btn-dropdown flat
-                    icon="settings"
-                    label="Prefs"
-                    rounded
-                    size="12px">
+    <q-btn-dropdown
+            class="bg-white text-primary"
+            flat
+            icon="settings"
+            rounded
+            size="12px">
         <q-card style="min-width: 320px">
             <q-card-section class="q-py-sm">
                 <q-list>

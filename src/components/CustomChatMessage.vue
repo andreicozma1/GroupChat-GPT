@@ -12,24 +12,24 @@
              @click="copyClipboard(textSnippet)">
             <div v-for="text in textSnippet.split('\n')"
                  :key="text">
-                        <span v-if="text.includes('http')">
-                            <span v-for="chunk in text.split(' ')"
-                                  :key="chunk"
-                                  style="padding-right: 3.5px">
-                                <a v-if="chunk.includes('http')"
-                                   :href="chunk"
-                                   target="_blank">
-                                    {{ chunk }}
-                                    <q-tooltip>{{ chunk }}</q-tooltip>
-                                </a>
-                                <span v-else>
-                                    {{ chunk }}
-                                </span>
-                            </span>
+                <span v-if="text.includes('http')">
+                    <span v-for="chunk in text.split(' ')"
+                          :key="chunk"
+                          style="padding-right: 3.5px">
+                        <a v-if="chunk.includes('http')"
+                           :href="chunk"
+                           target="_blank">
+                            {{ chunk }}
+                            <q-tooltip>{{ chunk }}</q-tooltip>
+                        </a>
+                        <span v-else>
+                            {{ chunk }}
                         </span>
+                    </span>
+                </span>
                 <span v-else>
-                            {{ text }}
-                        </span>
+                    {{ text }}
+                </span>
             </div>
             <q-tooltip :delay="750">
                 {{ getSnippetHoverHint(textSnippet) }}
@@ -205,7 +205,7 @@ const onClickEdit = () => {
 
 const canRegenerate = computed(() => {
 	return !shouldDelete.value;
-	// const msgIds = this.apiResponse?.prompt.messagesCtxIds;
+	// const msgIds = this.apiResponse?.prompt.messageContextIds;
 	// if (msgIds) return msgIds.length > 0;
 	// return false;
 })
@@ -244,7 +244,7 @@ const getSnippetHoverHint = (textSnippet?: string) => {
 	)} and ${numImages} ${getSingularOrPlural("image", numImages)}`;
 	const when = dateToLocaleStr(props.modelValue.dateCreated);
 	return `${who} sent ${what} on ${when}`;
-	// return message.response?.prompt.text ?? fallback;
+	// return message.response?.prompt.finalPromptText ?? fallback;
 }
 
 const getImageHoverHint = (imageUrl?: string) => {

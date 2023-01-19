@@ -15,8 +15,8 @@
             <CustomChatMessage :loading="msg.loading"
                                :model-value="msg"
                                :style="msgContextStyle"
-                               @mouseout="onMsgMouseOut(msg)"
-                               @mouseover="onMsgMouseOver(msg)"
+                               @mouseenter="onMsgMouseOver(msg)"
+                               @mouseleave="onMsgMouseOut(msg)"
             />
         </div>
     </q-scroll-area>

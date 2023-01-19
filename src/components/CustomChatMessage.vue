@@ -310,7 +310,7 @@ const bgColor = computed(() => {
 const style = computed(() => {
 	return {
 		...props.style,
-		borderRadius: "0.5rem",
+		borderRadius: "1.0rem",
 		opacity: props.modelValue.isIgnored ? 0.4 : 1,
 		outline: shouldDelete.value ? "2px solid red" : null,
 	};

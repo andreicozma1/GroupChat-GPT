@@ -98,7 +98,7 @@
 <script lang="ts"
         setup>
 import {useChatStore} from "stores/chatStore";
-import {computed, ComputedRef} from "vue";
+import {computed, ComputedRef, watch} from "vue";
 import {User} from "src/util/chat/User";
 import {Thread} from "src/util/chat/Thread";
 
@@ -127,4 +127,9 @@ const toggleUserVisibility = (user: User) => {
 		thread.prefs.hiddenUserIds.push(userId);
 	}
 };
+
+watch(activeThread.value.prefs, () => {
+	console.log("activeThread.prefs changed");
+	store.saveData();
+});
 </script>

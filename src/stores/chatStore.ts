@@ -7,6 +7,7 @@ import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
 
 import {parseDate} from "src/util/DateUtils";
 import ChatStoreState from "src/util/states/StateGlobalStore";
+import StateGlobalStore from "src/util/states/StateGlobalStore";
 import ThreadsState from "src/util/states/StateThreads";
 import UsersState from "src/util/states/StateUsers";
 import {User, UserTypes} from "src/util/chat/User";
@@ -25,7 +26,7 @@ export interface ApiResponse {
 }
 
 export const useChatStore = defineStore("chatStore", {
-	state: () => ChatStoreState.getDefault(),
+	state: () => ChatStoreState.getState(),
 	getters: {
 		/**************************************************************************************************************/
 		// Users
@@ -56,30 +57,30 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 		// Users
 		/**************************************************************************************************************/
-		registerUser(user: User) {
+		registerUser(user: User, verbose = true) {
 			console.warn("registerUser:", user);
-			smartNotify(`Registering user: "${user.id}"...`);
+			smartNotify('Registering user...', `ID: ${user.id}`);
 			this.usersMap[user.id] = user;
-			this.saveData();
+			this.saveData(verbose);
 			return this.usersMap[user.id];
 		},
-		getUserById(id: string): User {
+		getUserById(id: string, verbose = true): User {
 			// console.warn("getUserById:", id);
-			if (!this.usersMap[id]) smartNotify(`User not found: ${id}`);
+			if (!this.usersMap[id] && verbose) smartNotify('User not found', id);
 			return this.usersMap[id];
 		},
 		getMyUser(): User {
 			console.warn("getMyUser");
-			if (!this.getUserById(this.myUserId))
-				return this.registerUser(new UserHuman(this.myUserId));
+			if (!this.getUserById(this.myUserId, false))
+				return this.registerUser(new UserHuman(this.myUserId), false);
 			return this.getUserById(this.myUserId);
 		},
 		/**************************************************************************************************************/
 		// Threads
 		/**************************************************************************************************************/
-		registerThread(thread: Thread) {
+		registerThread(thread: Thread, verbose = true) {
 			console.warn("registerThread:", thread);
-			smartNotify(`Registering new thread: "${thread.id}"...`);
+			smartNotify("Registering thread...", `ID: ${thread.id}`);
 			// if the human isnt in the thread, add them
 			thread.addUser(this.getMyUser());
 			// add the default assistants to the thread
@@ -89,7 +90,7 @@ export const useChatStore = defineStore("chatStore", {
 			this.threadsMap[thread.id] = thread;
 			// set the new thread as the active thread
 			this.threadData.activeThreadId = thread.id;
-			this.saveData();
+			this.saveData(verbose);
 			return this.threadsMap[thread.id];
 		},
 		getThreadById(key: string) {
@@ -115,7 +116,7 @@ export const useChatStore = defineStore("chatStore", {
 			console.warn("=".repeat(60));
 			console.warn("getActiveThread");
 			if (!this.activeThreadId)
-				return this.registerThread(new Thread()) as Thread;
+				return this.registerThread(new Thread(), false) as Thread;
 			return this.getThreadById(this.activeThreadId) as Thread;
 		},
 		/**************************************************************************************************************/
@@ -225,7 +226,7 @@ export const useChatStore = defineStore("chatStore", {
 				}
 			}
 			thread.addMessage(message);
-			this.saveData();
+			this.saveData(false);
 		},
 		/**************************************************************************************************************/
 		// API Responses
@@ -318,12 +319,8 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 		/* DATA & STORAGE
 			/**************************************************************************************************************/
-		saveData() {
-			// smartNotify("Saving data...");
-			LocalStorage.set(
-				ChatStoreState.localStorageKey,
-				JSON.stringify(this.$state)
-			);
+		saveData(verbose = true) {
+			StateGlobalStore.saveState(this.$state, verbose);
 		},
 		clearAllData() {
 			// clear whole local storage and reload

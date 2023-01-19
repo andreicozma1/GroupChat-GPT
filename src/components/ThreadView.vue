@@ -80,8 +80,8 @@ const msgStyle = (msg: Message) => {
 	let style = {};
 	const contextIdx = msgContextIds.value.indexOf(msg.id);
 	if (contextIdx >= 0) {
-		const ctxMsgAlphaMin = store.prefs.contextMessageOpac.min;
-		const ctxMsgAlphaMax = store.prefs.contextMessageOpac.max;
+		const ctxMsgAlphaMin = store.prefs.contextMessageOpacity.min;
+		const ctxMsgAlphaMax = store.prefs.contextMessageOpacity.max;
 		const ctxMsgAlphaDelta =
 			(ctxMsgAlphaMax - ctxMsgAlphaMin) / msgContextIds.value.length;
 		const ctxMsgAlpha = ctxMsgAlphaMin + ctxMsgAlphaDelta * contextIdx;
@@ -93,7 +93,7 @@ const msgStyle = (msg: Message) => {
 	if (msgContextParentId.value === msg.id) {
 		style = {
 			...style,
-			backgroundColor: `rgba(0,0,255, ${store.prefs.contextMessageOpac.max})`,
+			backgroundColor: `rgba(0,0,255, ${store.prefs.contextMessageOpacity.max})`,
 		};
 	}
 	return style;

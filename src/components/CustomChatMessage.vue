@@ -311,7 +311,7 @@ const style = computed(() => {
 	return {
 		...props.style,
 		borderRadius: "0.5rem",
-		opacity: props.modelValue.isIgnored ? 0.5 : 1,
+		opacity: props.modelValue.isIgnored ? 0.4 : 1,
 		outline: shouldDelete.value ? "2px solid red" : null,
 	};
 });

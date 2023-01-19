@@ -1,9 +1,9 @@
 import {smartNotify} from "src/util/SmartNotify";
-import {User} from "src/util/users/User";
 import {getTextHash, removeAllHtmlTags, removeSpecifiedHtmlTags, wrapInHtmlTag} from "src/util/TextUtils";
 import {dateToLocaleStr} from "src/util/DateUtils";
-import {Message} from "src/util/message/Message";
 import {PromptBuilder} from "src/util/prompt/PromptBuilder";
+import {User} from "src/util/chat/User";
+import {Message} from "src/util/chat/Message";
 
 export class AssistantPrompt extends PromptBuilder {
 

@@ -12,7 +12,7 @@ import UsersState from "src/util/states/StateUsers";
 import {User, UserTypes} from "src/util/chat/User";
 import {Thread} from "src/util/chat/Thread";
 import {UserHuman} from "src/util/chat/UserHuman";
-import {assistantFilter} from "src/util/chat/assistants/Assistant";
+import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 

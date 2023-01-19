@@ -1,8 +1,8 @@
-import {Message} from "src/util/message/Message";
 import {createRegexHtmlTagWithContent, rHtmlTagWithContent} from "src/util/Utils";
-import {User} from "src/util/users/User";
 import {processItemizedList} from "src/util/ItemizedList";
 import {wrapInHtmlTag} from "src/util/TextUtils";
+import {Message} from "src/util/chat/Message";
+import {User} from "src/util/chat/User";
 
 export interface PromptConfig {
 	promptType: string;

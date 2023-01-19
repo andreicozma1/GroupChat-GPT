@@ -1,6 +1,9 @@
 import {User} from "src/util/chat/User";
-import {UserCodex, UserCoordinator, UserDalle, UserDavinci} from "src/util/chat/assistants/Assistant";
 import {UserCodexGen, UserDalleGen} from "src/util/chat/assistants/Helpers";
+import {UserCoordinator} from "src/util/chat/assistants/UserCoordinator";
+import {UserCodex} from "src/util/chat/assistants/UserCodex";
+import {UserDalle} from "src/util/chat/assistants/UserDalle";
+import {UserDavinci} from "src/util/chat/assistants/UserDavinci";
 
 export interface ChatStoreUserData {
 	usersMap: Record<string, User>;

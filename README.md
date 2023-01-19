@@ -29,10 +29,10 @@ Well, this application is a step towards that world.
     - Prompts for each AI assistant are dynamically created, including various characteristics and rules (outlined
       below)
 - Response Coordinator
-    - Dictates which assistant(s) needs to respond to the user's message.
-    - For example, if the user asks "hey, how are you all?", multiple assistants may respond, each with their own unique
+    - Dictates which assistant(s) needs to respond to the promptUser's message.
+    - For example, if the promptUser asks "hey, how are you all?", multiple assistants may respond, each with their own unique
       response.
-    - If the user asks "Hey DALL-E, I need to generate an image", then only DALL-E will respond.
+    - If the promptUser asks "Hey DALL-E, I need to generate an image", then only DALL-E will respond.
 - UserAssistant Traits, Characteristics, and Rules
     - Subject to tweaks and changes so read through the following files instead:
     - [./src/util/chat/assistants](./src/util/chat/assistants)

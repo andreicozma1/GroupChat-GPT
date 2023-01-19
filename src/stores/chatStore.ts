@@ -116,7 +116,7 @@ export const useChatStore = defineStore("chatStore", {
 			console.warn("=".repeat(60));
 			console.warn("getActiveThread");
 			if (!this.activeThreadId)
-				return this.registerThread(new Thread(), false) as Thread;
+				return this.registerThread(new Thread(this.myUserId), false) as Thread;
 			return this.getThreadById(this.activeThreadId) as Thread;
 		},
 		/**************************************************************************************************************/
@@ -259,24 +259,26 @@ export const useChatStore = defineStore("chatStore", {
 				);
 			}
 
-			const prompt = new AssistantPrompt(
-				// this.currentThreadName,
-				// this.humanUserName,
-				thread.name,
-				this.getMyUser().name,
-				user,
-				this.usersMap,
-				msgHist
-			);
-			console.log("generate->prompt:", prompt);
-			console.log("generate->prompt.hash:", prompt.hash);
-			console.log("generate->prompt.text:");
-			console.log(prompt.finalPromptText);
+			let prompt = undefined
 
 			// if we already have a response for this prompt, return it
 			let response;
 			let cached;
 			try {
+				prompt = new AssistantPrompt(
+					// this.currentThreadName,
+					// this.humanUserName,
+					thread.name,
+					this.getMyUser().name,
+					user,
+					thread.getJoinedUsers(this.getUserById),
+					msgHist
+				);
+				console.log("generate->prompt:", prompt);
+				console.log("generate->prompt.hash:", prompt.hash);
+				console.log("generate->prompt.text:");
+				console.log(prompt.finalPromptText);
+
 				const cachedResponse = this.getCachedResponseFromPrompt(prompt);
 				if (!ignoreCache && cachedResponse) {
 					response = cachedResponse;
@@ -333,6 +335,13 @@ export const useChatStore = defineStore("chatStore", {
 			this.cachedResponses = {};
 			this.saveData();
 			return this.cachedResponses;
+		},
+		resetActiveThread() {
+			smartNotify(`Clearing active thread`);
+			const activeThread: Thread = this.getActiveThread();
+			activeThread.resetAll();
+			this.saveData();
+			return activeThread;
 		},
 		resetAllThreads() {
 			smartNotify(`Resetting all threads`);

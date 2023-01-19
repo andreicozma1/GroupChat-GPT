@@ -61,10 +61,10 @@ export class PromptBuilder {
 
 	promptMembersInfo(
 		currentUser: User,
-		usersMap: { [key: string]: User },
+		usersArr: User[],
 		header = "MEMBERS"
 	): string {
-		const availableAssistants: User[] = Object.values(usersMap).filter(
+		const availableAssistants: User[] = usersArr.filter(
 			(a: User): boolean => {
 				if (a.showInMembersInfo === undefined) return true;
 				return a.showInMembersInfo;

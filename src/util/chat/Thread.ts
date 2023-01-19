@@ -20,26 +20,18 @@ export class Thread {
 	};
 
 	public id: string;
-	public name: string = Thread.defaultThreadName;
+	public name: string;
 	public prefs: ChatThreadPrefs = Thread.defaultPrefs;
 	public appVersion: string = getAppVersion();
 	private joinedUserIds: string[] = [];
 	private messageIdMap: { [key: string]: Message } = {};
 
 	constructor(
+		public ownerId: string,
 		name?: string,
-		joinedUserIds?: string[],
-		prefs?: ChatThreadPrefs
 	) {
 		this.id = uuidv4();
-		if (name) this.name = name;
-		if (joinedUserIds) this.joinedUserIds.push(...joinedUserIds);
-		if (prefs) {
-			this.prefs = {
-				...this.prefs,
-				...prefs,
-			};
-		}
+		this.name = name ?? Thread.defaultThreadName
 	}
 
 	addUser(user: User): void {
@@ -126,7 +118,7 @@ export class Thread {
 
 	clearJoinedUsers(): void {
 		this.notify("Clearing joined users");
-		this.joinedUserIds = [];
+		this.joinedUserIds = [this.ownerId];
 	}
 
 	resetPrefs(): void {
@@ -139,7 +131,7 @@ export class Thread {
 		this.clearMessages();
 		this.clearJoinedUsers();
 		this.resetPrefs();
-		this.name = Thread.defaultThreadName;
+		this.name = this.name ?? Thread.defaultThreadName
 		this.appVersion = getAppVersion();
 	}
 

@@ -23,7 +23,17 @@
                     rounded
                     @click="sendMessage"
             />
-            <q-space />
+            <div>
+                <DateText v-if="store.dateCreated"
+                          :date="store.dateCreated"
+                          class="q-pl-md"
+                          prefix="Created:" />
+                <DateText v-if="store.dateLastSaved"
+                          :date="store.dateLastSaved"
+                          class="q-pl-md"
+                          prefix="Last Saved:" />
+            </div>
+
             <q-space />
             <q-btn-group flat
                          rounded>
@@ -35,7 +45,7 @@
                         outline
                         size="sm"
                         title="Clear all messages in the thread"
-                        @click="store.getActiveThread().resetAll()"
+                        @click="store.resetActiveThread"
                 />
                 <q-btn
                         color="green"
@@ -68,6 +78,7 @@ import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
 import {smartNotify} from "src/util/SmartNotify";
 import {Message} from "src/util/chat/Message";
+import DateText from "components/DateText.vue";
 
 const store = useChatStore();
 
@@ -113,8 +124,8 @@ const sendMessage = () => {
 };
 
 watch(userMsgStr, () => {
-	// introduce a delay to detect if the user is typing.
-	// The coordinator will not be called until the user stops typing for a while.
+	// introduce a delay to detect if the promptUser is typing.
+	// The coordinator will not be called until the promptUser stops typing for a while.
 	isTyping.value = true;
 	if (isTypingTimeout.value) clearTimeout(isTypingTimeout.value);
 	isTypingTimeout.value = setTimeout(

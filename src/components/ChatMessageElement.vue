@@ -7,20 +7,16 @@
             :style="style"
             size="6"
             v-bind="modelValue"
-            @click="onClickMsg"
-    >
-        <div
-                v-for="textSnippet in parsedTextSnippets"
-                :key="textSnippet"
-                @click="copyClipboard(textSnippet)"
-        >
+            @click="onClickMsg">
+        <div v-for="textSnippet in parsedTextSnippets"
+             :key="textSnippet"
+             @click="copyClipboard(textSnippet)">
             <div v-for="text in textSnippet.split('\n')"
                  :key="text">
                 <span v-if="text.includes('http')">
-                    <span
-                            v-for="chunk in text.split(' ')"
-                            :key="chunk"
-                            style="padding-right: 3.5px"
+                    <span v-for="chunk in text.split(' ')"
+                          :key="chunk"
+                          style="padding-right: 3.5px"
                     >
                         <a v-if="chunk.includes('http')"
                            :href="chunk"
@@ -43,12 +39,10 @@
         </div>
 
         <div v-if="modelValue.imageUrls.length > 0">
-            <q-card
-                    v-for="imageUrl in modelValue.imageUrls"
+            <q-card v-for="imageUrl in modelValue.imageUrls"
                     :key="imageUrl"
                     class="bg-grey-1"
-                    flat
-            >
+                    flat>
                 <q-card-section class="q-pa-none">
                     <q-img
                             :src="imageUrl"
@@ -94,11 +88,10 @@
                 </q-btn>
 
                 <div class="text-caption text-blue-grey-10">
-                    <q-item-label :lines="1">
-                        {{ getStamp }}
-                    </q-item-label>
+                    <DateText :date="modelValue.dateCreated"
+                              :suffix="getStamp" />
                     <q-tooltip>
-                        {{ hoverHint }}
+                        {{ stampHoverHint }}
                     </q-tooltip>
                 </div>
                 <q-space></q-space>
@@ -163,15 +156,16 @@
 </template>
 <script lang="ts"
         setup>
-import {User} from "src/util/users/User";
-import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
+import {dateToLocaleStr} from "src/util/DateUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {getSeededQColor} from "src/util/Colors";
 import {useChatStore} from "stores/chatStore";
 import {computed, PropType, ref} from "vue";
 import {copyClipboard} from "src/util/Utils";
 import {getSingularOrPlural} from "src/util/TextUtils";
-import {Message} from "src/util/message/Message";
+import {User} from "src/util/chat/User";
+import {Message} from "src/util/chat/Message";
+import DateText from "components/DateText.vue";
 
 const props = defineProps({
 	// msgId: {
@@ -308,17 +302,16 @@ const typeIcon = computed(() => {
 
 const getStamp = computed(() => {
 	// const what = isSentByMe(msg) ? "Sent" : "Received";
-	const on = dateToTimeAgo(props.modelValue.dateCreated);
+	// const on = dateToTimeAgo(props.modelValue.dateCreated);
 	// let res = `${what} ${on}`;
-	let res = `${on}`;
+	// let res = `${on}`;
 	// if (msg.isCompRegen) res = `* ${res}`;
-	if (props.modelValue.apiResponse?.fromCache) res = `${res} (from cache)`;
-	if (props.modelValue.apiResponse?.cacheIgnored)
-		res = `${res} (cache ignored)`;
-	return res;
+	if (props.modelValue.apiResponse?.fromCache) return '(from cache)';
+	if (props.modelValue.apiResponse?.cacheIgnored) return '(cache ignored)';
+	return undefined
 });
 
-const hoverHint = computed(() => {
+const stampHoverHint = computed(() => {
 	const when = dateToLocaleStr(props.modelValue.dateCreated);
 	const what = isSentByMe.value ? "Sent" : "Received";
 	let res = `${what} on ${when}`;

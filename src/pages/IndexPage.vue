@@ -37,8 +37,8 @@ const updateScrollAreaStyle = () => {
 
 watch(userMsgStr, () => {
 	updateScrollAreaStyle();
-	// introduce a delay to detect if the user is typing.
-	// The coordinator will not be called until the user stops typing for a while.
+	// introduce a delay to detect if the promptUser is typing.
+	// The coordinator will not be called until the promptUser stops typing for a while.
 	isTyping.value = true;
 	if (isTypingTimeout.value) clearTimeout(isTypingTimeout.value);
 	isTypingTimeout.value = setTimeout(

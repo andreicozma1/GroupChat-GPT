@@ -21,15 +21,15 @@ export class AssistantPrompt extends PromptBuilder {
 	constructor(
 		public threadName: string,
 		public humanUserName: string,
-		public user: User,
-		usersMap: { [key: string]: User },
+		public promptUser: User,
+		allMembersArr: User[],
 		messagesCtx: Message[]
 	) {
-		super(user.promptConfig);
+		super(promptUser.promptConfig);
 		this.messageContextIds = messagesCtx.map((m: Message) => m.id);
 		this.allTextSnippets = messagesCtx.flatMap((m: Message) => m.textSnippets);
 
-		this.tMembers = this.promptMembersInfo(this.user, usersMap);
+		this.tMembers = this.promptMembersInfo(this.promptUser, allMembersArr);
 		this.tRules = this.getPromptRules();
 		this.tExamples = this.getPromptExamples(this.humanUserName);
 		this.tConversation = this.getPromptConversation(messagesCtx);

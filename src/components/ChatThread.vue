@@ -25,9 +25,6 @@
                      @click="copyClipboard(textSnippet)">
                     <div v-for="text in textSnippet.split('\n')"
                          :key="text">
-                        <!--                        handle showing links -->
-                        <!--                        links can either be inline with other text or on their own line -->
-                        <!--                        Only the link should use an achor tag -->
                         <span v-if="text.includes('http')">
                             <span v-for="chunk in text.split(' ')" :key="chunk"
                                   style="padding-right: 3.5px">

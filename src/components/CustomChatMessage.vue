@@ -31,7 +31,7 @@
                         </span>
             </div>
             <q-tooltip :delay="750">
-                {{ getTextHoverHint(textSnippet) }}
+                {{ getSnippetHoverHint(textSnippet) }}
             </q-tooltip>
         </div>
 
@@ -62,7 +62,7 @@
 
         <template v-slot:stamp>
             <div class="row items-center">
-                <q-btn :disable="!canRegenerate()"
+                <q-btn :disable="!canRegenerate"
                        :icon="typeIcon"
                        class="q-ma-none q-pa-none"
                        color="blue-grey-8"
@@ -71,7 +71,7 @@
                        round
                        size="xs"
                        @click="regenMessage">
-                    <q-tooltip v-if="canRegenerate()">
+                    <q-tooltip v-if="canRegenerate">
                         Re-generate message ({{ modelValue.userId }})
                     </q-tooltip>
                     <q-tooltip v-else>
@@ -190,13 +190,12 @@ const editMessage = () => {
 	// comp.editMessage(msg);
 };
 
-const canRegenerate = () => {
-	if (shouldDelete.value) return false;
-	return true
+const canRegenerate = computed(() => {
+	return !shouldDelete.value;
 	// const msgIds = this.apiResponse?.prompt.messagesCtxIds;
 	// if (msgIds) return msgIds.length > 0;
 	// return false;
-}
+})
 
 const regenMessage = () => {
 	console.warn("*".repeat(40));
@@ -219,6 +218,29 @@ const restoreMessage = () => {
 	console.warn("=> restore:", {...props.modelValue});
 	shouldDelete.value = false;
 };
+
+const getSnippetHoverHint = (textSnippet?: string) => {
+	const numTexts = props.modelValue.textSnippets?.length ?? 0;
+	const numImages = props.modelValue.imageUrls?.length ?? 0;
+	// const who = (isSentByMe(this) ? "You" : this.userName) + ` (${this.userId})`
+	const who = props.modelValue.userName + ` (${props.modelValue.userId})`;
+	const what = `${numTexts} ${getSingularOrPlural(
+		"text",
+		numTexts
+	)} and ${numImages} ${getSingularOrPlural("image", numImages)}`;
+	const when = dateToLocaleStr(props.modelValue.dateCreated);
+	return `${who} sent ${what} on ${when}`;
+	// return message.response?.prompt.text ?? fallback;
+}
+
+const getImageHoverHint = (imageUrl?: string) => {
+	return getSnippetHoverHint();
+}
+
+const getLoadingHoverHint = computed(() => {
+	return "Loading...";
+})
+
 
 const isSentByMe = computed(() => {
 	const myUser = store.getMyUser();
@@ -255,28 +277,6 @@ const getStamp = computed(() => {
 	if (props.modelValue.apiResponse?.fromCache) res = `${res} (from cache)`;
 	if (props.modelValue.apiResponse?.cacheIgnored) res = `${res} (cache ignored)`;
 	return res;
-})
-
-const getTextHoverHint = (textSnippet?: string) => {
-	const numTexts = props.modelValue.textSnippets?.length ?? 0;
-	const numImages = props.modelValue.imageUrls?.length ?? 0;
-	// const who = (isSentByMe(this) ? "You" : this.userName) + ` (${this.userId})`
-	const who = props.modelValue.userName + ` (${props.modelValue.userId})`;
-	const what = `${numTexts} ${getSingularOrPlural(
-		"text",
-		numTexts
-	)} and ${numImages} ${getSingularOrPlural("image", numImages)}`;
-	const when = dateToLocaleStr(props.modelValue.dateCreated);
-	return `${who} sent ${what} on ${when}`;
-	// return message.response?.prompt.text ?? fallback;
-}
-
-const getImageHoverHint = (imageUrl?: string) => {
-	return getTextHoverHint();
-}
-
-const getLoadingHoverHint = computed(() => {
-	return "Loading...";
 })
 
 const hoverHint = computed(() => {

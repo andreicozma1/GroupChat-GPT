@@ -70,7 +70,7 @@
                        flat
                        round
                        size="xs"
-                       @click="onClickRegenerate">
+                       @click.stop="onClickRegenerate">
                     <q-tooltip v-if="canRegenerate">
                         Re-generate message ({{ modelValue.userId }})
                     </q-tooltip>

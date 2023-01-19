@@ -64,11 +64,9 @@ export class ChatMessage {
 		return this.textSnippets.join("").trim().length > 0;
 	}
 
-
 	toggleIgnored() {
 		console.warn("=> ignore:", {...this});
 		this.isIgnored = this.isIgnored === undefined ? true : !this.isIgnored;
 	}
-
-
+	
 }

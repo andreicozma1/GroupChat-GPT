@@ -50,7 +50,9 @@ export class Thread {
 	}
 
 	getJoinedUsers(getUserCallback: (id: string) => User | undefined): User[] {
-		return this.joinedUserIds.map(getUserCallback).filter((u: User | undefined) => u !== undefined) as User[]
+		return this.joinedUserIds
+			.map(getUserCallback)
+			.filter((u: User | undefined) => u !== undefined) as User[];
 	}
 
 	getMessageIdMap(): { [key: string]: Message } {
@@ -58,7 +60,10 @@ export class Thread {
 			if (!(this.messageIdMap[messageId] instanceof Message)) {
 				console.warn("Prototype does not match ChatMessage");
 				console.log("getMessagesIdsMap->before:", this.messageIdMap[messageId]);
-				this.messageIdMap[messageId] = Object.assign(new Message(), this.messageIdMap[messageId]);
+				this.messageIdMap[messageId] = Object.assign(
+					new Message(),
+					this.messageIdMap[messageId]
+				);
 				console.log("getMessagesIdsMap->after:", this.messageIdMap[messageId]);
 			}
 		}
@@ -76,8 +81,9 @@ export class Thread {
 	}
 
 	getMessagesArrayFromIds(messageIds: string[]): Message[] {
-		const messages: Message[] = messageIds.map((messageId: string) => this.getMessageIdMap()[messageId])
-			.filter((message: Message | undefined) => message !== undefined)
+		const messages: Message[] = messageIds
+			.map((messageId: string) => this.getMessageIdMap()[messageId])
+			.filter((message: Message | undefined) => message !== undefined);
 		messages.sort((a: Message, b: Message) => {
 			const ad = parseDate(a.dateCreated).getTime();
 			const bd = parseDate(b.dateCreated).getTime();
@@ -113,24 +119,23 @@ export class Thread {
 		this.notify(`Deleted message: ${messageId}`);
 	}
 
-
 	clearMessages(): void {
-		this.notify('Clearing messages');
+		this.notify("Clearing messages");
 		this.messageIdMap = {};
 	}
 
 	clearJoinedUsers(): void {
-		this.notify('Clearing joined users');
+		this.notify("Clearing joined users");
 		this.joinedUserIds = [];
 	}
 
 	resetPrefs(): void {
-		this.notify('Resetting thread preferences');
+		this.notify("Resetting thread preferences");
 		this.prefs = Thread.defaultPrefs;
 	}
 
 	resetAll(): void {
-		this.notify('Resetting thread');
+		this.notify("Resetting thread");
 		this.clearMessages();
 		this.clearJoinedUsers();
 		this.resetPrefs();

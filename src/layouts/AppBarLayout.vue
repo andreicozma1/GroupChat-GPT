@@ -1,12 +1,13 @@
 <template>
     <q-header elevated>
         <q-toolbar>
-            <q-btn aria-label="Menu"
-                   dense
-                   flat
-                   icon="menu"
-                   round
-                   @click="toggleSideMenu"
+            <q-btn
+                    aria-label="Menu"
+                    dense
+                    flat
+                    icon="menu"
+                    round
+                    @click="toggleSideMenu"
             />
             <q-toolbar-title> GroupChat-GPT</q-toolbar-title>
             <ChatThreadPrefs />

@@ -53,7 +53,6 @@ export class Message {
 		this.loading = false;
 	}
 
-
 	containsKeywords(keywords: string[]): boolean {
 		const text: string = this.textSnippets.join(" ").toLowerCase();
 		return keywords.some((keyword: string) =>

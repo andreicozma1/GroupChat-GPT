@@ -32,7 +32,7 @@ export const processItemizedList = (
 		inline = false;
 		val = val.map((s: string, i: number) => {
 			return `${i + 1}. ${s}`;
-		})
+		});
 	}
 	val = val.join(valJoinStr);
 

@@ -5,18 +5,18 @@
 
     <q-scroll-area ref="threadElem"
                    :style="scrollAreaStyle">
-
         <q-item-label v-bind="threadCaptionProps">
-            {{ threadMessages.length.toString() + ' messages' }}
+            {{ threadMessages.length.toString() + " messages" }}
         </q-item-label>
 
         <div v-for="msg in threadMessages"
              :key="msg.id">
-            <CustomChatMessage :loading="msg.loading"
-                               :model-value="msg"
-                               :style="msgStyle(msg)"
-                               @mouseenter="onMsgMouseOver(msg)"
-                               @mouseleave="onMsgMouseOut(msg)"
+            <CustomChatMessage
+                    :loading="msg.loading"
+                    :model-value="msg"
+                    :style="msgStyle(msg)"
+                    @mouseenter="onMsgMouseOver(msg)"
+                    @mouseleave="onMsgMouseOut(msg)"
             />
         </div>
     </q-scroll-area>
@@ -48,16 +48,16 @@ const threadMessages: Ref<Message[]> = ref([]);
 const isLoading = ref(false);
 let loadingTimeout: NodeJS.Timeout | undefined | null = null;
 
-const prevMessageCount = ref(0)
+const prevMessageCount = ref(0);
 
 const threadCaptionProps = {
-	'class': "text-center q-py-md",
+	class: "text-center q-py-md",
 	overline: true,
 	lines: 1,
-}
+};
 
 const msgContextParentId: Ref<string | null> = ref(null);
-const msgContextIds: Ref<string[]> = ref([])
+const msgContextIds: Ref<string[]> = ref([]);
 
 const onMsgMouseOver = (msg: Message) => {
 	// console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messageContextIds);
@@ -68,35 +68,36 @@ const onMsgMouseOver = (msg: Message) => {
 		console.warn("onMsgMouseOver: no context ids found for msg: ", msg);
 		// smartNotify("Warning: Message context not found");
 	}
-}
+};
 
 const onMsgMouseOut = (msg: Message) => {
 	console.log("onMsgMouseOut->msg: ", {...msg});
 	msgContextIds.value = [];
 	msgContextParentId.value = null;
-}
+};
 
 const msgStyle = (msg: Message) => {
-	let style = {}
+	let style = {};
 	const contextIdx = msgContextIds.value.indexOf(msg.id);
 	if (contextIdx >= 0) {
-		const ctxMsgAlphaMin = store.prefs.contextMessageOpac.min
-		const ctxMsgAlphaMax = store.prefs.contextMessageOpac.max
-		const ctxMsgAlphaDelta = (ctxMsgAlphaMax - ctxMsgAlphaMin) / msgContextIds.value.length
-		const ctxMsgAlpha = ctxMsgAlphaMin + (ctxMsgAlphaDelta * contextIdx)
+		const ctxMsgAlphaMin = store.prefs.contextMessageOpac.min;
+		const ctxMsgAlphaMax = store.prefs.contextMessageOpac.max;
+		const ctxMsgAlphaDelta =
+			(ctxMsgAlphaMax - ctxMsgAlphaMin) / msgContextIds.value.length;
+		const ctxMsgAlpha = ctxMsgAlphaMin + ctxMsgAlphaDelta * contextIdx;
 		style = {
 			...style,
 			backgroundColor: `rgba(0,0,255,${ctxMsgAlpha})`,
-		}
+		};
 	}
 	if (msgContextParentId.value === msg.id) {
 		style = {
 			...style,
 			backgroundColor: `rgba(0,0,255, ${store.prefs.contextMessageOpac.max})`,
-		}
+		};
 	}
 	return style;
-}
+};
 
 const scrollToBottom = (duration?: number) => {
 	if (threadElem.value) {
@@ -106,7 +107,6 @@ const scrollToBottom = (duration?: number) => {
 		threadElem.value.setScrollPosition("vertical", size, duration);
 	}
 };
-
 
 const scrollAreaStyle = computed(() => {
 	const propStyle = props.scrollAreaStyle ? props.scrollAreaStyle : {};
@@ -128,7 +128,7 @@ const scrollAreaStyle = computed(() => {
 
 watchEffect(() => {
 	const thread = store.getActiveThread();
-	let messages: Message[] = []
+	let messages: Message[] = [];
 	isLoading.value = true;
 	try {
 		messages = thread.getMessagesArray();
@@ -175,5 +175,4 @@ watch(
 		scrollToBottom(1000);
 	}
 );
-
 </script>

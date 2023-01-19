@@ -1,7 +1,8 @@
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {User, UserTypes} from "src/util/chat/User";
 
-export const assistantFilter = (user?: User) => !user || user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER;
+export const assistantFilter = (user?: User) =>
+	!user || user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER;
 
 export class UserAssistant extends User {
 	constructor(id: string, name: string) {
@@ -22,4 +23,3 @@ export class UserAssistant extends User {
 		};
 	}
 }
-

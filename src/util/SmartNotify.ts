@@ -28,18 +28,12 @@ export const smartNotify = (message: string, caption?: string) => {
 			textColor: "white",
 		},
 		info: {
-			keywords: [
-				"info", "copied",
-				"registering", "loading"
-			],
+			keywords: ["info", "copied", "registering", "loading"],
 			color: "blue-4",
 			textColor: "white",
 		},
 		success: {
-			keywords: [
-				"success", "done",
-				"registered", "loaded"
-			],
+			keywords: ["success", "done", "registered", "loaded"],
 			color: "green-4",
 			textColor: "white",
 		},
@@ -51,10 +45,13 @@ export const smartNotify = (message: string, caption?: string) => {
 	// if no keywords found, default to info
 
 	// create an array of each word in the message as well as phrases of 2 words
-	const msgWords = message.toLowerCase().split(" ").map((w) => w.trim());
+	const msgWords = message
+		.toLowerCase()
+		.split(" ")
+		.map((w) => w.trim());
 	const msgMatches = new Set<string>();
 	for (let i = 0; i < msgWords.length - 1; i++) {
-		msgMatches.add(msgWords[i])
+		msgMatches.add(msgWords[i]);
 		msgMatches.add(msgWords[i + 1]);
 		msgMatches.add(msgWords[i] + " " + msgWords[i + 1]);
 	}
@@ -63,7 +60,9 @@ export const smartNotify = (message: string, caption?: string) => {
 	for (const msgMatch of msgMatches) {
 		for (const value of Object.values(typeMap)) {
 			const matchKeywords = value.keywords;
-			const lowerKeywords = matchKeywords.map((keyword) => keyword.toLowerCase());
+			const lowerKeywords = matchKeywords.map((keyword) =>
+				keyword.toLowerCase()
+			);
 			// split by space for each word and also every 2 words
 
 			if (lowerKeywords.some((keyword) => msgMatch.includes(keyword))) {
@@ -97,8 +96,7 @@ export const smartNotify = (message: string, caption?: string) => {
 			const opts: QNotifyCreateOptions | undefined = notifyQueue.shift();
 			if (!opts) continue;
 			Notify.create(opts);
-			await sleepPromise(1000)
+			await sleepPromise(1000);
 		}
 	}, 250);
 };
-

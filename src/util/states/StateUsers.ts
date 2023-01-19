@@ -23,9 +23,9 @@ const getDefault = (): ChatStoreUserData => {
 			codex_gen: new UserCodexGen(),
 		},
 		myUserId: "human",
-	}
-}
+	};
+};
 
 export default {
-	getDefault
-}
+	getDefault,
+};

@@ -40,12 +40,16 @@ export const parseMessagesHistory = (
 	messages = messages.filter((message: Message) => {
 		if (config.maxDate && config.maxDate < message.dateCreated) return false;
 		if (config.minDate && config.minDate > message.dateCreated) return false;
-		if (config.forceShowKeywords &&
-			message.containsKeywords(config.forceShowKeywords)) {
+		if (
+			config.forceShowKeywords &&
+			message.containsKeywords(config.forceShowKeywords)
+		) {
 			return true;
 		}
-		if (config.excludeUserIds &&
-			config.excludeUserIds.includes(message.userId)) {
+		if (
+			config.excludeUserIds &&
+			config.excludeUserIds.includes(message.userId)
+		) {
 			return false;
 		}
 		return true;

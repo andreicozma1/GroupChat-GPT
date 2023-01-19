@@ -33,7 +33,8 @@ module.exports = configure(function (/* ctx */) {
         css: ["app.scss"],
 
         // https://github.com/quasarframework/quasar/tree/dev/extras
-        extras: [// 'ionicons-v4',
+        extras: [
+            // 'ionicons-v4',
             // 'mdi-v5',
             // 'fontawesome-v6',
             // 'eva-icons',
@@ -132,7 +133,8 @@ module.exports = configure(function (/* ctx */) {
             prodPort: 3000, // The default port that the production server should use
             // (gets superseded if process.env.PORT is specified at runtime)
 
-            middlewares: ["render", // keep this as last one
+            middlewares: [
+                "render", // keep this as last one
             ],
         },
 

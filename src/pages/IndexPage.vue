@@ -23,7 +23,6 @@ const userMsgValid = computed(() => {
 const isTyping = ref(false);
 const isTypingTimeout: Ref<any> = ref(null);
 
-
 const updateScrollAreaStyle = () => {
 	setTimeout(() => {
 		let controlsHeight = 0;

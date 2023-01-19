@@ -1,12 +1,11 @@
 import {smartNotify} from "src/util/SmartNotify";
-import {getTextHash, removeAllHtmlTags, removeSpecifiedHtmlTags, wrapInHtmlTag} from "src/util/TextUtils";
+import {getTextHash, removeAllHtmlTags, removeSpecifiedHtmlTags, wrapInHtmlTag,} from "src/util/TextUtils";
 import {dateToLocaleStr} from "src/util/DateUtils";
 import {PromptBuilder} from "src/util/prompt/PromptBuilder";
 import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
 
 export class AssistantPrompt extends PromptBuilder {
-
 	public messageContextIds: string[];
 	public allTextSnippets: string[] = [];
 	public createTextPrompt: () => string;
@@ -36,7 +35,8 @@ export class AssistantPrompt extends PromptBuilder {
 		this.tConversation = this.getPromptConversation(messagesCtx);
 
 		// promptType if a function part of this class.
-		this.createTextPrompt = Object.getPrototypeOf(this)[this.promptConfig.promptType];
+		this.createTextPrompt =
+			Object.getPrototypeOf(this)[this.promptConfig.promptType];
 		console.log(Object.getPrototypeOf(this));
 		if (this.createTextPrompt === undefined) {
 			const promptTypeDefault = "createAssistantPrompt";
@@ -57,7 +57,10 @@ export class AssistantPrompt extends PromptBuilder {
 		const start = `=== AI GROUP CHAT: "${this.threadName}" ===`;
 		const desc = [
 			"The following is a group-chat conversation between a human and several AI assistants.",
-			wrapInHtmlTag("nocache", `Current Date-Time: ${dateToLocaleStr(new Date())}`),
+			wrapInHtmlTag(
+				"nocache",
+				`Current Date-Time: ${dateToLocaleStr(new Date())}`
+			),
 		];
 
 		return this.buildPrompt(
@@ -73,10 +76,13 @@ export class AssistantPrompt extends PromptBuilder {
 	public createPromptDalleGen(): string | undefined {
 		// now get the actual textSnippet that contains the html tag
 
-		const prompts = PromptBuilder.filterSnippetsWithTags(this.allTextSnippets, "dalle_gen");
+		const prompts = PromptBuilder.filterSnippetsWithTags(
+			this.allTextSnippets,
+			"dalle_gen"
+		);
 
 		if (prompts.length === 0) {
-			smartNotify("Prompt not found")
+			smartNotify("Prompt not found");
 			return undefined;
 		}
 
@@ -92,10 +98,13 @@ export class AssistantPrompt extends PromptBuilder {
 
 		const examples = this.getPromptExamples();
 
-		const prompts = PromptBuilder.filterSnippetsWithTags(this.allTextSnippets, "codex_gen");
+		const prompts = PromptBuilder.filterSnippetsWithTags(
+			this.allTextSnippets,
+			"codex_gen"
+		);
 
 		if (prompts.length === 0) {
-			smartNotify("Prompt not found")
+			smartNotify("Prompt not found");
 			return undefined;
 		}
 

@@ -104,7 +104,7 @@ const sendMessage = () => {
 				userMsgObj.value = null;
 			} else {
 				console.error("User message not found");
-				smartNotify("User message not found")
+				smartNotify("User message not found");
 			}
 
 			clearInterval(responseTimeout.value);
@@ -129,7 +129,7 @@ const kbShortcuts = (e: KeyboardEvent) => {
 	// ctrl/cmd+shift+x clears thread
 	if (e.key.toLowerCase() === "x" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
 		e.preventDefault();
-		store.resetAllThreads()
+		store.resetAllThreads();
 		return;
 	}
 	// ctrl/cmd+shift+r clears cache

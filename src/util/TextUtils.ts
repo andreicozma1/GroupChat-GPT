@@ -4,14 +4,12 @@ import {
 	createRegexHtmlTagWithContent,
 	rHtmlTagEnd,
 	rHtmlTagStart,
-	rHtmlTagWithContent
+	rHtmlTagWithContent,
 } from "src/util/Utils";
-
 
 export const getSingularOrPlural = (singularStr: string, count: number) => {
 	return count === 1 ? singularStr : `${singularStr}s`;
 };
-
 
 export const wrapInHtmlTag = (tag: string, ...msgPrompt: string[]) => {
 	return [`<${tag}>`, ...msgPrompt, `</${tag}>`].join("\n");
@@ -35,8 +33,10 @@ export const newlineSeparated = (...lines: string[]): string => {
 	return res;
 };
 
-
-export const removeAllHtmlTags = (text: string, removeContent = false): string => {
+export const removeAllHtmlTags = (
+	text: string,
+	removeContent = false
+): string => {
 	if (removeContent) {
 		text = text.replace(rHtmlTagWithContent, "");
 	} else {
@@ -44,9 +44,13 @@ export const removeAllHtmlTags = (text: string, removeContent = false): string =
 		text = text.replace(rHtmlTagEnd, "");
 	}
 	return text.trim();
-}
+};
 
-export const removeSpecifiedHtmlTags = (text: string, tag: string | string[], removeContent = false): string => {
+export const removeSpecifiedHtmlTags = (
+	text: string,
+	tag: string | string[],
+	removeContent = false
+): string => {
 	if (!Array.isArray(tag)) tag = [tag];
 	tag.forEach((t) => {
 		if (removeContent) {
@@ -57,7 +61,7 @@ export const removeSpecifiedHtmlTags = (text: string, tag: string | string[], re
 		}
 	});
 	return text.trim();
-}
+};
 
 export const getTextHash = (prompt: string): string => {
 	// TODO: use a better hash function

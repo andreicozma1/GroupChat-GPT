@@ -16,7 +16,6 @@ import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 
-
 export interface ApiResponse {
 	fromCache: boolean;
 	cacheIgnored: boolean;
@@ -61,17 +60,18 @@ export const useChatStore = defineStore("chatStore", {
 			console.warn("registerUser:", user);
 			smartNotify(`Registering user: "${user.id}"...`);
 			this.usersMap[user.id] = user;
-			this.saveData()
-			return this.usersMap[user.id]
+			this.saveData();
+			return this.usersMap[user.id];
 		},
 		getUserById(id: string): User {
 			// console.warn("getUserById:", id);
 			if (!this.usersMap[id]) smartNotify(`User not found: ${id}`);
-			return this.usersMap[id]
+			return this.usersMap[id];
 		},
 		getMyUser(): User {
 			console.warn("getMyUser");
-			if (!this.getUserById(this.myUserId)) return this.registerUser(new UserHuman(this.myUserId));
+			if (!this.getUserById(this.myUserId))
+				return this.registerUser(new UserHuman(this.myUserId));
 			return this.getUserById(this.myUserId);
 		},
 		/**************************************************************************************************************/
@@ -83,29 +83,39 @@ export const useChatStore = defineStore("chatStore", {
 			// if the human isnt in the thread, add them
 			thread.addUser(this.getMyUser());
 			// add the default assistants to the thread
-			this.usersAssistantsArray.filter((u) => u.defaultJoin).forEach((u) => thread.addUser(u));
+			this.usersAssistantsArray
+				.filter((u) => u.defaultJoin)
+				.forEach((u) => thread.addUser(u));
 			this.threadsMap[thread.id] = thread;
 			// set the new thread as the active thread
 			this.threadData.activeThreadId = thread.id;
-			this.saveData()
-			return this.threadsMap[thread.id]
+			this.saveData();
+			return this.threadsMap[thread.id];
 		},
 		getThreadById(key: string) {
 			console.warn("getThreadById:", key);
 			if (!(this.threadsMap[key] instanceof Thread)) {
-				this.threadsMap[key] = Object.assign(Thread.prototype, this.threadsMap[key]);
+				this.threadsMap[key] = Object.assign(
+					Thread.prototype,
+					this.threadsMap[key]
+				);
 			}
-			const joinedAssistants = this.threadsMap[key].getJoinedUsers(this.getUserById).filter(assistantFilter);
+			const joinedAssistants = this.threadsMap[key]
+				.getJoinedUsers(this.getUserById)
+				.filter(assistantFilter);
 			if (joinedAssistants.length === 0) {
-				smartNotify("Warning: There are no assistants in this thread!",
-					"You can add assistants in the thread preferences menu.");
+				smartNotify(
+					"Warning: There are no assistants in this thread!",
+					"You can add assistants in the thread preferences menu."
+				);
 			}
 			return this.threadsMap[key];
 		},
 		getActiveThread(): Thread {
 			console.warn("=".repeat(60));
 			console.warn("getActiveThread");
-			if (!this.activeThreadId) return this.registerThread(new Thread()) as Thread;
+			if (!this.activeThreadId)
+				return this.registerThread(new Thread()) as Thread;
 			return this.getThreadById(this.activeThreadId) as Thread;
 		},
 		/**************************************************************************************************************/
@@ -142,7 +152,7 @@ export const useChatStore = defineStore("chatStore", {
 				// messages = thread.getMessagesArrayFromIds(prevMsgContextIds)
 				// TODO: This will end up with less messages than expected if there are any undefined messages
 				// } else {
-				messages = thread.getMessagesArray()
+				messages = thread.getMessagesArray();
 				// }
 				messages = parseMessagesHistory(messages, {
 					excludeUserIds:
@@ -157,32 +167,38 @@ export const useChatStore = defineStore("chatStore", {
 				});
 				message.loading = true;
 
-				const response = await this.generate(user, messages, thread, ignoreCache);
+				const response = await this.generate(
+					user,
+					messages,
+					thread,
+					ignoreCache
+				);
 				message.parseApiResponse(response);
 			}
 
-
 			const followups = message.textSnippets.flatMap((text: string) => {
-				const joinedUserIds = thread.getJoinedUsers(this.getUserById).map(u => u.id)
-				const fups: string[] = []
+				const joinedUserIds = thread
+					.getJoinedUsers(this.getUserById)
+					.map((u) => u.id);
+				const fups: string[] = [];
 
 				text.match(/@([a-zA-Z0-9_]+)/g)?.forEach((m: string) => {
-					fups.push(m.slice(1))
-				})
+					fups.push(m.slice(1));
+				});
 
 				text.match(rHtmlTagWithContent)?.forEach((m: string) => {
 					// get the name of the html tag
-					const tag = m.match(rHtmlTagStart)?.[0].slice(1, -1)
+					const tag = m.match(rHtmlTagStart)?.[0].slice(1, -1);
 					// get the content of the html tag
-					if (tag) fups.push(tag)
-				})
+					if (tag) fups.push(tag);
+				});
 
 				fups.filter((m: string) => {
-					const isInChat = joinedUserIds.includes(m)
+					const isInChat = joinedUserIds.includes(m);
 					if (!isInChat)
 						smartNotify(`User ${m} is not a member of this chat thread.`);
 					return isInChat;
-				})
+				});
 
 				if (fups.length > 0) return fups;
 				return [];
@@ -199,7 +215,9 @@ export const useChatStore = defineStore("chatStore", {
 				message.followupMsgIds.push(nextMsg.id);
 				// increment the DateCreated from the previous message
 				// nextMsg.dateCreated = message.dateCreated;
-				nextMsg.dateCreated = new Date(parseDate(message.dateCreated).getTime() + 1);
+				nextMsg.dateCreated = new Date(
+					parseDate(message.dateCreated).getTime() + 1
+				);
 				if (thread.prefs.orderedResponses) {
 					await this.handleUserMessage(nextMsg, ignoreCache);
 				} else {
@@ -263,7 +281,10 @@ export const useChatStore = defineStore("chatStore", {
 					response = cachedResponse;
 					cached = true;
 				} else {
-					response = await makeApiRequest(user.apiReqConfig, prompt.finalPromptText);
+					response = await makeApiRequest(
+						user.apiReqConfig,
+						prompt.finalPromptText
+					);
 					cached = false;
 				}
 			} catch (error: any) {
@@ -296,10 +317,13 @@ export const useChatStore = defineStore("chatStore", {
 		},
 		/**************************************************************************************************************/
 		/* DATA & STORAGE
-		/**************************************************************************************************************/
+			/**************************************************************************************************************/
 		saveData() {
 			// smartNotify("Saving data...");
-			LocalStorage.set(ChatStoreState.localStorageKey, JSON.stringify(this.$state));
+			LocalStorage.set(
+				ChatStoreState.localStorageKey,
+				JSON.stringify(this.$state)
+			);
 		},
 		clearAllData() {
 			// clear whole local storage and reload
@@ -315,13 +339,13 @@ export const useChatStore = defineStore("chatStore", {
 		},
 		resetAllThreads() {
 			smartNotify(`Resetting all threads`);
-			this.threadData = ThreadsState.getDefault()
+			this.threadData = ThreadsState.getDefault();
 			this.saveData();
 			return this.threadData;
 		},
 		resetAllUsers() {
 			smartNotify(`Resetting all users`);
-			this.userData = UsersState.getDefault()
+			this.userData = UsersState.getDefault();
 			this.saveData();
 			return this.userData;
 		},

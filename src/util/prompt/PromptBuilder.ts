@@ -1,4 +1,4 @@
-import {createRegexHtmlTagWithContent, rHtmlTagWithContent} from "src/util/Utils";
+import {createRegexHtmlTagWithContent, rHtmlTagWithContent,} from "src/util/Utils";
 import {processItemizedList} from "src/util/ItemizedList";
 import {wrapInHtmlTag} from "src/util/TextUtils";
 import {Message} from "src/util/chat/Message";
@@ -51,7 +51,6 @@ export class PromptBuilder {
 		});
 	}
 
-
 	buildPrompt(...promptParts: string[]): string {
 		if (this.promptConfig.responseHeader)
 			promptParts.push(`### ${this.promptConfig.responseHeader}:`);
@@ -90,11 +89,11 @@ export class PromptBuilder {
 			});
 		} else {
 			info.push(this.promptAssistantInfo(currentUser, "You"));
-			availableAssistants.filter(
-				(a: User) => a.id !== currentUser.id
-			).forEach((user: User) => {
-				info.push(this.promptAssistantInfo(user));
-			});
+			availableAssistants
+				.filter((a: User) => a.id !== currentUser.id)
+				.forEach((user: User) => {
+					info.push(this.promptAssistantInfo(user));
+				});
 		}
 
 		return [this.h1(header), ...info].join("\n\n");
@@ -130,7 +129,10 @@ export class PromptBuilder {
 					msgPrompt = wrapInHtmlTag(this.promptConfig.queryWrapTag, msgPrompt);
 				}
 				if (!isQuery && this.promptConfig.responseWrapTag) {
-					msgPrompt = wrapInHtmlTag(this.promptConfig.responseWrapTag, msgPrompt);
+					msgPrompt = wrapInHtmlTag(
+						this.promptConfig.responseWrapTag,
+						msgPrompt
+					);
 				}
 				const identifier = isQuery
 					? this.promptConfig.exampleQueryHeader ?? exampleQueryHeaderFallback
@@ -159,7 +161,10 @@ export class PromptBuilder {
 				}
 				if (!isQuery && this.promptConfig.responseWrapTag) {
 					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
-					msgPrompt = wrapInHtmlTag(this.promptConfig.responseWrapTag, msgPrompt);
+					msgPrompt = wrapInHtmlTag(
+						this.promptConfig.responseWrapTag,
+						msgPrompt
+					);
 				}
 				msgPrompt = `### ${msg.userName}:\n${msgPrompt}`;
 				return msgPrompt;

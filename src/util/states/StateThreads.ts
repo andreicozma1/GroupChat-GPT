@@ -12,8 +12,8 @@ const getDefault = (): ChatStoreThreadData => {
 		activeThreadId: undefined,
 		defaultThreadName: "General",
 	};
-}
+};
 
 export default {
-	getDefault
-}
+	getDefault,
+};

@@ -16,6 +16,7 @@
     "@quasar/extras": "^1.0.0",
     "axios": "^0.21.1",
     "eslint-plugin-vue": "^7.0.0-beta.4",
+    "lodash": "^4.17.21",
     "openai": "^3.1.0",
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",
     "@rushstack/eslint-patch": "^1.2.0",
+    "@types/lodash": "^4.14.191",
     "@types/node": "^12.20.21",
     "@types/uuid": "^9.0.0",
     "@typescript-eslint/parser": "^5.10.0",

@@ -2,8 +2,10 @@ import {LocalStorage} from "quasar";
 import ThreadsState, {ChatStoreThreadData} from "src/util/states/StateThreads";
 import GlobalPrefs, {ChatStoreGlobalPrefs} from "src/util/states/StatePrefs";
 import UsersState, {ChatStoreUserData} from "src/util/states/StateUsers";
+import {merge} from 'lodash'
 
 export const localStorageKey = "data";
+
 
 interface StateGlobalStore {
 	userData: ChatStoreUserData
@@ -21,7 +23,10 @@ const getDefault = (): StateGlobalStore => {
 		prefs: GlobalPrefs.getDefault(),
 	}
 	if (!item) return state
-	state = Object.assign(state, JSON.parse(item))
+	const parsedJson = JSON.parse(item)
+	// recursively assign from parsedJson to state
+	// if a key in parsedJson is not in state, it will be ignored and error will be logged
+	state = merge(state, parsedJson)
 	return state
 }
 

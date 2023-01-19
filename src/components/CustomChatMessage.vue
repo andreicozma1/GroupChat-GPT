@@ -70,7 +70,7 @@
                        flat
                        round
                        size="xs"
-                       @click="regenMessage">
+                       @click="onClickRegenerate">
                     <q-tooltip v-if="canRegenerate">
                         Re-generate message ({{ modelValue.userId }})
                     </q-tooltip>
@@ -97,7 +97,7 @@
                        icon="edit"
                        round
                        size="xs"
-                       @click="editMessage">
+                       @click.stop="onClickEdit">
                     <q-tooltip> Edit message</q-tooltip>
                 </q-btn>
                 <q-btn v-if="!shouldDelete"
@@ -107,7 +107,7 @@
                        flat
                        round
                        size="xs"
-                       @click="modelValue.toggleIgnored()">
+                       @click.stop="modelValue.toggleIgnored()">
                     <q-tooltip>
                         {{ modelValue.isIgnored ? "Use message" : "Ignore message" }}
                     </q-tooltip>
@@ -118,7 +118,7 @@
                        flat
                        round
                        size="xs"
-                       @click="deleteMessage">
+                       @click.stop="toggleShouldDelete()">
                     <q-tooltip>
                         {{ shouldDelete ? "Yes, delete" : "Delete" }}
                     </q-tooltip>
@@ -130,7 +130,7 @@
                        icon="restore"
                        round
                        size="xs"
-                       @click="restoreMessage">
+                       @click.stop="toggleShouldDelete(false)">
                     <q-tooltip> Restore</q-tooltip>
                 </q-btn>
             </div>
@@ -184,10 +184,10 @@ const parsedTextSnippets = computed((): string[] => {
 	return texts;
 })
 
-const editMessage = () => {
+const onClickEdit = () => {
 	smartNotify(`Message editing is not yet implemented`);
 	console.warn("=> edit:", {...props.modelValue});
-	// comp.editMessage(msg);
+	// comp.onClickEdit(msg);
 };
 
 const canRegenerate = computed(() => {
@@ -197,26 +197,27 @@ const canRegenerate = computed(() => {
 	// return false;
 })
 
-const regenMessage = () => {
+const onClickRegenerate = () => {
 	console.warn("*".repeat(40));
-	console.log("regenMessage->message:", {...props.modelValue});
+	console.log("onClickRegenerate->message:", {...props.modelValue});
 	store.handleUserMessage(props.modelValue, true);
 };
 
-const deleteMessage = () => {
-	console.warn("=> delete:", {...props.modelValue});
+const toggleShouldDelete = (value?: boolean) => {
+	console.warn("=> toggleDelete:", {...props.modelValue});
+	if (value !== undefined) {
+		console.log("here")
+		shouldDelete.value = value;
+		return;
+	}
 	// 2nd click - confirmation and delete
 	if (shouldDelete.value) {
+		console.log("=> delete:", {...props.modelValue});
 		store.getActiveThread().deleteMessage(props.modelValue.id);
 		return;
 	}
 	// 1st click - will need 2nd click to confirm
 	shouldDelete.value = true;
-};
-
-const restoreMessage = () => {
-	console.warn("=> restore:", {...props.modelValue});
-	shouldDelete.value = false;
 };
 
 const getSnippetHoverHint = (textSnippet?: string) => {

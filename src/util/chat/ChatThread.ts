@@ -93,6 +93,10 @@ export class ChatThread {
 		this.messageIdMap[message.id] = message;
 	}
 
+	getMessageById(messageId: string): ChatMessage | undefined {
+		return this.getMessageIdMap()[messageId];
+	}
+
 	deleteMessage(messageId: string): void {
 		if (!this.getMessageIdMap()[messageId]) {
 			smartNotify("An error occurred while deleting the message.");

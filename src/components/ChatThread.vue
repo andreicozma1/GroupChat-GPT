@@ -5,14 +5,19 @@
 
     <q-scroll-area ref="threadElem"
                    :style="scrollAreaStyle">
+
         <q-item-label v-bind="threadCaptionProps">
             {{ threadMessages.length.toString() + ' messages' }}
         </q-item-label>
+
         <div v-for="msg in threadMessages"
              :key="msg.id">
             <CustomChatMessage :loading="msg.loading"
                                :model-value="msg"
-                               @mouseover="onMsgMouseOver(msg)" />
+                               :style="msgContextStyle"
+                               @mouseout="onMsgMouseOut(msg)"
+                               @mouseover="onMsgMouseOver(msg)"
+            />
         </div>
     </q-scroll-area>
 </template>
@@ -53,12 +58,25 @@ const threadCaptionProps = {
 }
 
 const msgContextStyle = {
-	outline: "2px dashed red"
+	backgroundColor: "#eee",
+	// border: "1px solid green",
 }
 
+const msgContextIds: Ref<string[]> = ref([])
+
 const onMsgMouseOver = (msg: ChatMessage) => {
-	console.log("onMsgMouseOver->msg: ", {...msg});
-	console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messagesCtxIds);
+	// console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messagesCtxIds);
+	if (msg.apiResponse?.prompt.messagesCtxIds) {
+		msgContextIds.value = msg.apiResponse.prompt.messagesCtxIds;
+	} else {
+		console.warn("onMsgMouseOver->no context ids found for msg: ", msg);
+		smartNotify("Warning: Message context not found");
+	}
+}
+
+const onMsgMouseOut = (msg: ChatMessage) => {
+	console.log("onMsgMouseOut->msg: ", {...msg});
+	msgContextIds.value = [];
 }
 
 const scrollToBottom = (duration?: number) => {

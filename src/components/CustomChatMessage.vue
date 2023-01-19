@@ -171,7 +171,9 @@ const props = defineProps({
 	style: {
 		type: Object as PropType<Record<string, any>>,
 		required: false,
-		default: () => ({})
+		default: () => ({
+			borderRadius: "5px",
+		})
 	}
 });
 

@@ -49,15 +49,31 @@ export const smartNotify = (message: string, caption?: string) => {
 	let textColor = "white";
 	// look for keywords in message to determine type
 	// if no keywords found, default to info
-	for (const value of Object.values(typeMap)) {
-		const keywords = value.keywords;
-		const lowerKeywords = keywords.map((keyword) => keyword.toLowerCase());
-		const lowerMessage = message.toLowerCase();
-		if (lowerKeywords.some((keyword) => lowerMessage.includes(keyword))) {
-			color = value.color;
-			textColor = value.textColor;
-			break;
+
+	// create an array of each word in the message as well as phrases of 2 words
+	const msgWords = message.toLowerCase().split(" ").map((w) => w.trim());
+	const msgMatches = new Set<string>();
+	for (let i = 0; i < msgWords.length - 1; i++) {
+		msgMatches.add(msgWords[i])
+		msgMatches.add(msgWords[i + 1]);
+		msgMatches.add(msgWords[i] + " " + msgWords[i + 1]);
+	}
+
+	let found = false;
+	for (const msgMatch of msgMatches) {
+		for (const value of Object.values(typeMap)) {
+			const matchKeywords = value.keywords;
+			const lowerKeywords = matchKeywords.map((keyword) => keyword.toLowerCase());
+			// split by space for each word and also every 2 words
+
+			if (lowerKeywords.some((keyword) => msgMatch.includes(keyword))) {
+				color = value.color;
+				textColor = value.textColor;
+				found = true;
+				break;
+			}
 		}
+		if (found) break;
 	}
 
 	console.warn("smartNotify->message:", message);

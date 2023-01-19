@@ -19,6 +19,7 @@ export class User {
 	alwaysIgnoreCache = false;
 	requiresUserIds: string[] = [];
 	defaultJoin = false;
+	defaultIgnored = false;
 
 	constructor(id: string, name: string, type: UserTypes) {
 		this.id = id;

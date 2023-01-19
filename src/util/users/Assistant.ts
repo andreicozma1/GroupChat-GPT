@@ -135,6 +135,7 @@ export class UserCoordinator extends User {
 	constructor() {
 		super("coordinator", "Coordinator", UserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.COORDINATOR;
+		this.defaultIgnored = true;
 		this.promptConfig.rules?.always?.push(
 			"Only respond with the exact IDs of the assistant(s) that should respond to the user's message.",
 			// "Separate assistant IDs with commas if more than one assistant should respond.",

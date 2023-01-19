@@ -13,7 +13,8 @@
             <div v-for="text in textSnippet.split('\n')"
                  :key="text">
                         <span v-if="text.includes('http')">
-                            <span v-for="chunk in text.split(' ')" :key="chunk"
+                            <span v-for="chunk in text.split(' ')"
+                                  :key="chunk"
                                   style="padding-right: 3.5px">
                                 <a v-if="chunk.includes('http')"
                                    :href="chunk"
@@ -54,7 +55,9 @@
         </div>
 
         <div v-if="loading">
-            <q-spinner-dots class="q-ml-md" color="primary" size="2em"/>
+            <q-spinner-dots class="q-ml-md"
+                            color="primary"
+                            size="2em" />
             <q-tooltip :delay="750">
                 {{ getLoadingHoverHint }}
             </q-tooltip>
@@ -89,7 +92,9 @@
                 </div>
                 <q-space></q-space>
 
-                <div v-if="shouldDelete" class="text-bold">Delete?</div>
+                <div v-if="shouldDelete"
+                     class="text-bold">Delete?
+                </div>
                 <q-btn v-if="!shouldDelete"
                        color="blue-grey-8"
                        dense
@@ -137,7 +142,8 @@
         </template>
     </q-chat-message>
 </template>
-<script lang="ts" setup>
+<script lang="ts"
+        setup>
 import {User} from "src/util/users/User";
 import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {smartNotify} from "src/util/SmartNotify";
@@ -159,7 +165,13 @@ const props = defineProps({
 	},
 	loading: {
 		type: Boolean as PropType<boolean>,
-		required: true
+		required: false,
+		default: false
+	},
+	style: {
+		type: Object as PropType<Record<string, any>>,
+		required: false,
+		default: () => ({})
 	}
 });
 
@@ -176,9 +188,10 @@ const onClickMsg = () => {
 
 const parsedTextSnippets = computed((): string[] => {
 	const texts = props.modelValue.textSnippets.flatMap((snippet: string) => {
-		return snippet.split("\n\n").map((line: string) => {
-			return line.trim();
-		});
+		return snippet.split("\n\n")
+			.map((line: string) => {
+				return line.trim();
+			});
 	});
 	if ((!texts || texts.length === 0) && !props.loading) return [];
 	return texts;
@@ -295,17 +308,20 @@ const bgColor = computed(() => {
 });
 
 const style = computed(() => {
-	if (props.modelValue.isIgnored)
-		return {
-			opacity: 0.5,
-			// textDecoration: "line-through",
+	let res = {...props.style};
+	if (props.modelValue.isIgnored) {
+		res = {
+			...res,
+			opacity: 0.5
 		};
-	if (shouldDelete.value)
-		return {
-			outline: "2px dashed red",
-			// borderRadius: "15px",
+	}
+	if (shouldDelete.value) {
+		res = {
+			...res,
+			outline: "2px dashed red"
 		};
-	return {};
+	}
+	return res;
 });
 
 </script>

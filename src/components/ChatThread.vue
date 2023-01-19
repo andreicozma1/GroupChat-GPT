@@ -1,22 +1,24 @@
 <template>
-    <q-linear-progress
-            v-if="isLoading"
-            color="primary"
-            indeterminate/>
+    <q-linear-progress v-if="isLoading"
+                       color="primary"
+                       indeterminate />
 
-    <q-scroll-area ref="threadElem" :style="getScrollAreaStyle">
+    <q-scroll-area ref="threadElem"
+                   :style="scrollAreaStyle">
         <q-item-label v-bind="threadCaptionProps">
             {{ threadMessages.length.toString() + ' messages' }}
         </q-item-label>
         <div v-for="msg in threadMessages"
              :key="msg.id">
-            <!--            <CustomChatMessage :msgId="msg.id"/>-->
-            <CustomChatMessage :loading="msg.loading" :model-value="msg"/>
+            <CustomChatMessage :loading="msg.loading"
+                               :model-value="msg"
+                               @mouseover="onMsgMouseOver(msg)" />
         </div>
     </q-scroll-area>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts"
+        setup>
 import {getAppVersion} from "src/util/Utils";
 import {computed, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
@@ -32,6 +34,7 @@ const props = defineProps({
 		default: null,
 	},
 });
+
 
 const store = useChatStore();
 const threadElem: any = ref(null);
@@ -49,6 +52,15 @@ const threadCaptionProps = {
 	lines: 1,
 }
 
+const msgContextStyle = {
+	outline: "2px dashed red"
+}
+
+const onMsgMouseOver = (msg: ChatMessage) => {
+	console.log("onMsgMouseOver->msg: ", {...msg});
+	console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messagesCtxIds);
+}
+
 const scrollToBottom = (duration?: number) => {
 	if (threadElem.value) {
 		duration = duration ?? 750;
@@ -58,7 +70,8 @@ const scrollToBottom = (duration?: number) => {
 	}
 };
 
-const getScrollAreaStyle = computed(() => {
+
+const scrollAreaStyle = computed(() => {
 	const propStyle = props.scrollAreaStyle ? props.scrollAreaStyle : {};
 	const defaults = {
 		position: "absolute",
@@ -75,13 +88,6 @@ const getScrollAreaStyle = computed(() => {
 		...propStyle,
 	};
 });
-
-watch(
-	() => props.scrollAreaStyle,
-	() => {
-		scrollToBottom(1000);
-	}
-);
 
 watchEffect(() => {
 	const thread = store.getActiveThread();
@@ -125,5 +131,12 @@ watchEffect(() => {
 		isLoading.value = false;
 	}, 1500);
 });
+
+watch(
+	() => props.scrollAreaStyle,
+	() => {
+		scrollToBottom(1000);
+	}
+);
 
 </script>

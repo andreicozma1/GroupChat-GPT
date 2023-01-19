@@ -9,7 +9,8 @@
         />
     </q-list>
 </template>
-<script lang="ts" setup>
+<script lang="ts"
+        setup>
 import EssentialLink, {EssentialLinkProps,} from "components/EssentialLink.vue";
 
 const essentialLinks: EssentialLinkProps[] = [

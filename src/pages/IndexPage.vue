@@ -1,11 +1,12 @@
 <template>
     <div class="full-width">
-        <ChatThread :scroll-area-style="scrollAreaStyle"/>
-        <ChatThreadForm ref="controlsCard"/>
+        <ChatThread :scroll-area-style="scrollAreaStyle" />
+        <ChatThreadForm ref="controlsCard" />
     </div>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts"
+        setup>
 import {QCard} from "quasar";
 import {computed, onMounted, Ref, ref, watch} from "vue";
 import ChatThreadForm from "components/ChatThreadInputs.vue";

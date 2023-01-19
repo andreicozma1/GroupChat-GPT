@@ -1,5 +1,9 @@
 <template>
-    <q-btn-dropdown flat icon="settings" label="Prefs" rounded size="12px">
+    <q-btn-dropdown flat
+                    icon="settings"
+                    label="Prefs"
+                    rounded
+                    size="12px">
         <q-card style="min-width: 320px">
             <q-card-section class="q-py-sm">
                 <q-list>
@@ -7,11 +11,15 @@
                                       icon="people"
                                       label="Members"
                                       popup>
-                        <q-card bordered flat>
+                        <q-card bordered
+                                flat>
                             <q-list separator>
-                                <q-item v-for="user in threadUsers" :key="user">
+                                <q-item v-for="user in threadUsers"
+                                        :key="user">
                                     <q-item-section side>
-                                        <q-avatar :icon="user.icon" rounded size="sm"/>
+                                        <q-avatar :icon="user.icon"
+                                                  rounded
+                                                  size="sm" />
                                     </q-item-section>
                                     <q-item-section>
                                         <q-item-label>
@@ -24,7 +32,7 @@
                                     <q-item-section side>
                                         <q-checkbox :model-value="isUserVisible(user)"
                                                     color="primary"
-                                                    @update:model-value="toggleUserVisibility(user)"/>
+                                                    @update:model-value="toggleUserVisibility(user)" />
                                     </q-item-section>
                                 </q-item>
                             </q-list>
@@ -35,13 +43,14 @@
                                       icon="settings"
                                       label="General"
                                       popup>
-                        <q-card bordered flat>
+                        <q-card bordered
+                                flat>
                             <q-list separator>
                                 <q-item dense>
                                     <q-checkbox v-if="activeThread.prefs"
                                                 v-model="activeThread.prefs.orderedResponses"
                                                 label="Ordered Responses"
-                                                left-label/>
+                                                left-label />
                                     <q-checkbox v-else
                                                 :model-value="undefined"
                                                 label="Ordered Responses"
@@ -54,7 +63,7 @@
                                     <q-checkbox v-if="activeThread.prefs"
                                                 v-model="activeThread.prefs.hideIgnoredMessages"
                                                 label="Hide Ignored Messages"
-                                                left-label/>
+                                                left-label />
                                     <q-checkbox v-else
                                                 :model-value="undefined"
                                                 label="Hide Ignored Messages"
@@ -70,7 +79,8 @@
         </q-card>
     </q-btn-dropdown>
 </template>
-<script lang="ts" setup>
+<script lang="ts"
+        setup>
 import {useChatStore} from "stores/chatStore";
 import {User} from "src/util/users/User";
 import {ChatThread} from "src/util/chat/ChatThread";

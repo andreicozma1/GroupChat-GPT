@@ -23,9 +23,10 @@
                     rounded
                     @click="sendMessage"
             />
-            <q-space/>
-            <q-space/>
-            <q-btn-group flat rounded>
+            <q-space />
+            <q-space />
+            <q-btn-group flat
+                         rounded>
                 <q-btn
                         color="light-blue"
                         icon-right="clear"
@@ -60,7 +61,8 @@
         </q-card-actions>
     </q-card>
 </template>
-<script lang="ts" setup>
+<script lang="ts"
+        setup>
 import {useChatStore} from "stores/chatStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";

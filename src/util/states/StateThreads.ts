@@ -1,4 +1,4 @@
-import {Thread} from "src/util/thread/Thread";
+import {Thread} from "src/util/chat/Thread";
 
 export interface ChatStoreThreadData {
 	threadsMap: Record<string, Thread>;

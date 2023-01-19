@@ -9,8 +9,8 @@
         setup>
 import {QCard} from "quasar";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import ChatThreadForm from "components/ChatThreadInputs.vue";
-import ChatThread from "components/ChatThread.vue";
+import ChatThreadForm from "components/ThreadInputs.vue";
+import ChatThread from "components/ThreadView.vue";
 
 const controlsCard: Ref<QCard | null> = ref(null);
 const scrollAreaStyle = ref({});

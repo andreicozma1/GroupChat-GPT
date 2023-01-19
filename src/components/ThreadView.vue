@@ -28,7 +28,7 @@ import {getAppVersion} from "src/util/Utils";
 import {computed, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
 import {useChatStore} from "stores/chatStore";
-import CustomChatMessage from "components/CustomChatMessage.vue";
+import CustomChatMessage from "components/ChatMessageElement.vue";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 

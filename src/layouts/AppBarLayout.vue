@@ -22,7 +22,7 @@
 <script lang="ts"
         setup>
 import {ref} from "vue";
-import ChatThreadPrefs from "components/ChatThreadPrefs.vue";
+import ChatThreadPrefs from "components/ThreadPrefs.vue";
 import SideMenu from "components/SideMenu.vue";
 
 const sideMenuOpen = ref(false);

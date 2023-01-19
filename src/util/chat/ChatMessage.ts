@@ -68,5 +68,4 @@ export class ChatMessage {
 		console.warn("=> ignore:", {...this});
 		this.isIgnored = this.isIgnored === undefined ? true : !this.isIgnored;
 	}
-	
 }

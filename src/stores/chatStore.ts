@@ -264,6 +264,7 @@ export const useChatStore = defineStore("chatStore", {
 		// API Responses
 		/**************************************************************************************************************/
 		getCachedResponseFromPrompt(prompt: AssistantPrompt): any {
+			console.log("getCachedResponseFromPrompt->prompt:", prompt);
 			return this.cachedResponses[prompt.hash];
 		},
 		async generate(
@@ -273,7 +274,7 @@ export const useChatStore = defineStore("chatStore", {
 			ignoreCache?: boolean
 		): Promise<ApiResponse> {
 			ignoreCache = ignoreCache ?? false;
-			ignoreCache = user.alwaysIgnoreCache === undefined ? ignoreCache : user.alwaysIgnoreCache;
+			ignoreCache = user.alwaysIgnoreCache || ignoreCache;
 			console.warn("-".repeat(20));
 			console.log("generate->actor:", user);
 			console.log("generate->ignoreCache:", ignoreCache);
@@ -308,8 +309,9 @@ export const useChatStore = defineStore("chatStore", {
 			let response;
 			let cached;
 			try {
-				if (!ignoreCache && this.getCachedResponseFromPrompt(prompt)) {
-					response = this.getCachedResponseFromPrompt(prompt);
+				const cachedResponse = this.getCachedResponseFromPrompt(prompt);
+				if (!ignoreCache && cachedResponse) {
+					response = cachedResponse;
 					cached = true;
 				} else {
 					response = await makeApiRequest(user.apiReqConfig, prompt.text);

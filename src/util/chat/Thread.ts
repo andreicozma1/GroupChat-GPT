@@ -1,9 +1,9 @@
-import {ChatMessage} from "src/util/chat/ChatMessage";
 import {getAppVersion} from "src/util/Utils";
 import {v4 as uuidv4} from "uuid";
-import {User} from "src/util/users/User";
 import {smartNotify} from "src/util/SmartNotify";
 import {parseDate} from "src/util/DateUtils";
+import {Message} from "src/util/chat/Message";
+import {User} from "src/util/chat/User";
 
 export interface ChatThreadPrefs {
 	hiddenUserIds: string[];
@@ -11,7 +11,7 @@ export interface ChatThreadPrefs {
 	orderedResponses: boolean;
 }
 
-export class ChatThread {
+export class Thread {
 	private static readonly defaultThreadName = "New Thread";
 	private static readonly defaultPrefs: ChatThreadPrefs = {
 		hiddenUserIds: [],
@@ -20,11 +20,11 @@ export class ChatThread {
 	};
 
 	public id: string;
-	public name: string = ChatThread.defaultThreadName;
-	public prefs: ChatThreadPrefs = ChatThread.defaultPrefs;
+	public name: string = Thread.defaultThreadName;
+	public prefs: ChatThreadPrefs = Thread.defaultPrefs;
 	public appVersion: string = getAppVersion();
 	private joinedUserIds: string[] = [];
-	private messageIdMap: { [key: string]: ChatMessage } = {};
+	private messageIdMap: { [key: string]: Message } = {};
 
 	constructor(
 		name?: string,
@@ -53,21 +53,21 @@ export class ChatThread {
 		return this.joinedUserIds.map(getUserCallback).filter((u: User | undefined) => u !== undefined) as User[]
 	}
 
-	getMessageIdMap(): { [key: string]: ChatMessage } {
+	getMessageIdMap(): { [key: string]: Message } {
 		for (const messageId in this.messageIdMap) {
-			if (!(this.messageIdMap[messageId] instanceof ChatMessage)) {
+			if (!(this.messageIdMap[messageId] instanceof Message)) {
 				console.warn("Prototype does not match ChatMessage");
 				console.log("getMessagesIdsMap->before:", this.messageIdMap[messageId]);
-				this.messageIdMap[messageId] = Object.assign(new ChatMessage(), this.messageIdMap[messageId]);
+				this.messageIdMap[messageId] = Object.assign(new Message(), this.messageIdMap[messageId]);
 				console.log("getMessagesIdsMap->after:", this.messageIdMap[messageId]);
 			}
 		}
 		return this.messageIdMap;
 	}
 
-	getMessagesArray(): ChatMessage[] {
-		const messages: ChatMessage[] = Object.values(this.getMessageIdMap());
-		messages.sort((a: ChatMessage, b: ChatMessage) => {
+	getMessagesArray(): Message[] {
+		const messages: Message[] = Object.values(this.getMessageIdMap());
+		messages.sort((a: Message, b: Message) => {
 			const ad = parseDate(a.dateCreated).getTime();
 			const bd = parseDate(b.dateCreated).getTime();
 			return ad - bd;
@@ -75,10 +75,10 @@ export class ChatThread {
 		return messages;
 	}
 
-	getMessagesArrayFromIds(messageIds: string[]): ChatMessage[] {
-		const messages: ChatMessage[] = messageIds.map((messageId: string) => this.getMessageIdMap()[messageId])
-			.filter((message: ChatMessage | undefined) => message !== undefined)
-		messages.sort((a: ChatMessage, b: ChatMessage) => {
+	getMessagesArrayFromIds(messageIds: string[]): Message[] {
+		const messages: Message[] = messageIds.map((messageId: string) => this.getMessageIdMap()[messageId])
+			.filter((message: Message | undefined) => message !== undefined)
+		messages.sort((a: Message, b: Message) => {
 			const ad = parseDate(a.dateCreated).getTime();
 			const bd = parseDate(b.dateCreated).getTime();
 			return ad - bd;
@@ -86,14 +86,14 @@ export class ChatThread {
 		return messages;
 	}
 
-	addMessage(message: ChatMessage): void {
+	addMessage(message: Message): void {
 		if (this.getMessageIdMap()[message.id]) {
 			delete this.messageIdMap[message.id];
 		}
 		this.messageIdMap[message.id] = message;
 	}
 
-	getMessageById(messageId: string): ChatMessage | undefined {
+	getMessageById(messageId: string): Message | undefined {
 		return this.getMessageIdMap()[messageId];
 	}
 
@@ -126,7 +126,7 @@ export class ChatThread {
 
 	resetPrefs(): void {
 		this.notify('Resetting thread preferences');
-		this.prefs = ChatThread.defaultPrefs;
+		this.prefs = Thread.defaultPrefs;
 	}
 
 	resetAll(): void {
@@ -134,7 +134,7 @@ export class ChatThread {
 		this.clearMessages();
 		this.clearJoinedUsers();
 		this.resetPrefs();
-		this.name = ChatThread.defaultThreadName;
+		this.name = Thread.defaultThreadName;
 		this.appVersion = getAppVersion();
 	}
 

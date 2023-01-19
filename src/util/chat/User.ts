@@ -1,5 +1,5 @@
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
-import {PromptConfig} from "src/util/prompt/PromptModels";
+import {PromptConfig} from "src/util/prompt/PromptBuilder";
 
 export enum UserTypes {
 	HUMAN = "human",

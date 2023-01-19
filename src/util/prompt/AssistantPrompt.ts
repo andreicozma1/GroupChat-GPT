@@ -2,7 +2,7 @@ import {smartNotify} from "src/util/SmartNotify";
 import {User} from "src/util/users/User";
 import {getTextHash, removeAllHtmlTags, removeSpecifiedHtmlTags, wrapInHtmlTag} from "src/util/TextUtils";
 import {dateToLocaleStr} from "src/util/DateUtils";
-import {ChatMessage} from "src/util/chat/ChatMessage";
+import {Message} from "src/util/message/Message";
 import {PromptBuilder} from "src/util/prompt/PromptBuilder";
 
 export class AssistantPrompt extends PromptBuilder {
@@ -24,11 +24,11 @@ export class AssistantPrompt extends PromptBuilder {
 		public humanUserName: string,
 		public user: User,
 		usersMap: { [key: string]: User },
-		messagesCtx: ChatMessage[]
+		messagesCtx: Message[]
 	) {
 		super(user.promptConfig);
-		this.messageContextIds = messagesCtx.map((m: ChatMessage) => m.id);
-		this.allTextSnippets = messagesCtx.flatMap((m: ChatMessage) => m.textSnippets);
+		this.messageContextIds = messagesCtx.map((m: Message) => m.id);
+		this.allTextSnippets = messagesCtx.flatMap((m: Message) => m.textSnippets);
 
 		this.tMembers = this.promptMembersInfo(this.user, usersMap);
 		this.tRules = this.getPromptRules();

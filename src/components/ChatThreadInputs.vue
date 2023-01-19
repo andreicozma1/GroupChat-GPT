@@ -67,7 +67,7 @@ import {useChatStore} from "stores/chatStore";
 import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
 import {smartNotify} from "src/util/SmartNotify";
-import {ChatMessage} from "src/util/chat/ChatMessage";
+import {Message} from "src/util/chat/Message";
 
 const store = useChatStore();
 
@@ -77,7 +77,7 @@ const userMsgValid = computed(() => {
 	return userMsgStr.value.trim().length > 0;
 });
 
-const userMsgObj: Ref<ChatMessage | null> = ref(null);
+const userMsgObj: Ref<Message | null> = ref(null);
 
 const isTyping = ref(false);
 const isTypingTimeout: Ref = ref(null);
@@ -89,7 +89,7 @@ const sendMessage = () => {
 	console.warn("=".repeat(60));
 	console.warn("=> sendMessage:");
 	if (userMsgObj.value === null) {
-		userMsgObj.value = new ChatMessage(store.getMyUser());
+		userMsgObj.value = new Message(store.getMyUser());
 	}
 	userMsgObj.value.textSnippets.push(userMsgStr.value);
 	userMsgStr.value = "";

@@ -1,6 +1,6 @@
-import {User, UserTypes} from "src/util/users/User";
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {newlineSeparated, wrapInCodeBlock} from "src/util/TextUtils";
+import {User, UserTypes} from "src/util/chat/User";
 
 export class UserDalleGen extends User {
 	constructor() {

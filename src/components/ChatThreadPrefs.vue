@@ -83,12 +83,12 @@
 <script lang="ts"
         setup>
 import {useChatStore} from "stores/chatStore";
-import {User} from "src/util/users/User";
-import {ChatThread} from "src/util/chat/ChatThread";
 import {computed, ComputedRef} from "vue";
+import {User} from "src/util/chat/User";
+import {Thread} from "src/util/chat/Thread";
 
 const store = useChatStore();
-const activeThread: ComputedRef<ChatThread> = computed(() => store.getActiveThread());
+const activeThread: ComputedRef<Thread> = computed(() => store.getActiveThread());
 
 const threadUsers: ComputedRef<User[]> = computed(() => {
 	return activeThread.value.getJoinedUsers(store.getUserById);
@@ -101,7 +101,7 @@ const isUserVisible = (user: User): boolean => {
 const toggleUserVisibility = (user: User) => {
 	console.log("toggleUserVisibility->user:", user);
 	const userId = user.id;
-	const thread: ChatThread = activeThread.value;
+	const thread: Thread = activeThread.value;
 	if (isUserVisible(user)) {
 		thread.prefs.hiddenUserIds = thread.prefs.hiddenUserIds.filter(
 			(id) => id !== userId

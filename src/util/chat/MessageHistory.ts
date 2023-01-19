@@ -1,6 +1,6 @@
-import {ChatMessage} from "src/util/chat/ChatMessage";
-
 // TODO: Make these configurable in UI in the future
+import {Message} from "src/util/chat/Message";
+
 export interface ChatMessageHistoryConfig {
 	// only return this many messages, starting from the most recent
 	maxMessages?: number;
@@ -18,15 +18,15 @@ export interface ChatMessageHistoryConfig {
 }
 
 export const parseMessagesHistory = (
-	messages: ChatMessage[],
+	messages: Message[],
 	config: ChatMessageHistoryConfig
-): ChatMessage[] => {
+): Message[] => {
 	const excludeLoading = config.excludeLoading ?? false;
 	const excludeNoText = config.excludeNoText ?? false;
 	const excludeIgnored = config.excludeIgnored ?? false;
 	// filter out messages whose textSnippets stripped and joined are empty
 	// unless the message has an image
-	messages = messages.filter((message: ChatMessage) => {
+	messages = messages.filter((message: Message) => {
 		if (excludeLoading && message.loading) return false;
 		if (excludeIgnored && message.isIgnored) return false;
 		if (excludeNoText && !message.hasTextSnippets()) return false;
@@ -37,7 +37,7 @@ export const parseMessagesHistory = (
 		messages = messages.slice(-config.maxMessages);
 		// console.log("getMessageHistory->maxMessages:", messages);
 	}
-	messages = messages.filter((message: ChatMessage) => {
+	messages = messages.filter((message: Message) => {
 		if (config.maxDate && config.maxDate < message.dateCreated) return false;
 		if (config.minDate && config.minDate > message.dateCreated) return false;
 		if (config.forceShowKeywords &&

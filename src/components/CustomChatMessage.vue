@@ -152,7 +152,7 @@ import {useChatStore} from "stores/chatStore";
 import {computed, PropType, ref} from "vue";
 import {copyClipboard} from "src/util/Utils";
 import {getSingularOrPlural} from "src/util/TextUtils";
-import {ChatMessage} from "src/util/chat/ChatMessage";
+import {Message} from "src/util/message/Message";
 
 const props = defineProps({
 	// msgId: {
@@ -160,7 +160,7 @@ const props = defineProps({
 	// 	required: true
 	// }
 	modelValue: {
-		type: Object as PropType<ChatMessage>,
+		type: Object as PropType<Message>,
 		required: true
 	},
 	loading: {
@@ -179,7 +179,7 @@ const store = useChatStore();
 
 const shouldDelete = ref(false);
 
-// const msg: ComputedRef<ChatMessage> = computed(() => store.getActiveThread().getMessageIdMap()[props.msgId]);
+// const msg: ComputedRef<Message> = computed(() => store.getActiveThread().getMessageIdMap()[props.msgId]);
 
 const onClickMsg = () => {
 	console.log("onClickMsg:", {...props.modelValue});
@@ -311,7 +311,7 @@ const style = computed(() => {
 	return {
 		...props.style,
 		borderRadius: "1.0rem",
-		opacity: props.modelValue.isIgnored ? 0.4 : 1,
+		opacity: props.modelValue.isIgnored ? store.prefs.ignoredMessageOpacity.value : 1,
 		outline: shouldDelete.value ? "2px solid red" : null,
 	};
 });

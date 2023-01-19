@@ -1,6 +1,6 @@
-import {User, UserTypes} from "src/util/users/User";
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {wrapInHtmlTag} from "src/util/TextUtils";
+import {User, UserTypes} from "src/util/chat/User";
 
 export const assistantFilter = (user?: User) => !user || user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER;
 

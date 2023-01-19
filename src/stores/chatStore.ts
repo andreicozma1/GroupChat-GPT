@@ -3,17 +3,19 @@ import {LocalStorage} from "quasar";
 import {rHtmlTagStart, rHtmlTagWithContent} from "src/util/Utils";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
-import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
-import {User, UserTypes} from "src/util/users/User";
-import {UserHuman} from "src/util/users/UserHuman";
-import {assistantFilter, UserCodex, UserCoordinator, UserDalle, UserDavinci,} from "src/util/users/Assistant";
-import {UserCodexGen, UserDalleGen} from "src/util/users/Helpers";
-import {ChatMessage} from "src/util/chat/ChatMessage";
-import {ChatThread} from "src/util/chat/ChatThread";
-import {parseDate} from "src/util/DateUtils";
 
-const localStorageKey = "data";
+import {parseDate} from "src/util/DateUtils";
+import ChatStoreState from "src/util/states/StateGlobalStore";
+import ThreadsState from "src/util/states/StateThreads";
+import UsersState from "src/util/states/StateUsers";
+import {User, UserTypes} from "src/util/chat/User";
+import {Thread} from "src/util/chat/Thread";
+import {UserHuman} from "src/util/chat/UserHuman";
+import {assistantFilter} from "src/util/chat/assistants/Assistant";
+import {Message} from "src/util/chat/Message";
+import {parseMessagesHistory} from "src/util/chat/MessageHistory";
+
 
 export interface ApiResponse {
 	fromCache: boolean;
@@ -23,61 +25,13 @@ export interface ApiResponse {
 	data: any;
 }
 
-class ChatStoreState {
-
-	userData: {
-		usersMap: Record<string, User>;
-		myUserId: string;
-	} = ChatStoreState.getDefaultUsersData();
-	threadData: {
-		threadsMap: Record<string, ChatThread>;
-		activeThreadId: string | undefined;
-		defaultThreadName: string;
-	} = ChatStoreState.getDefaultThreadsData();
-	cachedResponses: Record<string, any> = {};
-
-	public static getDefaultUsersData() {
-		return {
-			usersMap: {
-				coordinator: new UserCoordinator(),
-				davinci: new UserDavinci(),
-				// DALL-E
-				dalle: new UserDalle(),
-				dalle_gen: new UserDalleGen(),
-				// Codex
-				codex: new UserCodex(),
-				codex_gen: new UserCodexGen(),
-			},
-			myUserId: "human",
-		}
-	}
-
-	public static getDefaultThreadsData() {
-		return {
-			threadsMap: {},
-			activeThreadId: undefined,
-			defaultThreadName: "General",
-		};
-	}
-
-	reset() {
-		this.userData = ChatStoreState.getDefaultUsersData();
-		this.threadData = ChatStoreState.getDefaultThreadsData();
-		this.cachedResponses = {};
-	}
-}
-
-
-const getLocalStorageData = (): ChatStoreState => {
-	const item: string | null = LocalStorage.getItem(localStorageKey)
-	const state = new ChatStoreState()
-	if (!item) return state;
-	Object.assign(state, JSON.parse(item));
-	return state;
+export interface UIPref {
+	title: string;
+	value: any;
 }
 
 export const useChatStore = defineStore("chatStore", {
-	state: (): ChatStoreState => getLocalStorageData(),
+	state: () => ChatStoreState.getDefault(),
 	getters: {
 		/**************************************************************************************************************/
 		// Users
@@ -100,7 +54,7 @@ export const useChatStore = defineStore("chatStore", {
 		activeThreadId(state): string | undefined {
 			return state.threadData.activeThreadId;
 		},
-		threadsMap(state): Record<string, ChatThread> {
+		threadsMap(state): Record<string, Thread> {
 			return state.threadData.threadsMap;
 		},
 	},
@@ -128,7 +82,7 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 		// Threads
 		/**************************************************************************************************************/
-		registerThread(thread: ChatThread) {
+		registerThread(thread: Thread) {
 			console.warn("registerThread:", thread);
 			smartNotify(`Registering new thread: "${thread.id}"...`);
 			// if the human isnt in the thread, add them
@@ -143,8 +97,8 @@ export const useChatStore = defineStore("chatStore", {
 		},
 		getThreadById(key: string) {
 			console.warn("getThreadById:", key);
-			if (!(this.threadsMap[key] instanceof ChatThread)) {
-				this.threadsMap[key] = Object.assign(ChatThread.prototype, this.threadsMap[key]);
+			if (!(this.threadsMap[key] instanceof Thread)) {
+				this.threadsMap[key] = Object.assign(Thread.prototype, this.threadsMap[key]);
 			}
 			const joinedAssistants = this.threadsMap[key].getJoinedUsers(this.getUserById).filter(assistantFilter);
 			if (joinedAssistants.length === 0) {
@@ -153,24 +107,24 @@ export const useChatStore = defineStore("chatStore", {
 			}
 			return this.threadsMap[key];
 		},
-		getActiveThread(): ChatThread {
+		getActiveThread(): Thread {
 			console.warn("=".repeat(60));
 			console.warn("getActiveThread");
-			if (!this.activeThreadId) return this.registerThread(new ChatThread()) as ChatThread;
-			return this.getThreadById(this.activeThreadId) as ChatThread;
+			if (!this.activeThreadId) return this.registerThread(new Thread()) as Thread;
+			return this.getThreadById(this.activeThreadId) as Thread;
 		},
 		/**************************************************************************************************************/
 		// Messages
 		/**************************************************************************************************************/
-		createMessageFromUserId(id: string): ChatMessage {
+		createMessageFromUserId(id: string): Message {
 			id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
 			const cfg: User = this.getUserById(id);
-			return new ChatMessage(cfg);
+			return new Message(cfg);
 		},
 
-		async handleUserMessage(message: ChatMessage, ignoreCache = false) {
+		async handleUserMessage(message: Message, ignoreCache = false) {
 			const user: User = this.getUserById(message.userId);
-			const thread: ChatThread = this.getActiveThread();
+			const thread: Thread = this.getActiveThread();
 			thread.addMessage(message);
 			console.warn("*".repeat(40));
 
@@ -185,7 +139,7 @@ export const useChatStore = defineStore("chatStore", {
 			}
 
 			if (user.type !== UserTypes.HUMAN) {
-				let messages: ChatMessage[];
+				let messages: Message[];
 
 				// const prevMsgContextIds = message.apiResponse?.prompt?.messagesCtxIds;
 				// if (prevMsgContextIds) {
@@ -246,7 +200,7 @@ export const useChatStore = defineStore("chatStore", {
 			console.warn("handleUserMessage->followupActors:", followups);
 
 			for (const followUpUserId of followups) {
-				const nextMsg: ChatMessage = this.createMessageFromUserId(followUpUserId);
+				const nextMsg: Message = this.createMessageFromUserId(followUpUserId);
 				message.followupMsgIds.push(nextMsg.id);
 				// increment the DateCreated from the previous message
 				// nextMsg.dateCreated = message.dateCreated;
@@ -269,8 +223,8 @@ export const useChatStore = defineStore("chatStore", {
 		},
 		async generate(
 			user: User,
-			msgHist: ChatMessage[],
-			thread: ChatThread,
+			msgHist: Message[],
+			thread: Thread,
 			ignoreCache?: boolean
 		): Promise<ApiResponse> {
 			ignoreCache = ignoreCache ?? false;
@@ -350,7 +304,7 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 		saveData() {
 			// smartNotify("Saving data...");
-			LocalStorage.set(localStorageKey, JSON.stringify(this.$state));
+			LocalStorage.set(ChatStoreState.localStorageKey, JSON.stringify(this.$state));
 		},
 		clearAllData() {
 			// clear whole local storage and reload
@@ -366,16 +320,15 @@ export const useChatStore = defineStore("chatStore", {
 		},
 		resetAllThreads() {
 			smartNotify(`Resetting all threads`);
-			this.threadData = ChatStoreState.getDefaultThreadsData()
+			this.threadData = ThreadsState.getDefault()
 			this.saveData();
 			return this.threadData;
 		},
 		resetAllUsers() {
 			smartNotify(`Resetting all users`);
-			this.userData = ChatStoreState.getDefaultUsersData()
+			this.userData = UsersState.getDefault()
 			this.saveData();
 			return this.userData;
 		},
-
 	},
 });

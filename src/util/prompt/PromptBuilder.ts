@@ -1,15 +1,37 @@
-import {PromptConfig} from "src/util/prompt/PromptModels";
-import {ChatMessage} from "src/util/chat/ChatMessage";
+import {Message} from "src/util/message/Message";
 import {createRegexHtmlTagWithContent, rHtmlTagWithContent} from "src/util/Utils";
 import {User} from "src/util/users/User";
 import {processItemizedList} from "src/util/ItemizedList";
 import {wrapInHtmlTag} from "src/util/TextUtils";
 
+export interface PromptConfig {
+	promptType: string;
+	traits?: PromptTraits;
+	rules?: PromptRules;
+	examples?: string[]; // Order: Human, AI, Human, AI, etc.
+	exampleQueryHeader?: string;
+	responseHeader: string;
+	queryWrapTag?: string;
+	responseWrapTag?: string;
+}
+
+export interface PromptTraits {
+	personality?: string[];
+	strengths?: string[];
+	weaknesses?: string[];
+	abilities?: string[];
+}
+
+export interface PromptRules {
+	always?: string[];
+	never?: string[];
+}
+
 export class PromptBuilder {
 	constructor(protected promptConfig: PromptConfig) {}
 
-	public static filterMessagesWithTags(messages: ChatMessage[]): ChatMessage[] {
-		return messages.filter((msg: ChatMessage) => {
+	public static filterMessagesWithTags(messages: Message[]): Message[] {
+		return messages.filter((msg: Message) => {
 			return msg.textSnippets.some((text: string) => {
 				return rHtmlTagWithContent.test(text);
 			});
@@ -122,11 +144,11 @@ export class PromptBuilder {
 	}
 
 	getPromptConversation(
-		messagesCtx: ChatMessage[],
+		messagesCtx: Message[],
 		header = "CONVERSATION"
 	): string {
 		const res: string = messagesCtx
-			.map((msg: ChatMessage, i) => {
+			.map((msg: Message, i) => {
 				let msgPrompt = msg.textSnippets
 					.map((s: string) => s.trim())
 					.join("\n");

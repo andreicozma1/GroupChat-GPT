@@ -27,10 +27,10 @@
 import {getAppVersion} from "src/util/Utils";
 import {computed, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
-import {parseMessagesHistory} from "src/util/chat/MessageHistory";
-import {ChatMessage} from "src/util/chat/ChatMessage";
 import {useChatStore} from "stores/chatStore";
 import CustomChatMessage from "components/CustomChatMessage.vue";
+import {Message} from "src/util/chat/Message";
+import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 
 const props = defineProps({
 	scrollAreaStyle: {
@@ -43,7 +43,7 @@ const props = defineProps({
 const store = useChatStore();
 const threadElem: any = ref(null);
 
-const threadMessages: Ref<ChatMessage[]> = ref([]);
+const threadMessages: Ref<Message[]> = ref([]);
 
 const isLoading = ref(false);
 let loadingTimeout: NodeJS.Timeout | undefined | null = null;
@@ -59,7 +59,7 @@ const threadCaptionProps = {
 const msgContextParentId: Ref<string | null> = ref(null);
 const msgContextIds: Ref<string[]> = ref([])
 
-const onMsgMouseOver = (msg: ChatMessage) => {
+const onMsgMouseOver = (msg: Message) => {
 	// console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messageContextIds);
 	if (msg.apiResponse?.prompt.messageContextIds) {
 		msgContextParentId.value = msg.id;
@@ -70,24 +70,24 @@ const onMsgMouseOver = (msg: ChatMessage) => {
 	}
 }
 
-const onMsgMouseOut = (msg: ChatMessage) => {
+const onMsgMouseOut = (msg: Message) => {
 	console.log("onMsgMouseOut->msg: ", {...msg});
 	msgContextIds.value = [];
 	msgContextParentId.value = null;
 }
 
-const msgStyle = (msg: ChatMessage) => {
+const msgStyle = (msg: Message) => {
 	let style = {}
 	if (msgContextIds.value.includes(msg.id)) {
 		style = {
 			...style,
-			backgroundColor: "rgba(0,0,255,0.05)",
+			backgroundColor: `rgba(0,0,255,${store.prefs.contextMessageOpacity.value / 2})`,
 		}
 	}
 	if (msgContextParentId.value === msg.id) {
 		style = {
 			...style,
-			backgroundColor: "rgba(0,0,255,0.1)",
+			backgroundColor: `rgba(0,0,255, ${store.prefs.contextMessageOpacity.value})`,
 		}
 	}
 	return style;
@@ -123,7 +123,7 @@ const scrollAreaStyle = computed(() => {
 
 watchEffect(() => {
 	const thread = store.getActiveThread();
-	let messages: ChatMessage[] = []
+	let messages: Message[] = []
 	isLoading.value = true;
 	try {
 		messages = thread.getMessagesArray();
@@ -133,7 +133,7 @@ watchEffect(() => {
 			maxMessages: undefined,
 			maxDate: undefined,
 		});
-		messages = messages.filter((message: ChatMessage) => {
+		messages = messages.filter((message: Message) => {
 			return !(thread.prefs.hideIgnoredMessages && message.isIgnored);
 		});
 		// console.log("getThreadMessages->messages:", messages);

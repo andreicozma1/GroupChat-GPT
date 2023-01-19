@@ -1,9 +1,9 @@
 import {v4 as uuidv4} from "uuid";
 import {ApiResponse} from "stores/chatStore";
-import {User} from "src/util/users/User";
 import {getRobohashUrl} from "src/util/ImageUtils";
+import {User} from "src/util/chat/User";
 
-export class ChatMessage {
+export class Message {
 	userId: string;
 	userName: string;
 	userAvatarUrl: string;

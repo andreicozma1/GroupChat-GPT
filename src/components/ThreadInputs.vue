@@ -39,7 +39,7 @@
                 />
                 <q-btn
                         color="green"
-                        icon-right="cache"
+                        icon-right="cached"
                         label="Comp. Cache"
                         no-caps
                         outline

@@ -78,16 +78,20 @@ const onMsgMouseOut = (msg: Message) => {
 
 const msgStyle = (msg: Message) => {
 	let style = {}
-	if (msgContextIds.value.includes(msg.id)) {
+	const contextIdx = msgContextIds.value.indexOf(msg.id);
+	if (contextIdx >= 0) {
+		const ctxMsgAlphaMin = store.prefs.contextMessageOpacity.min.value
+		const ctxMsgAlphaMax = store.prefs.contextMessageOpacity.max.value
+		const ctxMsgAlpha = ctxMsgAlphaMin + (ctxMsgAlphaMax - ctxMsgAlphaMin) * (contextIdx + 1) / msgContextIds.value.length;
 		style = {
 			...style,
-			backgroundColor: `rgba(0,0,255,${store.prefs.contextMessageOpacity.value / 2})`,
+			backgroundColor: `rgba(0,0,255,${ctxMsgAlpha})`,
 		}
 	}
 	if (msgContextParentId.value === msg.id) {
 		style = {
 			...style,
-			backgroundColor: `rgba(0,0,255, ${store.prefs.contextMessageOpacity.value})`,
+			backgroundColor: `rgba(0,0,255, ${store.prefs.contextMessageOpacity.max.value})`,
 		}
 	}
 	return style;

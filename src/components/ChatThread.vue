@@ -66,7 +66,7 @@ const onMsgMouseOver = (msg: ChatMessage) => {
 		msgContextIds.value = msg.apiResponse.prompt.messagesCtxIds;
 	} else {
 		console.warn("onMsgMouseOver: no context ids found for msg: ", msg);
-		smartNotify("Warning: Message context not found");
+		// smartNotify("Warning: Message context not found");
 	}
 }
 

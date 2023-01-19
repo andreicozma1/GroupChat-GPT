@@ -2,8 +2,6 @@ import {v4 as uuidv4} from "uuid";
 import {ApiResponse} from "stores/chatStore";
 import {User} from "src/util/users/User";
 import {getRobohashUrl} from "src/util/ImageUtils";
-import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
-import {getSingularOrPlural} from "src/util/TextUtils";
 
 export class ChatMessage {
 	userId: string;
@@ -14,7 +12,6 @@ export class ChatMessage {
 	loading: boolean;
 	followupMsgIds: string[] = [];
 
-	shouldDelete = false;
 	isIgnored = false;
 	textSnippets: string[] = [];
 	imageUrls: string[] = [];
@@ -67,13 +64,6 @@ export class ChatMessage {
 		return this.textSnippets.join("").trim().length > 0;
 	}
 
-	canRegenerate() {
-		if (this.shouldDelete) return false;
-		return true
-		// const msgIds = this.apiResponse?.prompt.messagesCtxIds;
-		// if (msgIds) return msgIds.length > 0;
-		// return false;
-	}
 
 	toggleIgnored() {
 		console.warn("=> ignore:", {...this});
@@ -81,50 +71,4 @@ export class ChatMessage {
 	}
 
 
-	getStamp() {
-		// const what = isSentByMe(msg) ? "Sent" : "Received";
-		const on = dateToTimeAgo(this.dateCreated);
-		// let res = `${what} ${on}`;
-		let res = `${on}`;
-		// if (msg.isCompRegen) res = `* ${res}`;
-		if (this.apiResponse?.fromCache) res = `${res} (from cache)`;
-		if (this.apiResponse?.cacheIgnored) res = `${res} (cache ignored)`;
-		return res;
-	}
-
-	getTextHoverHint(textSnippet?: string) {
-		const numTexts = this.textSnippets?.length ?? 0;
-		const numImages = this.imageUrls?.length ?? 0;
-		// const who = (isSentByMe(this) ? "You" : this.userName) + ` (${this.userId})`
-		const who = this.userName + ` (${this.userId})`;
-		const what = `${numTexts} ${getSingularOrPlural(
-			"text",
-			numTexts
-		)} and ${numImages} ${getSingularOrPlural("image", numImages)}`;
-		const when = dateToLocaleStr(this.dateCreated);
-		return `${who} sent ${what} on ${when}`;
-		// return message.response?.prompt.text ?? fallback;
-	}
-
-	getImageHoverHint(imageUrl?: string) {
-		return this.getTextHoverHint();
-	}
-
-	getLoadingHoverHint() {
-		return "Loading...";
-	}
-
-	getStyle() {
-		if (this.isIgnored)
-			return {
-				opacity: 0.5,
-				// textDecoration: "line-through",
-			};
-		if (this.shouldDelete)
-			return {
-				outline: "2px dashed red",
-				// borderRadius: "15px",
-			};
-		return {};
-	}
 }

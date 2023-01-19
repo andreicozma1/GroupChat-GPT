@@ -171,9 +171,7 @@ const props = defineProps({
 	style: {
 		type: Object as PropType<Record<string, any>>,
 		required: false,
-		default: () => ({
-			borderRadius: "5px",
-		})
+		default: () => ({})
 	}
 });
 
@@ -310,20 +308,12 @@ const bgColor = computed(() => {
 });
 
 const style = computed(() => {
-	let res = {...props.style};
-	if (props.modelValue.isIgnored) {
-		res = {
-			...res,
-			opacity: 0.5
-		};
-	}
-	if (shouldDelete.value) {
-		res = {
-			...res,
-			outline: "2px dashed red"
-		};
-	}
-	return res;
+	return {
+		...props.style,
+		borderRadius: "0.5rem",
+		opacity: props.modelValue.isIgnored ? 0.5 : 1,
+		outline: shouldDelete.value ? "2px solid red" : null,
+	};
 });
 
 </script>

@@ -14,7 +14,7 @@
              :key="msg.id">
             <CustomChatMessage :loading="msg.loading"
                                :model-value="msg"
-                               :style="msgContextStyle"
+                               :style="msgStyle(msg)"
                                @mouseenter="onMsgMouseOver(msg)"
                                @mouseleave="onMsgMouseOut(msg)"
             />
@@ -40,7 +40,6 @@ const props = defineProps({
 	},
 });
 
-
 const store = useChatStore();
 const threadElem: any = ref(null);
 
@@ -57,19 +56,16 @@ const threadCaptionProps = {
 	lines: 1,
 }
 
-const msgContextStyle = {
-	backgroundColor: "#eee",
-	// border: "1px solid green",
-}
-
+const msgContextParentId: Ref<string | null> = ref(null);
 const msgContextIds: Ref<string[]> = ref([])
 
 const onMsgMouseOver = (msg: ChatMessage) => {
 	// console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messagesCtxIds);
 	if (msg.apiResponse?.prompt.messagesCtxIds) {
+		msgContextParentId.value = msg.id;
 		msgContextIds.value = msg.apiResponse.prompt.messagesCtxIds;
 	} else {
-		console.warn("onMsgMouseOver->no context ids found for msg: ", msg);
+		console.warn("onMsgMouseOver: no context ids found for msg: ", msg);
 		smartNotify("Warning: Message context not found");
 	}
 }
@@ -77,6 +73,24 @@ const onMsgMouseOver = (msg: ChatMessage) => {
 const onMsgMouseOut = (msg: ChatMessage) => {
 	console.log("onMsgMouseOut->msg: ", {...msg});
 	msgContextIds.value = [];
+	msgContextParentId.value = null;
+}
+
+const msgStyle = (msg: ChatMessage) => {
+	let style = {}
+	if (msgContextIds.value.includes(msg.id)) {
+		style = {
+			...style,
+			backgroundColor: "rgba(0,0,255,0.05)",
+		}
+	}
+	if (msgContextParentId.value === msg.id) {
+		style = {
+			...style,
+			backgroundColor: "rgba(0,0,255,0.1)",
+		}
+	}
+	return style;
 }
 
 const scrollToBottom = (duration?: number) => {

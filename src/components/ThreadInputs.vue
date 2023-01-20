@@ -38,17 +38,17 @@
                 <q-btn
                         color="light-blue"
                         icon-right="clear"
-                        label="Reset Thread"
+                        label="Clear Messages"
                         no-caps
                         outline
                         size="sm"
                         title="Clear all messages in the thread"
-                        @click="store.resetActiveThread"
+                        @click="store.getActiveThread().clearMessages()"
                 />
                 <q-btn
                         color="green"
                         icon-right="cached"
-                        label="Comp. Cache"
+                        label="Clear Cache"
                         no-caps
                         outline
                         size="sm"

@@ -14,7 +14,7 @@ const getDefault = (): ChatStoreGlobalPrefs => {
 		contextMessageOpacity: {
 			title: "Context Message Opacity (Min)",
 			min: 0.04,
-			max: 0.15,
+			max: 0.10,
 		},
 	};
 };

@@ -87,13 +87,13 @@ const msgStyle = (msg: Message) => {
 		const ctxMsgAlpha = ctxMsgAlphaMin + ctxMsgAlphaDelta * contextIdx;
 		style = {
 			...style,
-			backgroundColor: `rgba(0,0,255,${ctxMsgAlpha})`,
+			backgroundColor: `rgba(0,0,0,${ctxMsgAlpha})`,
 		};
 	}
 	if (msgContextParentId.value === msg.id) {
 		style = {
 			...style,
-			backgroundColor: `rgba(0,0,255, ${store.prefs.contextMessageOpacity.max})`,
+			backgroundColor: `rgba(0,0,0, ${store.prefs.contextMessageOpacity.max})`,
 		};
 	}
 	return style;

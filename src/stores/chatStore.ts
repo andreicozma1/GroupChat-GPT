@@ -347,6 +347,13 @@ export const useChatStore = defineStore("chatStore", {
 			this.saveState();
 			return activeThread;
 		},
+		clearActiveThreadMessages() {
+			smartNotify(`Clearing active thread messages...`);
+			const activeThread: Thread = this.getActiveThread();
+			activeThread.clearMessages();
+			this.saveState();
+			return activeThread;
+		},
 		resetAllThreads() {
 			smartNotify(`Resetting all threads data...`);
 			this.threadData = StateThreads.getDefault();

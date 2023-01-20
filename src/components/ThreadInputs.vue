@@ -33,49 +33,104 @@
             </div>
 
             <q-space />
-            <q-btn-group flat
-                         rounded>
-                <q-btn
-                        color="orange"
-                        icon-right="clear"
-                        label="Reset Prefs"
-                        no-caps
-                        outline
-                        size="sm"
-                        title="Reset app preferences to default values"
-                        @click="store.resetPrefs"
+            <!--            <q-btn-group flat-->
+            <!--                         rounded>-->
+            <!--                <q-btn-->
+            <!--                        color="orange"-->
+            <!--                        icon-right="clear"-->
+            <!--                        label="Reset Prefs"-->
+            <!--                        no-caps-->
+            <!--                        outline-->
+            <!--                        size="sm"-->
+            <!--                        title="Reset app preferences to default values"-->
+            <!--                        @click="store.resetPrefs"-->
+            <!--                />-->
+            <!--                <q-btn-->
+            <!--                        color="light-blue"-->
+            <!--                        icon-right="clear"-->
+            <!--                        label="Clear Thread Messages"-->
+            <!--                        no-caps-->
+            <!--                        outline-->
+            <!--                        size="sm"-->
+            <!--                        title="Clear all messages in the active thread"-->
+            <!--                        @click="store.getActiveThread().clearMessages"-->
+            <!--                />-->
+            <!--                <q-btn-->
+            <!--                        color="green"-->
+            <!--                        icon-right="cached"-->
+            <!--                        label="Clear Completion Cache"-->
+            <!--                        no-caps-->
+            <!--                        outline-->
+            <!--                        size="sm"-->
+            <!--                        title="Clear the global completion cache"-->
+            <!--                        @click="store.clearCachedResponses"-->
+            <!--                />-->
+            <!--                <q-btn-->
+            <!--                        color="red"-->
+            <!--                        icon-right="delete_forever"-->
+            <!--                        label="Hard Reset"-->
+            <!--                        no-caps-->
+            <!--                        outline-->
+            <!--                        size="sm"-->
+            <!--                        title="Reset all application data from local storage"-->
+            <!--                        @click="store.clearAllData"-->
+            <!--                />-->
+            <!--            </q-btn-group>-->
+            <q-fab v-model="fab"
+                   class="q-mr-md"
+                   color="primary"
+                   direction="up"
+                   icon="keyboard_arrow_up"
+                   label="Reset Options"
+                   padding="xs sm"
+                   vertical-actions-align="right"
+            >
+                <q-fab-action color="light-blue"
+                              icon="message"
+                              label="Clear Active Thread Messages"
+                              size="sm"
+                              title="Clear all messages in the active thread"
+                              v-bind="fabActionProps"
+                              @click="store.clearActiveThreadMessages" />
+                <q-fab-action color="light-blue"
+                              icon="forum"
+                              label="Full Reset Active Thread"
+                              size="sm"
+                              title="Reset the active thread by clearing messages, joined users, and the thread preferences"
+                              v-bind="fabActionProps"
+                              @click="store.resetActiveThread" />
+
+                <q-fab-action color="green"
+                              icon="cached"
+                              label="Clear Global Completion Cache Data"
+                              size="sm"
+                              title="Clear the global completion cache"
+                              v-bind="fabActionProps"
+                              @click="store.clearCachedResponses"
                 />
-                <q-btn
-                        color="light-blue"
-                        icon-right="clear"
-                        label="Clear Thread Messages"
-                        no-caps
-                        outline
-                        size="sm"
-                        title="Clear all messages in the active thread"
-                        @click="store.getActiveThread().clearMessages"
+                <q-fab-action color="orange"
+                              icon="settings"
+                              label="Reset Global Prefs Data"
+                              title="Reset all app preferences to default values"
+                              v-bind="fabActionProps"
+                              @click="store.resetPrefs" />
+
+                <q-fab-action color="orange"
+                              icon="group"
+                              label="Reset Global Users Data"
+                              title="Reset all user data to default values"
+                              v-bind="fabActionProps"
+                              @click="store.resetAllUsers" />
+                <q-fab-action color="red"
+                              icon="delete_forever"
+                              label="Full Reset App Data"
+                              size="sm"
+                              title="Reset all application data from local storage"
+                              v-bind="fabActionProps"
+                              @click="store.clearAllData"
                 />
-                <q-btn
-                        color="green"
-                        icon-right="cached"
-                        label="Clear Completion Cache"
-                        no-caps
-                        outline
-                        size="sm"
-                        title="Clear the global completion cache"
-                        @click="store.clearCachedResponses"
-                />
-                <q-btn
-                        color="red"
-                        icon-right="delete_forever"
-                        label="Hard Reset"
-                        no-caps
-                        outline
-                        size="sm"
-                        title="Reset all application data from local storage"
-                        @click="store.clearAllData"
-                />
-            </q-btn-group>
+            </q-fab>
+
         </q-card-actions>
     </q-card>
 </template>
@@ -101,6 +156,22 @@ const userMsgObj: Ref<Message | null> = ref(null);
 const isTyping = ref(false);
 const isTypingTimeout: Ref = ref(null);
 const responseTimeout: Ref = ref(null);
+
+const fab = ref(false);
+
+const hideLabels = computed(() => {
+	return !fab.value;
+});
+
+const fabActionProps = {
+	hideLabel: hideLabels,
+	labelPosition: "left",
+	externalLabel: true,
+}
+
+const onClickFabAction = (e) => {
+	smartNotify("onClickFabAction->e:", e);
+};
 
 
 const sendMessage = () => {

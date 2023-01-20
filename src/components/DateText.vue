@@ -5,7 +5,7 @@
                   style="cursor: pointer"
                   @click.stop="onClick"
                   @click.right.stop="onRightClick">
-        {{ parsedDate }}
+        {{ text }}
     </q-item-label>
 
 </template>
@@ -13,13 +13,14 @@
 <script lang="ts"
         setup>
 
-import {dateToLocaleStr, dateToTimeAgo} from "../util/DateUtils";
-import {computed, PropType, ref} from "vue";
+import {dateToLocaleStr, dateToTimeAgo, parseDate, ValidDateTypes} from "../util/DateUtils";
+import {PropType, Ref, ref, watchEffect} from "vue";
 
 const props = defineProps({
-	date: {
-		type: [String, Number, Date] as PropType<Date | string | number>,
-		required: true
+	modelValue: {
+		// also allow undefined
+		type: [String, Number, Date] as PropType<ValidDateTypes>,
+		required: false
 	},
 	prefix: {
 		type: String,
@@ -31,25 +32,41 @@ const props = defineProps({
 	}
 });
 
-const dates = Array.isArray(props.date) ? props.date : [props.date];
+const parseDateProps = (): Date[] => {
+	const res = Array.isArray(props.modelValue) ? props.modelValue : [props.modelValue];
+	return res.map((val) => parseDate(val));
+}
+const dates: Ref<Date[]> = ref(parseDateProps())
+
+const text = ref("");
 
 const toggleState = ref(0);
-const dateStringType = ref(false);
+const dateTypeToggle = ref(false);
 
-const parsedDate = computed(() => {
-	const date = dates[toggleState.value];
-	let dateStr = dateStringType.value ? dateToLocaleStr(date) : dateToTimeAgo(date)
-	if (props.prefix) dateStr = props.prefix + " " + dateStr;
-	if (props.suffix) dateStr = dateStr + " " + props.suffix;
-	return dateStr;
-})
 
 const onClick = () => {
-	dateStringType.value = !dateStringType.value;
+	dateTypeToggle.value = !dateTypeToggle.value;
 }
 
 const onRightClick = () => {
-	toggleState.value = (toggleState.value + 1) % dates.length;
+	toggleState.value = (toggleState.value + 1) % dates.value.length;
 }
+
+watchEffect(() => {
+	dates.value = parseDateProps();
+	const date = dates.value[toggleState.value];
+	let dateStr;
+
+	if (date) {
+		const timeAgo = dateToTimeAgo(date);
+		const localeStr = dateToLocaleStr(date);
+		dateStr = dateTypeToggle.value ? localeStr : timeAgo;
+	} else {
+		dateStr = "Unknown";
+	}
+	if (props.prefix) dateStr = props.prefix + " " + dateStr;
+	if (props.suffix) dateStr = dateStr + " " + props.suffix;
+	text.value = dateStr;
+})
 
 </script>

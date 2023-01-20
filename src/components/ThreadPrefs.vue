@@ -130,6 +130,6 @@ const toggleUserVisibility = (user: User) => {
 
 watch(activeThread.value.prefs, () => {
 	console.log("activeThread.prefs changed");
-	store.saveData();
+	store.saveState();
 });
 </script>

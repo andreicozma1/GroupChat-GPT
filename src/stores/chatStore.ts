@@ -28,6 +28,12 @@ export interface ApiResponse {
 export const useChatStore = defineStore("chatStore", {
 	state: () => ChatStoreState.getState(),
 	getters: {
+		getDateCreated(state): Date {
+			return parseDate(state.dateCreated);
+		},
+		getDateLastSaved(state): Date | undefined {
+			return state.dateLastSaved ? parseDate(state.dateLastSaved) : undefined;
+		},
 		/**************************************************************************************************************/
 		// Users
 		/**************************************************************************************************************/
@@ -61,7 +67,7 @@ export const useChatStore = defineStore("chatStore", {
 			console.warn("registerUser:", user);
 			smartNotify('Registering user...', `ID: ${user.id}`);
 			this.usersMap[user.id] = user;
-			this.saveData(verbose);
+			this.saveState(verbose);
 			return this.usersMap[user.id];
 		},
 		getUserById(id: string, verbose = true): User {
@@ -90,7 +96,7 @@ export const useChatStore = defineStore("chatStore", {
 			this.threadsMap[thread.id] = thread;
 			// set the new thread as the active thread
 			this.threadData.activeThreadId = thread.id;
-			this.saveData(verbose);
+			this.saveState(verbose);
 			return this.threadsMap[thread.id];
 		},
 		getThreadById(key: string) {
@@ -226,7 +232,7 @@ export const useChatStore = defineStore("chatStore", {
 				}
 			}
 			thread.addMessage(message);
-			this.saveData(false);
+			this.saveState(false);
 		},
 		/**************************************************************************************************************/
 		// API Responses
@@ -321,7 +327,7 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 		/* DATA & STORAGE
 			/**************************************************************************************************************/
-		saveData(verbose = true) {
+		saveState(verbose = true) {
 			StateGlobalStore.saveState(this.$state, verbose);
 		},
 		clearAllData() {
@@ -333,26 +339,26 @@ export const useChatStore = defineStore("chatStore", {
 		resetCachedResponses() {
 			smartNotify(`Clearing cached responses`);
 			this.cachedResponses = {};
-			this.saveData();
+			this.saveState();
 			return this.cachedResponses;
 		},
 		resetActiveThread() {
 			smartNotify(`Clearing active thread`);
 			const activeThread: Thread = this.getActiveThread();
 			activeThread.resetAll();
-			this.saveData();
+			this.saveState();
 			return activeThread;
 		},
 		resetAllThreads() {
 			smartNotify(`Resetting all threads`);
 			this.threadData = ThreadsState.getDefault();
-			this.saveData();
+			this.saveState();
 			return this.threadData;
 		},
 		resetAllUsers() {
 			smartNotify(`Resetting all users`);
 			this.userData = UsersState.getDefault();
-			this.saveData();
+			this.saveState();
 			return this.userData;
 		},
 	},

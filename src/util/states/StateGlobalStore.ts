@@ -41,7 +41,7 @@ const getState = (): StateGlobalStore => {
 
 const saveState = (state: StateGlobalStore, verbose = true): void => {
 	if (verbose) smartNotify("Saving changes...");
-	console.log("saveState:", state);
+	console.log("saveState:", {...state});
 	state.dateLastSaved = new Date();
 	LocalStorage.set(localStorageKey, JSON.stringify(state));
 }

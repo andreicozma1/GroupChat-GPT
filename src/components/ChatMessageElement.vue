@@ -88,7 +88,7 @@
                 </q-btn>
 
                 <div class="text-caption text-blue-grey-10">
-                    <DateText :date="modelValue.dateCreated"
+                    <DateText :modelValue="modelValue.dateCreated"
                               :suffix="getStamp" />
                     <q-tooltip>
                         {{ stampHoverHint }}

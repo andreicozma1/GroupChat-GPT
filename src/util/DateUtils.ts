@@ -1,12 +1,14 @@
 import {getSingularOrPlural} from "src/util/TextUtils";
 
-export const parseDate = (dateRepr: string | number | Date): Date => {
+export type ValidDateTypes = Date | string | number;
+
+export const parseDate = (dateRepr: ValidDateTypes): Date => {
 	if (typeof dateRepr === "string" || typeof dateRepr === "number")
 		dateRepr = new Date(dateRepr);
 	return dateRepr;
 };
 
-export const dateToLocaleStr = (date: string | number | Date) => {
+export const dateToLocaleStr = (date: ValidDateTypes) => {
 	date = parseDate(date);
 	const options: Intl.DateTimeFormatOptions = {
 		year: "numeric",
@@ -19,7 +21,7 @@ export const dateToLocaleStr = (date: string | number | Date) => {
 	return date.toLocaleDateString("en-US", options);
 };
 
-export const dateToTimeAgo = (date: string | number | Date) => {
+export const dateToTimeAgo = (date: ValidDateTypes) => {
 	date = parseDate(date);
 	const dateNow = new Date();
 	const diff = dateNow.getTime() - date.getTime();

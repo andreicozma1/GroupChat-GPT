@@ -2,12 +2,13 @@ import {v4 as uuidv4} from "uuid";
 import {ApiResponse} from "stores/chatStore";
 import {getRobohashUrl} from "src/util/ImageUtils";
 import {User} from "src/util/chat/User";
+import {ValidDateTypes} from "src/util/DateUtils";
 
 export class Message {
 	userId: string;
 	userName: string;
 	userAvatarUrl: string;
-	dateCreated: string | number | Date = new Date();
+	dateCreated: ValidDateTypes = new Date();
 	id: string = uuidv4();
 	loading: boolean;
 	followupMsgIds: string[] = [];

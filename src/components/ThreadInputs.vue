@@ -159,12 +159,7 @@ const responseTimeout: Ref = ref(null);
 
 const fab = ref(false);
 
-const hideLabels = computed(() => {
-	return !fab.value;
-});
-
 const fabActionProps = {
-	hideLabel: hideLabels,
 	labelPosition: "left",
 	externalLabel: true,
 }

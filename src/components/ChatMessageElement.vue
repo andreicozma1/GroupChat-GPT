@@ -314,8 +314,8 @@ const stampHoverHint = computed(() => {
 	const when = dateToLocaleStr(props.modelValue.dateCreated);
 	const what = isSentByMe.value ? "Sent" : "Received";
 	let res = `${what} on ${when}`;
-	const dateGenerated =
-		props.modelValue.apiResponse?.data?.data?.created * 1000;
+	console.warn("stampHoverHint:", props.modelValue.apiResponse);
+	const dateGenerated = props.modelValue.apiResponse?.data?.data?.created * 1000;
 	if (dateGenerated)
 		res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
 	return res;

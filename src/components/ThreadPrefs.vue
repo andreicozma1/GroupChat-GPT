@@ -10,10 +10,10 @@
             <q-card-section class="q-py-sm">
                 <q-list>
                     <q-expansion-item
-                            expand-separator
                             icon="people"
+
                             label="Members"
-                            popup
+                            v-bind="defaultExpansionItemProps"
                     >
                         <q-card bordered
                                 flat>
@@ -46,10 +46,9 @@
                     </q-expansion-item>
 
                     <q-expansion-item
-                            expand-separator
                             icon="settings"
                             label="General"
-                            popup
+                            v-bind="defaultExpansionItemProps"
                     >
                         <q-card bordered
                                 flat>
@@ -102,6 +101,12 @@ import {computed, ComputedRef, watch} from "vue";
 import {User} from "src/util/chat/User";
 import {Thread} from "src/util/chat/Thread";
 
+
+const defaultExpansionItemProps = {
+	defaultOpened: true,
+	expandSeparator: true,
+	popup: true,
+}
 const store = useChatStore();
 const activeThread: ComputedRef<Thread> = computed(() =>
 	store.getActiveThread()

@@ -40,7 +40,7 @@ const dates: Ref<Date[]> = ref(parseDateProps())
 
 const text = ref("");
 
-const toggleState = ref(0);
+const currentDateIdx = ref(0);
 const dateTypeToggle = ref(false);
 
 
@@ -49,21 +49,36 @@ const onClick = () => {
 }
 
 const onRightClick = () => {
-	toggleState.value = (toggleState.value + 1) % dates.value.length;
+	currentDateIdx.value = (currentDateIdx.value + 1) % dates.value.length;
+}
+
+const dateUpdateInterval: Ref<NodeJS.Timeout | null> = ref(null);
+
+let timeoutMs = 1000;
+
+const update = () => {
+	const date = dates.value[currentDateIdx.value];
+	let dateStr;
+
+	if (dateUpdateInterval.value) clearTimeout(dateUpdateInterval.value);
+	if (dateTypeToggle.value) {
+		dateStr = dateToLocaleStr(date);
+	} else {
+		dateStr = dateToTimeAgo(date);
+		dateUpdateInterval.value = setTimeout(update, timeoutMs);
+	}
+
+	if (props.prefix) dateStr = props.prefix + " " + dateStr;
+	if (props.suffix) dateStr = dateStr + " " + props.suffix;
+
+	if (text.value === dateStr) timeoutMs *= 1.25
+	text.value = dateStr;
 }
 
 watchEffect(() => {
 	dates.value = parseDateProps();
-	const date = dates.value[toggleState.value];
-	let dateStr;
-
-	const timeAgo = dateToTimeAgo(date);
-	const localeStr = dateToLocaleStr(date);
-	dateStr = dateTypeToggle.value ? localeStr : timeAgo;
-
-	if (props.prefix) dateStr = props.prefix + " " + dateStr;
-	if (props.suffix) dateStr = dateStr + " " + props.suffix;
-	text.value = dateStr;
+	update();
 })
+
 
 </script>

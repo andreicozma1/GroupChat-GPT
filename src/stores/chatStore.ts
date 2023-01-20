@@ -107,15 +107,6 @@ export const useChatStore = defineStore("chatStore", {
 					this.threadsMap[key]
 				);
 			}
-			const joinedAssistants = this.threadsMap[key]
-				.getJoinedUsers(this.getUserById)
-				.filter(assistantFilter);
-			if (joinedAssistants.length === 0) {
-				smartNotify(
-					"Warning: There are no assistants in this thread!",
-					"You can add assistants in the thread preferences menu."
-				);
-			}
 			return this.threadsMap[key];
 		},
 		getActiveThread(): Thread {
@@ -183,10 +174,8 @@ export const useChatStore = defineStore("chatStore", {
 				message.parseApiResponse(response);
 			}
 
-			const followups = message.textSnippets.flatMap((text: string) => {
-				const joinedUserIds = thread
-					.getJoinedUsers(this.getUserById)
-					.map((u) => u.id);
+
+			let followups = message.textSnippets.flatMap((text: string) => {
 				const fups: string[] = [];
 
 				text.match(/@([a-zA-Z0-9_]+)/g)?.forEach((m: string) => {
@@ -199,17 +188,21 @@ export const useChatStore = defineStore("chatStore", {
 					// get the content of the html tag
 					if (tag) fups.push(tag);
 				});
+				return fups;
+			});
 
-				fups.filter((m: string) => {
+			if (followups.length > 0) {
+				const joinedUserIds = thread
+					.getJoinedUsers(this.getUserById)
+					.map((u) => u.id);
+				followups = followups.filter((m: string) => {
 					const isInChat = joinedUserIds.includes(m);
-					if (!isInChat)
+					if (!isInChat) {
 						smartNotify(`User ${m} is not a member of this chat thread.`);
+					}
 					return isInChat;
 				});
-
-				if (fups.length > 0) return fups;
-				return [];
-			});
+			}
 
 			if (user.id === this.getMyUser().id && followups.length === 0) {
 				followups.push(this.userData.usersMap.coordinator.id);

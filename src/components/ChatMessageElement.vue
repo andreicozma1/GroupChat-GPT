@@ -89,7 +89,7 @@
 
                 <div class="text-caption text-blue-grey-10">
                     <DateText :modelValue="modelValue.dateCreated"
-                              :suffix="getStamp" />
+                              :suffix="getStamp()" />
                     <q-tooltip>
                         {{ stampHoverHint }}
                     </q-tooltip>
@@ -300,7 +300,7 @@ const typeIcon = computed(() => {
 	return user.icon;
 });
 
-const getStamp = computed(() => {
+const getStamp = () => {
 	// const what = isSentByMe(msg) ? "Sent" : "Received";
 	// const on = dateToTimeAgo(props.modelValue.dateCreated);
 	// let res = `${what} ${on}`;
@@ -309,7 +309,7 @@ const getStamp = computed(() => {
 	if (props.modelValue.apiResponse?.fromCache) return '(from cache)';
 	if (props.modelValue.apiResponse?.cacheIgnored) return '(cache ignored)';
 	return undefined
-});
+}
 
 const stampHoverHint = computed(() => {
 	const when = dateToLocaleStr(props.modelValue.dateCreated);

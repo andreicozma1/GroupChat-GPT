@@ -64,19 +64,22 @@ export class PromptBuilder {
 		usersArr: User[],
 		header = "MEMBERS"
 	): string {
-		const availableAssistants: User[] = usersArr.filter(
+		const availableUsers: User[] = usersArr.filter(
 			(a: User): boolean => {
 				if (a.showInMembersInfo === undefined) return true;
 				return a.showInMembersInfo;
 			}
 		);
-		if (!availableAssistants || availableAssistants.length === 0) return "";
+		if (!availableUsers || availableUsers.length === 0) {
+			throw new Error("No users are available at the moment.");
+			// return ""
+		}
 
-		const isAvailable = availableAssistants.some(
+		const isAvailable = availableUsers.some(
 			(a: User) => a.id === currentUser.id
 		);
 		// sort such that the current user is last
-		availableAssistants.sort((a: User, b: User) => {
+		availableUsers.sort((a: User, b: User) => {
 			if (a.id === currentUser.id) return 1;
 			if (b.id === currentUser.id) return -1;
 			return 0;
@@ -84,12 +87,12 @@ export class PromptBuilder {
 
 		const info: string[] = [];
 		if (!isAvailable) {
-			availableAssistants.forEach((user: User) => {
+			availableUsers.forEach((user: User) => {
 				info.push(this.promptAssistantInfo(user));
 			});
 		} else {
 			info.push(this.promptAssistantInfo(currentUser, "You"));
-			availableAssistants
+			availableUsers
 				.filter((a: User) => a.id !== currentUser.id)
 				.forEach((user: User) => {
 					info.push(this.promptAssistantInfo(user));

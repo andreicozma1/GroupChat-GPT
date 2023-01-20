@@ -61,7 +61,7 @@ const msgContextIds: Ref<string[]> = ref([]);
 
 const onMsgMouseOver = (msg: Message) => {
 	// console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messageContextIds);
-	if (msg.apiResponse?.prompt.messageContextIds) {
+	if (msg.apiResponse?.prompt?.messageContextIds) {
 		msgContextParentId.value = msg.id;
 		msgContextIds.value = msg.apiResponse.prompt.messageContextIds;
 	} else {

@@ -4,18 +4,17 @@ import {rHtmlTagStart, rHtmlTagWithContent} from "src/util/Utils";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
 import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
-
 import {parseDate} from "src/util/DateUtils";
-import ChatStoreState from "src/util/states/StateGlobalStore";
 import StateGlobalStore from "src/util/states/StateGlobalStore";
-import ThreadsState from "src/util/states/StateThreads";
-import UsersState from "src/util/states/StateUsers";
+import StateThreads from "src/util/states/StateThreads";
+import StateUsers from "src/util/states/StateUsers";
 import {User, UserTypes} from "src/util/chat/User";
 import {Thread} from "src/util/chat/Thread";
 import {UserHuman} from "src/util/chat/UserHuman";
 import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
+import StatePrefs from "src/util/states/StatePrefs";
 
 export interface ApiResponse {
 	fromCache: boolean;
@@ -26,7 +25,7 @@ export interface ApiResponse {
 }
 
 export const useChatStore = defineStore("chatStore", {
-	state: () => ChatStoreState.getState(),
+	state: () => StateGlobalStore.getState(),
 	getters: {
 		getDateCreated(state): Date {
 			return parseDate(state.dateCreated);
@@ -329,28 +328,34 @@ export const useChatStore = defineStore("chatStore", {
 			LocalStorage.clear();
 			location.reload();
 		},
-		resetCachedResponses() {
-			smartNotify(`Clearing cached responses`);
+		clearCachedResponses() {
+			smartNotify(`Clearing complete cache...`);
 			this.cachedResponses = {};
 			this.saveState();
 			return this.cachedResponses;
 		},
+		resetPrefs() {
+			smartNotify(`Resetting preferences...`);
+			this.prefs = StatePrefs.getDefault()
+			this.saveState();
+			return this.prefs;
+		},
 		resetActiveThread() {
-			smartNotify(`Clearing active thread`);
+			smartNotify(`Resetting active thread...`);
 			const activeThread: Thread = this.getActiveThread();
 			activeThread.resetAll();
 			this.saveState();
 			return activeThread;
 		},
 		resetAllThreads() {
-			smartNotify(`Resetting all threads`);
-			this.threadData = ThreadsState.getDefault();
+			smartNotify(`Resetting all threads data...`);
+			this.threadData = StateThreads.getDefault();
 			this.saveState();
 			return this.threadData;
 		},
 		resetAllUsers() {
-			smartNotify(`Resetting all users`);
-			this.userData = UsersState.getDefault();
+			smartNotify(`Resetting all users data...`);
+			this.userData = StateUsers.getDefault();
 			this.saveState();
 			return this.userData;
 		},

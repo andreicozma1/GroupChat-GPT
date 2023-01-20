@@ -36,24 +36,34 @@
             <q-btn-group flat
                          rounded>
                 <q-btn
-                        color="light-blue"
+                        color="orange"
                         icon-right="clear"
-                        label="Clear Messages"
+                        label="Reset Prefs"
                         no-caps
                         outline
                         size="sm"
-                        title="Clear all messages in the thread"
-                        @click="store.getActiveThread().clearMessages()"
+                        title="Reset app preferences to default values"
+                        @click="store.resetPrefs"
+                />
+                <q-btn
+                        color="light-blue"
+                        icon-right="clear"
+                        label="Clear Thread Messages"
+                        no-caps
+                        outline
+                        size="sm"
+                        title="Clear all messages in the active thread"
+                        @click="store.getActiveThread().clearMessages"
                 />
                 <q-btn
                         color="green"
                         icon-right="cached"
-                        label="Clear Cache"
+                        label="Clear Completion Cache"
                         no-caps
                         outline
                         size="sm"
-                        title="Clear completion cache for assistant responses"
-                        @click="store.resetCachedResponses"
+                        title="Clear the global completion cache"
+                        @click="store.clearCachedResponses"
                 />
                 <q-btn
                         color="red"
@@ -62,7 +72,7 @@
                         no-caps
                         outline
                         size="sm"
-                        title="Remove all data from browser local storage"
+                        title="Reset all application data from local storage"
                         @click="store.clearAllData"
                 />
             </q-btn-group>

@@ -3,8 +3,10 @@ import {ApiResponse} from "stores/chatStore";
 import {getRobohashUrl} from "src/util/ImageUtils";
 import {User} from "src/util/chat/User";
 import {ValidDateTypes} from "src/util/DateUtils";
+import {getSeededQColor} from "src/util/Colors";
 
 export class Message {
+	public static defaultBackgroundColor = "blue-grey-1";
 	userId: string;
 	userName: string;
 	userAvatarUrl: string;
@@ -12,7 +14,6 @@ export class Message {
 	id: string = uuidv4();
 	loading: boolean;
 	followupMsgIds: string[] = [];
-
 	isIgnored = false;
 	textSnippets: string[] = [];
 	imageUrls: string[] = [];
@@ -68,5 +69,9 @@ export class Message {
 	toggleIgnored() {
 		console.warn("=> ignore:", {...this});
 		this.isIgnored = this.isIgnored === undefined ? true : !this.isIgnored;
+	}
+
+	getBackgroundColor() {
+		return getSeededQColor(this.userName, 1, 2)
 	}
 }

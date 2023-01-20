@@ -12,6 +12,7 @@
         <div v-for="msg in threadMessages"
              :key="msg.id">
             <CustomChatMessage
+                    :class="msgClass(msg)"
                     :loading="msg.loading"
                     :model-value="msg"
                     :style="msgStyle(msg)"
@@ -31,6 +32,9 @@ import {useChatStore} from "stores/chatStore";
 import CustomChatMessage from "components/ChatMessageElement.vue";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
+import {colors, colorsRgba} from "quasar";
+import getPaletteColor = colors.getPaletteColor;
+import textToRgb = colors.textToRgb;
 
 const props = defineProps({
 	scrollAreaStyle: {
@@ -56,48 +60,54 @@ const threadCaptionProps = {
 	lines: 1,
 };
 
-const msgContextParentId: Ref<string | null> = ref(null);
+const defaultBackgroundColor = textToRgb(getPaletteColor(Message.defaultBackgroundColor))
+const msgContextParentColorRgba: Ref<colorsRgba> = ref(defaultBackgroundColor);
 const msgContextIds: Ref<string[]> = ref([]);
 
 const onMsgMouseOver = (msg: Message) => {
-	// console.log("onMsgMouseOver->contextIds: ", msg.apiResponse?.prompt.messageContextIds);
 	if (msg.apiResponse?.prompt?.messageContextIds) {
-		msgContextParentId.value = msg.id;
-		msgContextIds.value = msg.apiResponse.prompt.messageContextIds;
+		msgContextIds.value = [...msg.apiResponse.prompt.messageContextIds, msg.id];
+		msgContextParentColorRgba.value = textToRgb(getPaletteColor(msg.getBackgroundColor()))
 	} else {
 		console.warn("onMsgMouseOver: no context ids found for msg: ", msg);
-		// smartNotify("Warning: Message context not found");
 	}
 };
 
 const onMsgMouseOut = (msg: Message) => {
 	console.log("onMsgMouseOut->msg: ", {...msg});
 	msgContextIds.value = [];
-	msgContextParentId.value = null;
+	msgContextParentColorRgba.value = defaultBackgroundColor;
 };
 
 const msgStyle = (msg: Message) => {
-	let style = {};
+	let style = {
+		backgroundColor: 'transparent',
+	};
+
 	const contextIdx = msgContextIds.value.indexOf(msg.id);
+	const r = msgContextParentColorRgba.value.r;
+	const g = msgContextParentColorRgba.value.g;
+	const b = msgContextParentColorRgba.value.b;
 	if (contextIdx >= 0) {
 		const ctxMsgAlphaMin = store.prefs.contextMessageOpacity.min;
 		const ctxMsgAlphaMax = store.prefs.contextMessageOpacity.max;
-		const ctxMsgAlphaDelta =
-			(ctxMsgAlphaMax - ctxMsgAlphaMin) / msgContextIds.value.length;
-		const ctxMsgAlpha = ctxMsgAlphaMin + ctxMsgAlphaDelta * contextIdx;
+		const ctxMsgAlphaDelta = (ctxMsgAlphaMax - ctxMsgAlphaMin) / (msgContextIds.value.length - 1);
+		const ctxMsgAlpha = ctxMsgAlphaMin + (ctxMsgAlphaDelta * contextIdx);
 		style = {
 			...style,
-			backgroundColor: `rgba(0,0,0,${ctxMsgAlpha})`,
-		};
-	}
-	if (msgContextParentId.value === msg.id) {
-		style = {
-			...style,
-			backgroundColor: `rgba(0,0,0, ${store.prefs.contextMessageOpacity.max})`,
+			backgroundColor: `rgba(${r}, ${g}, ${b}, ${ctxMsgAlpha})`,
 		};
 	}
 	return style;
 };
+
+const msgClass = (msg: Message) => {
+	const contextIdx = msgContextIds.value.indexOf(msg.id);
+	if (contextIdx >= 0) {
+		return "transSlow"
+	}
+	return "transFast";
+}
 
 const scrollToBottom = (duration?: number) => {
 	if (threadElem.value) {

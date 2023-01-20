@@ -158,7 +158,6 @@
         setup>
 import {dateToLocaleStr} from "src/util/DateUtils";
 import {smartNotify} from "src/util/SmartNotify";
-import {getSeededQColor} from "src/util/Colors";
 import {useChatStore} from "stores/chatStore";
 import {computed, PropType, ref} from "vue";
 import {copyClipboard} from "src/util/Utils";
@@ -324,9 +323,7 @@ const stampHoverHint = computed(() => {
 
 const bgColor = computed(() => {
 	if (shouldDelete.value) return "red-2";
-	return isSentByMe.value
-		? null
-		: getSeededQColor(props.modelValue.userName, 1, 2);
+	return props.modelValue.getBackgroundColor()
 });
 
 const style = computed(() => {

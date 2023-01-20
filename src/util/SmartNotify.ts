@@ -28,7 +28,7 @@ export const smartNotify = (message: string, caption?: string) => {
 			textColor: "white",
 		},
 		info: {
-			keywords: ["info", "copied", "registering", "loading"],
+			keywords: ["info", "copied", "registering", "loading", "resetting", "clearing", "saving"],
 			color: "blue-4",
 			textColor: "white",
 		},

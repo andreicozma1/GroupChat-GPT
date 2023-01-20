@@ -1,1 +1,9 @@
 // app global css in SCSS form
+
+.transFast {
+  transition: background-color 0.5s ease;
+}
+
+.transSlow {
+  transition: background-color 1.5s ease;
+}

@@ -11,8 +11,7 @@
                 <q-list>
                     <q-expansion-item
                             icon="people"
-
-                            label="Members"
+                            label="Joined Users"
                             v-bind="defaultExpansionItemProps"
                     >
                         <q-card bordered
@@ -47,7 +46,7 @@
 
                     <q-expansion-item
                             icon="settings"
-                            label="General"
+                            label="Thread Prefs"
                             v-bind="defaultExpansionItemProps"
                     >
                         <q-card bordered

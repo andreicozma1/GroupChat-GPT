@@ -2,7 +2,7 @@
     <q-btn-dropdown
             class="bg-white text-primary"
             flat
-            icon="settings"
+            icon="tune"
             rounded
             size="12px"
     >

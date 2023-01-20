@@ -1,5 +1,6 @@
 <template>
-    <q-layout view="lHh Lpr lFf">
+    <q-layout id="mainlayout"
+              view="lHh Lpr lFf">
         <AppBarLayout />
 
         <q-page-container>

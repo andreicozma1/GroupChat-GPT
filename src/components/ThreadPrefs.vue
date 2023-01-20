@@ -9,6 +9,25 @@
         <q-card style="min-width: 320px">
             <q-card-section class="q-py-sm">
                 <q-list>
+                    <q-input
+                            v-model="newThreadName"
+                            :rules="[val => val?.length >= 2 || 'Thread name must be at least 2 characters']"
+                            clearable
+                            dense
+                            label="Thread Name"
+                            outlined>
+                        <template #append>
+                            <q-btn
+                                    :disable="!isNewThreadNameValid"
+                                    color="green-4"
+                                    dense
+                                    icon="check"
+                                    round
+                                    size="sm"
+                                    @click="saveThreadName"
+                            />
+                        </template>
+                    </q-input>
                     <q-expansion-item
                             icon="people"
                             label="Joined Users"
@@ -96,9 +115,10 @@
 <script lang="ts"
         setup>
 import {useChatStore} from "stores/chatStore";
-import {computed, ComputedRef, watch} from "vue";
+import {computed, ComputedRef, Ref, ref, watch} from "vue";
 import {User} from "src/util/chat/User";
 import {Thread} from "src/util/chat/Thread";
+import {smartNotify} from "src/util/SmartNotify";
 
 
 const defaultExpansionItemProps = {
@@ -110,6 +130,20 @@ const store = useChatStore();
 const activeThread: ComputedRef<Thread> = computed(() =>
 	store.getActiveThread()
 );
+
+const newThreadName: Ref<string> = ref(activeThread.value.name);
+
+const isNewThreadNameValid: ComputedRef<boolean> = computed(() => {
+	if (newThreadName.value === activeThread.value.name) return false;
+	if (newThreadName.value?.length < 2) return false;
+	return true;
+});
+
+const saveThreadName = () => {
+	if (!isNewThreadNameValid.value) smartNotify("Please enter a valid new thread name");
+	activeThread.value.name = newThreadName.value;
+	store.saveState(true);
+}
 
 const threadUsers: ComputedRef<User[]> = computed(() => {
 	return activeThread.value.getJoinedUsers(store.getUserById);

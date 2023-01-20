@@ -177,8 +177,12 @@ const kbShortcuts = (e: KeyboardEvent) => {
 	}
 	// if any number or letter is pressed, focus the input
 	if (userMsgEl.value && e.key.match(/^[a-z0-9]$/i)) {
-		console.log("Focusing input");
-		userMsgEl.value.focus();
+		// get the current input focus
+		const activeEl = document.activeElement;
+		if (activeEl?.id.toLowerCase() === "mainlayout") {
+			console.log("Focusing input");
+			userMsgEl.value.focus();
+		}
 		return;
 	}
 };

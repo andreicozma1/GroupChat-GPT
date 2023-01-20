@@ -1,15 +1,14 @@
 <template>
     <q-header elevated>
         <q-toolbar>
-            <q-btn
-                    aria-label="Menu"
-                    dense
-                    flat
-                    icon="menu"
-                    round
-                    @click="toggleSideMenu"
+            <q-btn aria-label="Menu"
+                   dense
+                   flat
+                   icon="menu"
+                   round
+                   @click="toggleSideMenu"
             />
-            <q-toolbar-title> GroupChat-GPT</q-toolbar-title>
+            <q-toolbar-title> {{ activeThread.name }}</q-toolbar-title>
             <ChatThreadPrefs />
             <!--            <div class="q-ml-sm">Quasar v{{ $q.version }}</div>-->
         </q-toolbar>
@@ -22,9 +21,16 @@
 </template>
 <script lang="ts"
         setup>
-import {ref} from "vue";
+import {computed, ComputedRef, ref} from "vue";
 import ChatThreadPrefs from "components/ThreadPrefs.vue";
 import SideMenu from "components/SideMenu.vue";
+import {useChatStore} from "stores/chatStore";
+import {Thread} from "src/util/chat/Thread";
+
+const store = useChatStore();
+const activeThread: ComputedRef<Thread> = computed(() =>
+	store.getActiveThread()
+);
 
 const sideMenuOpen = ref(false);
 

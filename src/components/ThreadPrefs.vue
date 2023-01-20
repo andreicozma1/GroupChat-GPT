@@ -119,12 +119,16 @@ const toggleUserVisibility = (user: User) => {
 	console.log("toggleUserVisibility->user:", user);
 	const userId = user.id;
 	const thread: Thread = activeThread.value;
+	console.log("toggleUserVisibility->thread.prefs.hiddenUserIds:", thread.prefs.hiddenUserIds);
+
 	if (isUserVisible(user)) {
+		thread.prefs.hiddenUserIds.push(userId);
+		console.log("toggleUserVisibility->push:", thread.prefs.hiddenUserIds);
+	} else {
 		thread.prefs.hiddenUserIds = thread.prefs.hiddenUserIds.filter(
 			(id) => id !== userId
 		);
-	} else {
-		thread.prefs.hiddenUserIds.push(userId);
+		console.log("toggleUserVisibility->filter:", thread.prefs.hiddenUserIds);
 	}
 };
 

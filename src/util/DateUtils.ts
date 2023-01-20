@@ -18,13 +18,13 @@ export const dateToLocaleStr = (date: ValidDateTypes) => {
 		minute: "numeric",
 		second: "numeric",
 	};
-	return date.toLocaleDateString("en-US", options);
+	return date?.toLocaleDateString("en-US", options);
 };
 
 export const dateToTimeAgo = (date: ValidDateTypes) => {
 	date = parseDate(date);
 	const dateNow = new Date();
-	const diff = dateNow.getTime() - date.getTime();
+	const diff = dateNow?.getTime() - date?.getTime();
 
 	// Calculate the differences for each time unit
 	const dSec = Math.floor(diff / 1000);

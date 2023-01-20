@@ -24,10 +24,10 @@
                     @click="sendMessage"
             />
             <div>
-                <DateText :modelValue="dateCreated"
+                <DateText :modelValue="store.getDateCreated"
                           class="q-pl-md"
                           prefix="Created:" />
-                <DateText :modelValue="dateLastSaved"
+                <DateText :modelValue="store.getDateLastSaved"
                           class="q-pl-md"
                           prefix="Last Saved:" />
             </div>
@@ -72,7 +72,7 @@
 <script lang="ts"
         setup>
 import {useChatStore} from "stores/chatStore";
-import {computed, onBeforeUnmount, onMounted, ref, Ref, watch, watchEffect} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref, Ref, watch} from "vue";
 import {QCard, QInput} from "quasar";
 import {smartNotify} from "src/util/SmartNotify";
 import {Message} from "src/util/chat/Message";
@@ -92,14 +92,6 @@ const isTyping = ref(false);
 const isTypingTimeout: Ref = ref(null);
 const responseTimeout: Ref = ref(null);
 
-const dateCreated: Ref<Date> = ref(store.getDateCreated);
-const dateLastSaved: Ref<Date | undefined> = ref(store.getDateLastSaved);
-
-watchEffect(() => {
-	console.log("UPDATED")
-	dateCreated.value = store.getDateCreated;
-	dateLastSaved.value = store.getDateLastSaved;
-});
 
 const sendMessage = () => {
 	if (!userMsgValid.value) return;

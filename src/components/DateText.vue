@@ -57,13 +57,10 @@ watchEffect(() => {
 	const date = dates.value[toggleState.value];
 	let dateStr;
 
-	if (date) {
-		const timeAgo = dateToTimeAgo(date);
-		const localeStr = dateToLocaleStr(date);
-		dateStr = dateTypeToggle.value ? localeStr : timeAgo;
-	} else {
-		dateStr = "Unknown";
-	}
+	const timeAgo = dateToTimeAgo(date);
+	const localeStr = dateToLocaleStr(date);
+	dateStr = dateTypeToggle.value ? localeStr : timeAgo;
+
 	if (props.prefix) dateStr = props.prefix + " " + dateStr;
 	if (props.suffix) dateStr = dateStr + " " + props.suffix;
 	text.value = dateStr;

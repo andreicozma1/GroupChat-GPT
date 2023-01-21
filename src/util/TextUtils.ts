@@ -1,11 +1,4 @@
-import {
-	createRegexHtmlTagEnd,
-	createRegexHtmlTagStart,
-	createRegexHtmlTagWithContent,
-	rHtmlTagEnd,
-	rHtmlTagStart,
-	rHtmlTagWithContent,
-} from "src/util/Utils";
+import {createRegexHtmlTagEnd, createRegexHtmlTagStart, createRegexHtmlTagWithContent} from "src/util/Utils";
 
 export const getSingularOrPlural = (singularStr: string, count: number) => {
 	return count === 1 ? singularStr : `${singularStr}s`;
@@ -38,10 +31,10 @@ export const removeAllHtmlTags = (
 	removeContent = false
 ): string => {
 	if (removeContent) {
-		text = text.replace(rHtmlTagWithContent, "");
+		text = text.replace(createRegexHtmlTagWithContent(), "");
 	} else {
-		text = text.replace(rHtmlTagStart, "");
-		text = text.replace(rHtmlTagEnd, "");
+		text = text.replace(createRegexHtmlTagStart(), "");
+		text = text.replace(createRegexHtmlTagEnd(), "");
 	}
 	return text.trim();
 };

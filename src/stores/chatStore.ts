@@ -1,6 +1,5 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
-import {rHtmlTagStart, rHtmlTagWithContent} from "src/util/Utils";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
 import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
@@ -15,6 +14,7 @@ import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import StatePrefs from "src/util/states/StatePrefs";
+import {createRegexHtmlTagStart, createRegexHtmlTagWithContent} from "src/util/Utils";
 
 export interface ApiResponse {
 	fromCache: boolean;
@@ -189,9 +189,14 @@ export const useChatStore = defineStore("chatStore", {
 					});
 				});
 
-				text.match(rHtmlTagWithContent)?.forEach((m: string) => {
+				text.match(createRegexHtmlTagWithContent())?.forEach((m: string) => {
 					// get the name of the html tag
-					const tag = m.match(rHtmlTagStart)?.[0].slice(1, -1);
+					console.error("followup", m)
+
+					const tag = m.match(createRegexHtmlTagStart())?.[0].slice(1, -1);
+					const prompt = m.match(createRegexHtmlTagWithContent())
+
+					console.error("followup", prompt)
 					// get the content of the html tag
 					if (tag) fups.push({
 						userId: tag,

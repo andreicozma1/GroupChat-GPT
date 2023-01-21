@@ -20,18 +20,14 @@ export const copyClipboard = (text: string) => {
 	});
 };
 
-export const rHtmlTagStart = /<[a-zA-Z0-9_]+>/gi;
-export const rHtmlTagEnd = /<\/[a-zA-Z0-9_]+>/gi;
-export const rHtmlTagWithContent = /<[a-zA-Z0-9_]+>(.+?)<\/[a-zA-Z0-9_]+>/gis;
-
-export const createRegexHtmlTagWithContent = (tag: string) => {
-	return new RegExp(`<${tag}>(.+?)</${tag}>`, "gis");
+export const createRegexHtmlTagWithContent = (tag = '([a-zA-Z0-9_]+)') => {
+	return new RegExp(`<${tag}>\\s*(.+?)\\s*</?${tag}>`, "gis");
 };
 
-export const createRegexHtmlTagStart = (tag: string) => {
+export const createRegexHtmlTagStart = (tag = '([a-zA-Z0-9_]+)') => {
 	return new RegExp(`<${tag}>`, "gi");
 };
 
-export const createRegexHtmlTagEnd = (tag: string) => {
-	return new RegExp(`</${tag}>`, "gi");
+export const createRegexHtmlTagEnd = (tag = '([a-zA-Z0-9_]+)') => {
+	return new RegExp(`</?${tag}>`, "gi");
 };

@@ -1,8 +1,8 @@
-import {createRegexHtmlTagWithContent, rHtmlTagWithContent,} from "src/util/Utils";
 import {processItemizedList} from "src/util/ItemizedList";
 import {wrapInHtmlTag} from "src/util/TextUtils";
 import {Message} from "src/util/chat/Message";
 import {User} from "src/util/chat/User";
+import {createRegexHtmlTagWithContent} from "src/util/Utils";
 
 export interface PromptConfig {
 	promptType: string;
@@ -33,7 +33,7 @@ export class PromptBuilder {
 	public static filterMessagesWithTags(messages: Message[]): Message[] {
 		return messages.filter((msg: Message) => {
 			return msg.textSnippets.some((text: string) => {
-				return rHtmlTagWithContent.test(text);
+				return createRegexHtmlTagWithContent().test(text);
 			});
 		});
 	}
@@ -42,7 +42,7 @@ export class PromptBuilder {
 		textSnipets: string[],
 		tag?: string
 	): string[] {
-		let regex = rHtmlTagWithContent;
+		let regex = createRegexHtmlTagWithContent();
 		if (tag?.trim()) regex = createRegexHtmlTagWithContent(tag);
 		return textSnipets.flatMap((text: string) => {
 			const matches = text.match(regex);

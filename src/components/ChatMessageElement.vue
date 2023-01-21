@@ -2,7 +2,6 @@
     <q-chat-message
             :avatar="modelValue.userAvatarUrl"
             :bg-color="bgColor"
-            :name="userName"
             :sent="isSentByMe"
             :style="style"
             size="6"
@@ -16,8 +15,7 @@
                 <span v-if="text.includes('http')">
                     <span v-for="chunk in text.split(' ')"
                           :key="chunk"
-                          style="padding-right: 3.5px"
-                    >
+                          style="padding-right: 3.5px">
                         <a v-if="chunk.includes('http')"
                            :href="chunk"
                            target="_blank">
@@ -33,8 +31,9 @@
                     {{ text }}
                 </span>
             </div>
-            <q-tooltip :delay="750">
-                {{ getSnippetHoverHint(textSnippet) }}
+            <q-tooltip v-if="modelUsage"
+                       :delay="750">
+                {{ modelUsageStr }}
             </q-tooltip>
         </div>
 
@@ -51,9 +50,6 @@
                             style="max-height: 400px"
                     />
                 </q-card-section>
-                <q-tooltip :delay="750">
-                    {{ getImageHoverHint(imageUrl) }}
-                </q-tooltip>
             </q-card>
         </div>
 
@@ -61,23 +57,62 @@
             <q-spinner-dots class="q-ml-md"
                             color="primary"
                             size="2em" />
-            <q-tooltip :delay="750">
-                {{ getLoadingHoverHint }}
-            </q-tooltip>
         </div>
+
+        <template v-slot:name>
+            <span class="row">
+                <span class="text-weight-bold q-mr-xs">
+                    {{ modelValue.userName }}
+                </span>
+                <q-badge v-if="modelValue.isIgnored"
+                         color="orange"
+                         label="Ignored"
+                         v-bind="defaultBadgeProps">
+                    <q-tooltip>
+                        This message will be ignored in future prompts.
+                    </q-tooltip>
+                </q-badge>
+                <q-badge v-if="modelValue.apiResponse"
+                         color="green"
+                         label="AI"
+                         outline
+                         rounded
+                         v-bind="defaultBadgeProps">
+                    <q-tooltip>
+                        {{ modelUsageStr }}
+                    </q-tooltip>
+                </q-badge>
+            </span>
+
+            <!--            <q-badge :label="parsedTextSnippets.length + ' text snippets'"-->
+            <!--                     align="middle"-->
+            <!--                     class="q-mx-xs"-->
+            <!--                     color="primary"-->
+            <!--                     outline-->
+            <!--                     rounded-->
+            <!--                     style="font-size: 0.7rem; padding: 0 3px">-->
+            <!--            </q-badge>-->
+            <!--            <q-badge :label="modelValue.imageUrls.length + ' images'"-->
+            <!--                     align="middle"-->
+            <!--                     class="q-mx-xs"-->
+            <!--                     color="accent"-->
+            <!--                     outline-->
+            <!--                     rounded-->
+            <!--                     style="font-size: 0.7rem; padding: 0 3px">-->
+            <!--            </q-badge>-->
+        </template>
 
         <template v-slot:stamp>
             <div class="row items-center">
-                <q-btn
-                        :disable="!canRegenerate"
-                        :icon="typeIcon"
-                        class="q-ma-none q-pa-none"
-                        color="blue-grey-8"
-                        dense
-                        flat
-                        round
-                        size="xs"
-                        @click.stop="onClickRegenerate"
+                <q-btn :disable="!canRegenerate"
+                       :icon="typeIcon"
+                       class="q-ma-none q-pa-none"
+                       color="blue-grey-8"
+                       dense
+                       flat
+                       round
+                       size="xs"
+                       @click.stop="onClickRegenerate"
                 >
                     <q-tooltip v-if="canRegenerate">
                         Re-generate message ({{ modelValue.userId }})
@@ -94,59 +129,57 @@
                         {{ stampHoverHint }}
                     </q-tooltip>
                 </div>
-                <q-space></q-space>
+                <q-space />
+
+                <CompletionUsageBadges :model-usage="modelUsage" />
 
                 <div v-if="shouldDelete"
                      class="text-bold">Delete?
                 </div>
-                <q-btn
-                        v-if="!shouldDelete"
-                        color="blue-grey-8"
-                        dense
-                        flat
-                        icon="edit"
-                        round
-                        size="xs"
-                        @click.stop="onClickEdit"
+                <q-btn v-if="!shouldDelete"
+                       color="blue-grey-8"
+                       dense
+                       flat
+                       icon="edit"
+                       round
+                       size="xs"
+                       @click.stop="onClickEdit"
                 >
                     <q-tooltip> Edit message</q-tooltip>
                 </q-btn>
-                <q-btn
-                        v-if="!shouldDelete"
-                        :icon="modelValue.isIgnored ? 'visibility' : 'visibility_off'"
-                        color="blue-grey-8"
-                        dense
-                        flat
-                        round
-                        size="xs"
-                        @click.stop="modelValue.toggleIgnored()"
+                <q-btn v-if="!shouldDelete"
+                       :icon="modelValue.isIgnored ? 'visibility' : 'visibility_off'"
+                       color="blue-grey-8"
+                       dense
+                       flat
+                       round
+                       size="xs"
+                       @click.stop="modelValue.toggleIgnored()"
                 >
                     <q-tooltip>
                         {{ modelValue.isIgnored ? "Use message" : "Ignore message" }}
                     </q-tooltip>
                 </q-btn>
-                <q-btn
-                        :color="shouldDelete ? 'black' : 'blue-grey-8'"
-                        :icon="shouldDelete ? 'delete_forever' : 'delete'"
-                        dense
-                        flat
-                        round
-                        size="xs"
-                        @click.stop="toggleShouldDelete()"
+                <q-btn :color="shouldDelete ? 'black' : 'blue-grey-8'"
+                       :icon="shouldDelete ? 'delete_forever' : 'delete'"
+                       dense
+                       flat
+                       round
+                       size="xs"
+                       @click.stop="toggleShouldDelete()"
                 >
                     <q-tooltip>
                         {{ shouldDelete ? "Yes, delete" : "Delete" }}
                     </q-tooltip>
                 </q-btn>
-                <q-btn
-                        v-if="shouldDelete"
-                        :color="shouldDelete ? 'black' : 'blue-grey-8'"
-                        dense
-                        flat
-                        icon="restore"
-                        round
-                        size="xs"
-                        @click.stop="toggleShouldDelete(false)"
+                <q-btn v-if="shouldDelete"
+                       :color="shouldDelete ? 'black' : 'blue-grey-8'"
+                       dense
+                       flat
+                       icon="restore"
+                       round
+                       size="xs"
+                       @click.stop="toggleShouldDelete(false)"
                 >
                     <q-tooltip> Restore</q-tooltip>
                 </q-btn>
@@ -156,15 +189,15 @@
 </template>
 <script lang="ts"
         setup>
-import {dateToLocaleStr} from "src/util/DateUtils";
+import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {useChatStore} from "stores/chatStore";
 import {computed, PropType, ref} from "vue";
 import {copyClipboard} from "src/util/Utils";
-import {getSingularOrPlural} from "src/util/TextUtils";
 import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
 import DateText from "components/DateText.vue";
+import CompletionUsageBadges from "components/CompletionUsageBadges.vue";
 
 const props = defineProps({
 	// msgId: {
@@ -191,11 +224,15 @@ const store = useChatStore();
 
 const shouldDelete = ref(false);
 
-// const msg: ComputedRef<Message> = computed(() => store.getActiveThread().getMessageIdMap()[props.msgId]);
+const defaultBadgeProps = {
+	style: "font-size: 0.6rem; padding: 0 5px; margin-bottom: 2px; margin-top: 2px; margin-left: 4px",
+	align: "middle",
+}
+
 
 const onClickMsg = () => {
 	console.log("onClickMsg:", {...props.modelValue});
-	console.log("onClickMsg", {...props.modelValue.apiResponse?.data?.data});
+	console.log("onClickMsg", {...props.modelValue?.apiResponse});
 };
 
 const parsedTextSnippets = computed((): string[] => {
@@ -216,9 +253,6 @@ const onClickEdit = () => {
 
 const canRegenerate = computed(() => {
 	return !shouldDelete.value;
-	// const msgIds = this.apiResponse?.prompt.messageContextIds;
-	// if (msgIds) return msgIds.length > 0;
-	// return false;
 });
 
 const onClickRegenerate = () => {
@@ -244,40 +278,12 @@ const toggleShouldDelete = (value?: boolean) => {
 	shouldDelete.value = true;
 };
 
-const getSnippetHoverHint = (textSnippet?: string) => {
-	const numTexts = props.modelValue.textSnippets?.length ?? 0;
-	const numImages = props.modelValue.imageUrls?.length ?? 0;
-	// const who = (isSentByMe(this) ? "You" : this.userName) + ` (${this.userId})`
-	const who = props.modelValue.userName + ` (${props.modelValue.userId})`;
-	const what = `${numTexts} ${getSingularOrPlural(
-		"text",
-		numTexts
-	)} and ${numImages} ${getSingularOrPlural("image", numImages)}`;
-	const when = dateToLocaleStr(props.modelValue.dateCreated);
-	return `${who} sent ${what} on ${when}`;
-	// return message.response?.prompt.finalPromptText ?? fallback;
-};
-
-const getImageHoverHint = (imageUrl?: string) => {
-	return getSnippetHoverHint();
-};
-
-const getLoadingHoverHint = computed(() => {
-	return "Loading...";
-});
-
 const isSentByMe = computed(() => {
 	const myUser = store.getMyUser();
 	return (
 		props.modelValue.userId === myUser.id &&
 		props.modelValue.userName === myUser.name
 	);
-});
-
-const userName = computed((): string => {
-	const user: User = store.getUserById(props.modelValue.userId);
-	// return `${user.name} (${user.id})`;
-	return user.name;
 });
 
 const typeIcon = computed(() => {
@@ -300,25 +306,31 @@ const typeIcon = computed(() => {
 });
 
 const getStamp = () => {
-	// const what = isSentByMe(msg) ? "Sent" : "Received";
-	// const on = dateToTimeAgo(props.modelValue.dateCreated);
-	// let res = `${what} ${on}`;
-	// let res = `${on}`;
-	// if (msg.isCompRegen) res = `* ${res}`;
 	if (props.modelValue.apiResponse?.fromCache) return '(from cache)';
 	if (props.modelValue.apiResponse?.cacheIgnored) return '(cache ignored)';
 	return undefined
 }
 
 const stampHoverHint = computed(() => {
-	const when = dateToLocaleStr(props.modelValue.dateCreated);
-	const what = isSentByMe.value ? "Sent" : "Received";
-	let res = `${what} on ${when}`;
-	console.warn("stampHoverHint:", props.modelValue.apiResponse);
-	const dateGenerated = props.modelValue.apiResponse?.data?.data?.created * 1000;
-	if (dateGenerated)
-		res += "\n\n" + ` [Generated on ${dateToLocaleStr(dateGenerated)}]`;
+	const dateGenerated = props.modelValue.apiResponse?.data?.created * 1000;
+	if (dateGenerated) {
+		return `Generated ${dateToTimeAgo(dateGenerated)} (${dateToLocaleStr(dateGenerated)})`;
+	}
+	let res = isSentByMe.value ? "Sent" : "Received";
+	res += ` ${dateToTimeAgo(props.modelValue.dateCreated)} (${dateToLocaleStr(props.modelValue.dateCreated)})`;
 	return res;
+});
+
+const modelUsage = computed(() => {
+	return props.modelValue.apiResponse?.data?.usage;
+});
+
+const modelUsageStr = computed(() => {
+	const usage = modelUsage.value
+	if (!usage) return undefined
+	const keys = Object.keys(usage)
+	if (keys.length === 0) return undefined
+	return keys.map(key => `${key}: ${usage[key]} `).join('; ')
 });
 
 const bgColor = computed(() => {
@@ -332,7 +344,7 @@ const style = computed(() => {
 		borderRadius: "1.0rem",
 		opacity: props.modelValue.isIgnored
 			? store.prefs.ignoredMessageOpacity.value
-			: 1,
+			: 1.0,
 		outline: shouldDelete.value ? "2px solid red" : null,
 	};
 });

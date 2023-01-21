@@ -31,9 +31,9 @@
                     {{ text }}
                 </span>
             </div>
-            <q-tooltip v-if="modelUsage"
+            <q-tooltip v-if="modelValue.apiResponse?.data?.usage"
                        :delay="750">
-                {{ modelUsageStr }}
+                {{ modelUsageStr() }}
             </q-tooltip>
         </div>
 
@@ -72,14 +72,14 @@
                         This message will be ignored in future prompts.
                     </q-tooltip>
                 </q-badge>
-                <q-badge v-if="modelValue.apiResponse"
+                <q-badge v-if="modelValue.apiResponse !== undefined"
                          color="green"
                          label="AI"
                          outline
                          rounded
                          v-bind="defaultBadgeProps">
                     <q-tooltip>
-                        {{ modelUsageStr }}
+                        {{ modelUsageStr() }}
                     </q-tooltip>
                 </q-badge>
             </span>
@@ -131,7 +131,8 @@
                 </div>
                 <q-space />
 
-                <CompletionUsageBadges :model-usage="modelUsage" />
+                <CompletionUsageBadges v-if="modelValue?.apiResponse?.data?.usage"
+                                       :model-usage="modelValue?.apiResponse?.data?.usage" />
 
                 <div v-if="shouldDelete"
                      class="text-bold">Delete?
@@ -200,10 +201,6 @@ import DateText from "components/DateText.vue";
 import CompletionUsageBadges from "components/CompletionUsageBadges.vue";
 
 const props = defineProps({
-	// msgId: {
-	// 	type: String as PropType<string>,
-	// 	required: true
-	// }
 	modelValue: {
 		type: Object as PropType<Message>,
 		required: true,
@@ -321,17 +318,13 @@ const stampHoverHint = computed(() => {
 	return res;
 });
 
-const modelUsage = computed(() => {
-	return props.modelValue.apiResponse?.data?.usage;
-});
-
-const modelUsageStr = computed(() => {
-	const usage = modelUsage.value
+const modelUsageStr = () => {
+	const usage = props.modelValue.apiResponse?.data?.usage;
 	if (!usage) return undefined
 	const keys = Object.keys(usage)
 	if (keys.length === 0) return undefined
 	return keys.map(key => `${key}: ${usage[key]} `).join('; ')
-});
+}
 
 const bgColor = computed(() => {
 	if (shouldDelete.value) return "red-2";

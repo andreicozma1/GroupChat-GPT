@@ -5,16 +5,17 @@ Well, this application is a step towards that world.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 ## Table of Contents
 
 - [Features:](#features)
 - [Setup Project & Dependencies](#setup-project--dependencies)
 - [Run & Build](#run--build)
-  - [Start the app in development mode](#start-the-app-in-development-mode)
-  - [Build the app for production](#build-the-app-for-production)
+    - [Start the app in development mode](#start-the-app-in-development-mode)
+    - [Build the app for production](#build-the-app-for-production)
 - [Additional Commands](#additional-commands)
-  - [Lint the files](#lint-the-files)
-  - [Format the files](#format-the-files)
+    - [Lint the files](#lint-the-files)
+    - [Format the files](#format-the-files)
 - [License & Credit](#license--credit)
 - [Demo Screenshots](#demo-screenshots)
 
@@ -28,14 +29,13 @@ Well, this application is a step towards that world.
     - Prompts for each AI assistant are dynamically created, including various characteristics and rules (outlined
       below)
 - Response Coordinator
-    - Dictates which assistant(s) needs to respond to the user's message.
-    - For example, if the user asks "hey, how are you all?", multiple assistants may respond, each with their own unique
+    - Dictates which assistant(s) needs to respond to the promptUser's message.
+    - For example, if the promptUser asks "hey, how are you all?", multiple assistants may respond, each with their own unique
       response.
-    - If the user asks "Hey DALL-E, I need to generate an image", then only DALL-E will respond.
-- Assistant Traits, Characteristics, and Rules
+    - If the promptUser asks "Hey DALL-E, I need to generate an image", then only DALL-E will respond.
+- UserAssistant Traits, Characteristics, and Rules
     - Subject to tweaks and changes so read through the following files instead:
-    - [/src/util/assistant/configs](./src/util/assistant/configs)
-    - [/src/util/assistant/Prompt.ts](./src/util/assistant/AssistantPrompts.ts)
+    - [./src/util/chat/assistants](./src/util/chat/assistants)
 - DALL-E can be asked to generate images.
     - If necessary, DALL-E it will try to gather information from you from which to generate a prompt for the DALL-E
       API.

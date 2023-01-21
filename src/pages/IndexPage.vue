@@ -1,15 +1,16 @@
 <template>
     <div class="full-width">
-        <ChatThread :scroll-area-style="scrollAreaStyle"/>
-        <ChatThreadForm ref="controlsCard"/>
+        <ChatThread :scroll-area-style="scrollAreaStyle" />
+        <ChatThreadForm ref="controlsCard" />
     </div>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts"
+        setup>
 import {QCard} from "quasar";
 import {computed, onMounted, Ref, ref, watch} from "vue";
-import ChatThreadForm from "components/ChatThreadForm.vue";
-import ChatThread from "components/ChatThread.vue";
+import ChatThreadForm from "components/ThreadInputs.vue";
+import ChatThread from "components/ThreadView.vue";
 
 const controlsCard: Ref<QCard | null> = ref(null);
 const scrollAreaStyle = ref({});
@@ -36,8 +37,8 @@ const updateScrollAreaStyle = () => {
 
 watch(userMsgStr, () => {
 	updateScrollAreaStyle();
-	// introduce a delay to detect if the user is typing.
-	// The coordinator will not be called until the user stops typing for a while.
+	// introduce a delay to detect if the promptUser is typing.
+	// The coordinator will not be called until the promptUser stops typing for a while.
 	isTyping.value = true;
 	if (isTypingTimeout.value) clearTimeout(isTypingTimeout.value);
 	isTypingTimeout.value = setTimeout(

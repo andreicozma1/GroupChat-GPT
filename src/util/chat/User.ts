@@ -1,9 +1,10 @@
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
-import {PromptConfig} from "src/util/prompt/PromptModels";
+import {PromptConfig} from "src/util/prompt/PromptBuilder";
 
 export enum UserTypes {
 	HUMAN = "human",
 	ASSISTANT = "assistant",
+	HELPER = "helper",
 }
 
 export class User {
@@ -11,14 +12,18 @@ export class User {
 	name: string;
 	icon = "chat";
 	type: UserTypes;
-	apiReqConfig: ApiRequestConfigTypes | string = ApiRequestConfigTypes.CONVERSATION;
+	apiReqConfig: ApiRequestConfigTypes | string =
+		ApiRequestConfigTypes.CONVERSATION;
 	promptConfig: PromptConfig;
-	followupPromptHelperId?: string;
 	showInMembersInfo = true;
-	shouldIgnoreCache = false;
+	alwaysIgnoreCache = false;
+	requiresUserIds: string[] = [];
+	defaultJoin = false;
+	defaultIgnored = false;
 
 	constructor(id: string, name: string, type: UserTypes) {
 		this.id = id;
+		this.id = this.id.replace(/\s/g, "");
 		this.name = name;
 		this.type = type;
 		this.promptConfig = {
@@ -31,13 +36,10 @@ export class User {
 			strengths: [],
 			weaknesses: [],
 			abilities: [],
-		}
+		};
 		this.promptConfig.rules = {
-			always: [
-				"Strictly follow the rules of the conversation.",
-			],
+			always: ["Strictly follow the rules of the conversation."],
 			never: [],
-		}
+		};
 	}
 }
-

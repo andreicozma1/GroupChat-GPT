@@ -5,12 +5,13 @@
         <EssentialLink
                 v-for="link in essentialLinks"
                 :key="link.title"
-                v-bind="link"/>
+                v-bind="link"
+        />
     </q-list>
 </template>
-<script lang="ts" setup>
-
-import EssentialLink, {EssentialLinkProps} from "components/EssentialLink.vue";
+<script lang="ts"
+        setup>
+import EssentialLink, {EssentialLinkProps,} from "components/EssentialLink.vue";
 
 const essentialLinks: EssentialLinkProps[] = [
 	{
@@ -32,5 +33,4 @@ const essentialLinks: EssentialLinkProps[] = [
 		link: "https://andreicozma.com",
 	},
 ];
-
 </script>

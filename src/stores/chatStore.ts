@@ -1,277 +1,310 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
-import {getAppVersion} from "src/util/Utils";
-import {ChatMessage, ChatThread, ChatThreadPrefs} from "src/util/chat/ChatModels";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeApiRequest} from "src/util/openai/ApiReq";
-import {createMessageFromUserConfig, getMessageHistory} from "src/util/chat/ChatUtils";
-import {Prompt} from "src/util/prompt/Prompt";
-import {User, UserTypes} from "src/util/users/User";
-import {UserHuman} from "src/util/users/UserHuman";
-import {UserCodex, UserCoordinator, UserDalle, UserDavinci} from "src/util/users/Assistant";
-import {UserCodexGen, UserDalleGen} from "src/util/users/Helpers";
+import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
+import {parseDate} from "src/util/DateUtils";
+import StateGlobalStore from "src/util/states/StateGlobalStore";
+import StateThreads from "src/util/states/StateThreads";
+import StateUsers from "src/util/states/StateUsers";
+import {User, UserTypes} from "src/util/chat/User";
+import {Thread} from "src/util/chat/Thread";
+import {UserHuman} from "src/util/chat/UserHuman";
+import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
+import {Message} from "src/util/chat/Message";
+import {parseMessagesHistory} from "src/util/chat/MessageHistory";
+import StatePrefs from "src/util/states/StatePrefs";
+import {createRegexHtmlTagStart, createRegexHtmlTagWithContent} from "src/util/Utils";
 
-const localStorageKey = "data";
-const defaultUserId = "humanUser"
-const defaultUserName = "Human"
-const defaultThreadId = "general"
-const defaultThreadName = "General"
-const defaultAssistants = ["davinci", "dalle", "codex"]
-
-interface CachedResponse {
-	contextIds: string[];
+export interface ApiResponse {
+	fromCache: boolean;
+	cacheIgnored: boolean;
+	errorMsg: string | undefined;
+	prompt: AssistantPrompt;
 	data: any;
 }
 
-export interface PromptResponse {
-	prompt?: Prompt;
-	response?: CachedResponse;
-	// TODO: Put these in a separate MessageContent interface and keep track of history
-	textSnippets: string[];
-	imageUrls: string[];
-
-	errorMsg?: string;
-	cached?: boolean;
+interface FollowUp {
+	userId: string,
+	prompt?: string
 }
 
-
-const DefaultThread = {
-	messageIdMap: {},
-	appVersion: getAppVersion(),
-	joinedUserIds: [],
-	prefs: {
-		hiddenUserIds: [],
-		dontShowMessagesHiddenInPrompts: false,
-		orderedResponses: true,
-	}
-}
-
-
-// interface ChatStoreState {
-// 	usersMap: Ref<Record<string, ChatUser>>;
-// 	threadsMap: Ref<Record<string, ChatThread>>;
-// 	humanUserId: Ref<string>;
-// 	currentThread: Ref<string>;
-// 	cachedResponses: Ref<Record<string, CachedResponse>>;
-// }
-interface ChatStoreState {
-	usersMap: Record<string, User>;
-	threadsMap: Record<string, ChatThread>;
-	humanUserId: string;
-	humanUserName: string;
-	currentThreadId: string;
-	currentThreadName: string;
-	cachedResponses: Record<string, CachedResponse>;
-}
-
-export const useChatStore = defineStore("counter", {
-	state: (): ChatStoreState => ({
-		usersMap: {
-			coordinator: new UserCoordinator(),
-			davinci: new UserDavinci(),
-			// DALL-E
-			dalle: new UserDalle(),
-			dalle_gen: new UserDalleGen(),
-			// Codex
-			codex: new UserCodex(),
-			codex_gen: new UserCodexGen(),
-		},
-		threadsMap: {},
-		humanUserId: defaultUserId,
-		humanUserName: defaultUserName,
-		currentThreadId: defaultThreadId,
-		currentThreadName: defaultThreadName,
-		cachedResponses: {},
-		...LocalStorage.getItem(localStorageKey),
-	}),
+export const useChatStore = defineStore("chatStore", {
+	state: () => StateGlobalStore.getState(),
 	getters: {
-		getUsersMap(state): Record<string, User> {
-			return state.usersMap;
+		getDateCreated(state): Date {
+			return parseDate(state.dateCreated);
 		},
-		getUserConfig(): (key: string) => User {
-			return (key: string) => {
-				if (key === this.humanUserId && !this.getUsersMap[key]) {
-					this.getUsersMap[key] = new UserHuman(this.humanUserId, this.humanUserName);
-				}
-				return this.getUsersMap[key];
-			}
+		getDateLastSaved(state): Date | undefined {
+			return state.dateLastSaved ? parseDate(state.dateLastSaved) : undefined;
 		},
-		getHumanUserConfig(): User {
-			console.log(this.getUsersMap)
-			console.log(this.getUserConfig(this.humanUserId))
-			console.log(this.humanUserId)
-			return this.getUserConfig(this.humanUserId);
+		/**************************************************************************************************************/
+		// Users
+		/**************************************************************************************************************/
+		myUserId(state): string {
+			return state.userData.myUserId;
 		},
-		getActiveThread(state): ChatThread {
-			let needsSave = false
-			let thread = state.threadsMap[state.currentThreadId];
-			if (!thread) {
-				smartNotify("Creating new thread");
-				thread = {...DefaultThread};
-				needsSave = true;
-			}
-
-			// if the human isnt in the thread, add them
-			if (!thread.joinedUserIds.includes(this.humanUserId)) {
-				smartNotify("Joining thread: " + state.currentThreadId);
-				thread.joinedUserIds.push(this.humanUserId);
-				needsSave = true;
-			}
-			// if the number of assistants in the thread is 0, add the default assistants
-			const users = thread.joinedUserIds.map(id => this.getUserConfig(id))
-			const assistants = users.filter((user: User) => user.type === UserTypes.ASSISTANT);
-
-			if (assistants.length === 0) {
-				smartNotify(`Adding default assistants: ${defaultAssistants.join(", ")}`);
-				thread.joinedUserIds.push(...defaultAssistants);
-				needsSave = true;
-			}
-			thread.joinedUserIds = Array.from(new Set(thread.joinedUserIds));
-			console.log("getThread:", state.currentThreadId, {...thread});
-			this.threadsMap[state.currentThreadId] = thread;
-			return this.threadsMap[state.currentThreadId]
+		usersMap(state): Record<string, User> {
+			return state.userData.usersMap;
 		},
-		getCachedResponses(state) {
-			return state.cachedResponses;
+		usersArray(): User[] {
+			return Object.values(this.usersMap);
 		},
-		getCachedResponseFromPrompt(): (prompt: Prompt) => CachedResponse {
-			return (prompt: Prompt) => this.getCachedResponses[prompt.hash];
+		usersAssistantsArray(): User[] {
+			return this.usersArray.filter(assistantFilter);
 		},
-		getPromptResponse(): (prompt: Prompt) => PromptResponse {
-			return (prompt: Prompt): PromptResponse => {
-				const cache = this.getCachedResponseFromPrompt(prompt);
-				const responseData = cache.data;
-				const choices = responseData.choices;
-				const text = choices
-					?.flatMap((c: any) => {
-						c = c.text
-							.replace("<prompt>\n", "<prompt>")
-							.replace("\n</prompt>", "</prompt>");
-						c = c.trim();
-						// if starts with ``` and ends with ``` then it's a code block
-						if (c.startsWith("```") && c.endsWith("```")) return c;
-						c = c.split("\n\n");
-						return c;
-					})
-					.map((t: string) => t.trim())
-					.filter((t: string) => t.length > 0);
-				if (text) {
-					console.warn("=> text:");
-					text?.forEach((t: string) => console.log(t));
-				}
-
-				const images = responseData.data?.map((d: any) => d.url);
-				if (images) {
-					console.warn("=> images:");
-					images?.forEach((i: string) => console.log(i));
-				}
-
-				return {
-					cached: undefined,
-					prompt: prompt,
-					textSnippets: text,
-					imageUrls: images,
-					response: cache,
-				};
-			}
-		}
+		/**************************************************************************************************************/
+		// Threads
+		/**************************************************************************************************************/
+		activeThreadId(state): string | undefined {
+			return state.threadData.activeThreadId;
+		},
+		threadsMap(state): Record<string, Thread> {
+			return state.threadData.threadsMap;
+		},
 	},
 	actions: {
-		saveData() {
-			// TODO: Make this optional with a preference
-			// smartNotify("Saving data...");
-			LocalStorage.set(localStorageKey, this.$state);
+		/**************************************************************************************************************/
+		// Users
+		/**************************************************************************************************************/
+		registerUser(user: User, verbose = true) {
+			console.warn("registerUser:", user);
+			smartNotify('Registering user...', `ID: ${user.id}`);
+			this.usersMap[user.id] = user;
+			this.saveState(verbose);
+			return this.usersMap[user.id];
 		},
-		clearAllData() {
-			// clear whole local storage and reload
-			smartNotify("Clearing all app data...");
-			LocalStorage.clear();
-			location.reload();
+		getUserById(id: string, verbose = true): User {
+			// console.warn("getUserById:", id);
+			if (!this.usersMap[id] && verbose) smartNotify('User not found', id);
+			return this.usersMap[id];
 		},
-		clearCurrentThreadMessages() {
-			smartNotify(`Clearing thread messages: ${this.currentThreadId}`);
-			this.threadsMap[this.currentThreadId].messageIdMap = {}
-			this.saveData();
+		getMyUser(): User {
+			console.warn("getMyUser");
+			if (!this.getUserById(this.myUserId, false))
+				return this.registerUser(new UserHuman(this.myUserId), false);
+			return this.getUserById(this.myUserId);
 		},
-		clearCachedResponses() {
-			smartNotify(`Clearing cached responses`);
-			this.cachedResponses = {};
-			this.saveData();
+		/**************************************************************************************************************/
+		// Threads
+		/**************************************************************************************************************/
+		registerThread(thread: Thread, verbose = true) {
+			console.warn("registerThread:", thread);
+			smartNotify("Registering thread...", `ID: ${thread.id}`);
+			// if the human isnt in the thread, add them
+			thread.addUser(this.getMyUser());
+			// add the default assistants to the thread
+			this.usersAssistantsArray
+				.filter((u) => u.defaultJoin)
+				.forEach((u) => thread.addUser(u));
+			this.threadsMap[thread.id] = thread;
+			// set the new thread as the active thread
+			this.threadData.activeThreadId = thread.id;
+			this.saveState(verbose);
+			return this.threadsMap[thread.id];
 		},
-		resetCurrentThreadPrefs() {
-			smartNotify(`Resetting thread prefs: ${this.currentThreadId}`);
-			this.threadsMap[this.currentThreadId].prefs = {...DefaultThread.prefs} as ChatThreadPrefs;
-			this.saveData();
-		},
-		resetCurrentThread() {
-			smartNotify(`Resetting thread: ${this.currentThreadId}`);
-			this.threadsMap[this.currentThreadId] = {...DefaultThread} as ChatThread;
-			this.saveData();
-		},
-		resetAllThreads() {
-			smartNotify(`Resetting all threads`);
-			this.threadsMap = {}
-			this.currentThreadId = defaultThreadId;
-			this.saveData();
-		},
-		resetAllUsers() {
-			smartNotify(`Resetting all users`);
-			this.usersMap = {
-				coordinator: new UserCoordinator(),
-				davinci: new UserDavinci(),
-				// DALL-E
-				dalle: new UserDalle(),
-				dalle_gen: new UserDalleGen(),
-				// Codex
-				codex: new UserCodex(),
-				codex_gen: new UserCodexGen(),
+		getThreadById(key: string) {
+			console.warn("getThreadById:", key);
+			if (!(this.threadsMap[key] instanceof Thread)) {
+				this.threadsMap[key] = Object.assign(
+					Thread.prototype,
+					this.threadsMap[key]
+				);
 			}
-			this.humanUserId = defaultUserId;
-			this.humanUserName = defaultUserName;
-			this.saveData();
+			return this.threadsMap[key];
 		},
-		createMessageFromUserId(id: string, store: any): ChatMessage {
+		getActiveThread(): Thread {
+			console.warn("=".repeat(60));
+			console.warn("getActiveThread");
+			if (!this.activeThreadId)
+				return this.registerThread(new Thread(this.myUserId), false) as Thread;
+			return this.getThreadById(this.activeThreadId) as Thread;
+		},
+		/**************************************************************************************************************/
+		// Messages
+		/**************************************************************************************************************/
+		createMessageFromUserId(id: string): Message {
 			id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
-			const cfg: User = this.getUserConfig(id);
-			return createMessageFromUserConfig(cfg, store);
+			const cfg: User = this.getUserById(id);
+			return new Message(cfg);
+		},
+
+		async handleUserMessage(message: Message, ignoreCache = false) {
+			const user: User = this.getUserById(message.userId);
+			const thread: Thread = this.getActiveThread();
+			thread.addMessage(message);
+			console.warn("*".repeat(40));
+
+			console.log("handleUserMessage->user:", user);
+			console.log("handleUserMessage->message:", message);
+
+			if (message.followupMsgIds.length > 0) {
+				message.followupMsgIds.forEach((id: string) => {
+					thread.deleteMessage(id);
+				});
+				message.followupMsgIds = [];
+			}
+
+			if (user.type !== UserTypes.HUMAN) {
+				let messages: Message[];
+
+				// const prevMsgContextIds = message.apiResponse?.prompt?.messagesCtxIds;
+				// if (prevMsgContextIds) {
+				// Re-generation from specified context
+				// messages = thread.getMessagesArrayFromIds(prevMsgContextIds)
+				// TODO: This will end up with less messages than expected if there are any undefined messages
+				// } else {
+				messages = thread.getMessagesArray();
+				// }
+				messages = parseMessagesHistory(messages, {
+					excludeUserIds:
+						user.id !== this.userData.usersMap.coordinator.id
+							? [this.userData.usersMap.coordinator.id]
+							: [],
+					maxMessages: 10,
+					maxDate: message.dateCreated,
+					excludeLoading: true,
+					excludeNoText: true,
+					excludeIgnored: true,
+				});
+				message.loading = true;
+
+				const response = await this.generate(
+					user,
+					messages,
+					thread,
+					ignoreCache
+				);
+				message.parseApiResponse(response);
+			}
+
+
+			let followups: FollowUp[] = message.textSnippets.flatMap((text: string) => {
+				const fups: FollowUp[] = [];
+
+				text.match(/@([a-zA-Z0-9_]+)/g)?.forEach((m: string) => {
+					fups.push({
+						userId: m.slice(1),
+						prompt: undefined
+					});
+				});
+
+				text.match(createRegexHtmlTagWithContent())?.forEach((m: string) => {
+					// get the name of the html tag
+					console.error("followup", m)
+
+					const tag = m.match(createRegexHtmlTagStart())?.[0].slice(1, -1);
+					const prompt = m.match(createRegexHtmlTagWithContent())
+
+					console.error("followup", prompt)
+					// get the content of the html tag
+					if (tag) fups.push({
+						userId: tag,
+						prompt: undefined
+					});
+				});
+				return fups;
+			});
+
+			if (followups.length > 0) {
+				const joinedUserIds = thread
+					.getJoinedUsers(this.getUserById)
+					.map((u) => u.id);
+				followups = followups.filter((f: FollowUp) => {
+					const uid = f.userId
+					const isInChat = joinedUserIds.includes(uid);
+					if (!isInChat) smartNotify(`User ${uid} is not a member of this chat thread.`);
+					return isInChat;
+				});
+			} else if (user.type === UserTypes.HUMAN) {
+				followups = [
+					{
+						userId: this.userData.usersMap.coordinator.id,
+						prompt: undefined
+					},
+				];
+			}
+
+			console.warn("handleUserMessage->followupActors:", followups);
+
+			for (const fup of followups) {
+				const uid = fup.userId;
+				const nextMsg: Message = this.createMessageFromUserId(uid);
+				message.followupMsgIds.push(nextMsg.id);
+				// increment the DateCreated from the previous message
+				// nextMsg.dateCreated = message.dateCreated;
+				nextMsg.dateCreated = new Date(
+					parseDate(message.dateCreated).getTime() + 1
+				);
+				if (thread.prefs.orderedResponses) {
+					await this.handleUserMessage(nextMsg, ignoreCache);
+				} else {
+					this.handleUserMessage(nextMsg, ignoreCache);
+				}
+			}
+			thread.addMessage(message);
+			this.saveState(false);
+		},
+		/**************************************************************************************************************/
+		// API Responses
+		/**************************************************************************************************************/
+		getCachedResponseFromPrompt(prompt: AssistantPrompt): any {
+			console.log("getCachedResponseFromPrompt->prompt:", prompt);
+			return this.cachedResponses[prompt.hash];
 		},
 		async generate(
 			user: User,
-			msgHist: ChatMessage[],
+			msgHist: Message[],
+			thread: Thread,
 			ignoreCache?: boolean
-		): Promise<PromptResponse> {
+		): Promise<ApiResponse> {
 			ignoreCache = ignoreCache ?? false;
+			ignoreCache = user.alwaysIgnoreCache || ignoreCache;
 			console.warn("-".repeat(20));
-			console.log('generate->actor:', user);
+			console.log("generate->actor:", user);
 			console.log("generate->ignoreCache:", ignoreCache);
 
-			msgHist = msgHist.filter((m: ChatMessage) => !m.hideInPrompt);
-			const contextIds: string[] = msgHist.map((m: ChatMessage) => m.id);
-			console.log("generate->contextIds:", contextIds);
+			// const contextIds: string[] = ;
+			// console.log("generate->contextIds:", contextIds);
+
 			for (let i = 0; i < msgHist.length; i++) {
-				console.log("----------------")
-				console.log(`msgHist[${i}] -> (${msgHist[i].textSnippets.length} texts & ${msgHist[i].imageUrls.length} images)`,
-					[...msgHist[i].textSnippets], {...msgHist[i]});
+				console.log("----------------");
+				console.log(
+					`msgHist[${i}] -> (${msgHist[i].textSnippets.length} texts & ${msgHist[i].imageUrls.length} images)`,
+					[...msgHist[i].textSnippets],
+					{...msgHist[i]}
+				);
 			}
 
-			const prompt = new Prompt(this.currentThreadName, this.humanUserName, user, this.getUsersMap, msgHist);
-			console.log("generate->prompt:", prompt)
-			console.log("generate->prompt.hash:", prompt.hash)
-			console.log("generate->prompt.text:")
-			console.log(prompt.text)
+			let prompt = undefined
 
-			// if we already have a completion for this prompt, return it
-
-			// TODO: Change hash prompt to be based on msgIds?
-
-			let completion;
+			// if we already have a response for this prompt, return it
+			let response;
 			let cached;
 			try {
-				if (!ignoreCache && this.getCachedResponseFromPrompt(prompt)) {
-					completion = this.getCachedResponseFromPrompt(prompt)
+				prompt = new AssistantPrompt(
+					// this.currentThreadName,
+					// this.humanUserName,
+					thread.name,
+					this.getMyUser().name,
+					user,
+					thread.getJoinedUsers(this.getUserById),
+					msgHist
+				);
+				console.log("generate->prompt:", prompt);
+				console.log("generate->prompt.hash:", prompt.hash);
+				console.log("generate->prompt.text:");
+				console.log(prompt.finalPromptText);
+
+				const cachedResponse = this.getCachedResponseFromPrompt(prompt);
+				if (!ignoreCache && cachedResponse) {
+					response = cachedResponse;
 					cached = true;
 				} else {
-					completion = await makeApiRequest(user.apiReqConfig, prompt.text);
+					response = await makeApiRequest(
+						user.apiReqConfig,
+						prompt.finalPromptText
+					);
 					cached = false;
 				}
 			} catch (error: any) {
@@ -285,237 +318,72 @@ export const useChatStore = defineStore("counter", {
 						"\n" + "Data: " + JSON.stringify(error.response.data, null, 4);
 				}
 				return {
+					fromCache: false,
+					cacheIgnored: ignoreCache,
 					errorMsg: errorMsg,
-					response: {
-						contextIds: contextIds,
-						data: undefined,
-					},
-					textSnippets: [],
-					imageUrls: [],
 					prompt: prompt,
-				};
+					data: undefined,
+				} as ApiResponse;
 			}
-			this.cachedResponses[prompt.hash] = {
-				contextIds: contextIds,
-				...completion
-			};
+			this.cachedResponses[prompt.hash] = response;
 
 			return {
-				...this.getPromptResponse(prompt),
-				cached: cached,
-			};
+				fromCache: cached,
+				cacheIgnored: ignoreCache,
+				errorMsg: undefined,
+				prompt: prompt,
+				data: this.cachedResponses[prompt.hash].data,
+			} as ApiResponse;
 		},
-		pushMessage(message: ChatMessage, loading?: boolean): ChatMessage {
-			// console.log("-------------------------------");
-			let existingMsg: ChatMessage = this.getActiveThread.messageIdMap[message.id]
-			if (existingMsg) {
-				existingMsg = {
-					...existingMsg,
-					...message,
-					loading: loading ?? false,
-				}
-				this.threadsMap[this.currentThreadId].messageIdMap[message.id] = existingMsg;
-				this.saveData();
-				return existingMsg;
-			}
-			// message.dateCreated = new Date();
-			message.loading = loading ?? false;
-
-			this.threadsMap[this.currentThreadId].messageIdMap[message.id] = message;
-			this.saveData();
-			return message;
+		/**************************************************************************************************************/
+		/* DATA & STORAGE
+			/**************************************************************************************************************/
+		saveState(verbose = true) {
+			StateGlobalStore.saveState(this.$state, verbose);
 		},
-		deleteMessage(messageId: string, silent = false): void {
-			if (!this.getActiveThread.messageIdMap[messageId]) {
-				if (!silent) {
-					smartNotify("An error occurred while deleting the message.");
-				}
-				console.error(`An error occurred while deleting the message: ${messageId}`);
-				return;
-			}
-			const followUpIds = this.threadsMap[this.currentThreadId].messageIdMap[messageId].followupMsgIds;
-			if (followUpIds) {
-				for (let i = 0; i < followUpIds.length; i++) {
-					this.deleteMessage(followUpIds[i], true);
-				}
-			}
-			delete this.threadsMap[this.currentThreadId].messageIdMap[messageId];
-			this.saveData();
-			smartNotify("Successfully deleted message.");
+		clearAllData() {
+			// clear whole local storage and reload
+			smartNotify("Clearing all app data...");
+			LocalStorage.clear();
+			location.reload();
 		},
-		async handleUserMessage(message: ChatMessage, comp: any, forceUserId?: string) {
-			forceUserId = forceUserId || message.userId;
-			const user: User = this.getUserConfig(forceUserId);
-			const thread: ChatThread = comp.getActiveThread
-
-			console.warn("*".repeat(40));
-
-			console.log('handleUserMessage->cfg:', user);
-			console.log('handleUserMessage->forceUserId:', forceUserId);
-			console.log('handleUserMessage->message:', message);
-
-			message.isCompRegen = message.response?.contextIds
-				? message.response.contextIds.length > 0
-				: false;
-			console.log('handleUserMessage->message.isCompRegen:', message.isCompRegen);
-
-			// if (msg.isCompRegen) {
-			// 	console.warn("=> Regen");
-			// 	msg.textSnippets = [];
-			// 	msg.imageUrls = [];
-			// }
-			message.followupMsgIds.forEach((id: string) => {
-				comp.deleteMessage(id, true);
-			})
-			message.followupMsgIds = [];
-			comp.pushMessage(message, true);
-
-			const msgHistIds = message.response?.contextIds
-			let ignoreCache = user.shouldIgnoreCache === undefined ? false : user.shouldIgnoreCache;
-			let msgHist;
-			if (!msgHistIds) {
-				// First-time generation
-				msgHist = getMessageHistory(comp, {
-					hiddenUserIds: user.id !== this.usersMap.coordinator.id ? [this.usersMap.coordinator.id] : [],
-					maxMessages: 10,
-					maxDate: message.dateCreated,
-					excludeLoading: true,
-				});
-			} else {
-				// Re-generation from specified context
-				msgHist = msgHistIds.map((id) => thread.messageIdMap[id]);
-				// if there are any undefined messages, remove them
-				msgHist = msgHist.filter((m) => m !== undefined);
-				// TODO: This will end up with less messages than expected if there are any undefined messages
-				ignoreCache = true;
-			}
-
-			const response: PromptResponse = await comp.generate(
-				user,
-				msgHist,
-				ignoreCache
-			);
-			console.log('handleUserMessage->response:', response);
-			message.response = response.response;
-			message.cached = response.cached;
-
-			if (response.errorMsg) {
-				console.error('Error generating response:', response.errorMsg);
-				message.textSnippets = ["[ERROR]" + "\n" + response.errorMsg]
-				comp.pushMessage(message);
-				return;
-			}
-
-			if (response?.textSnippets) message.textSnippets = response.textSnippets
-			if (response?.imageUrls) message.imageUrls = response.imageUrls
-			comp.pushMessage(message);
-
-			const followupActors = message.textSnippets
-				.flatMap((t: string) => t.toLowerCase().split("\n"))
-				.filter((t: string) => t.includes("respond"))
-				.flatMap((t: string) => t.split(":")[1].split(","))
-				.map((a: string) => a.trim().toLowerCase())
-				.filter((a: string) => a !== "none");
-
-			let followupPrompts = message.textSnippets
-				.filter((t: string) => t.includes("<prompt>"))
-				.map((t: string) =>
-					t.split("<prompt>")[1].trim().split("</prompt>")[0].trim()
-				);
-
-			const followups = []
-
-			switch (user.id) {
-				case this.usersMap.coordinator.id:
-					if (followupActors.length === 0) {
-						console.warn("=> No follow-ups");
-						message.textSnippets.push("[INFO] It appears that all assistants chose to ignore your message, lol.");
-						message.textSnippets.push("You could try sending a message that is a little more interesting!");
-						break;
-					}
-					console.log('handleUserMessage->followupActors:', followupActors);
-					for (const nextKey of followupActors) {
-						const nextMsg: ChatMessage = this.createMessageFromUserId(
-							nextKey,
-							comp
-						);
-						message.followupMsgIds.push(nextMsg.id);
-						nextMsg.dateCreated = message.dateCreated
-						followups.push({
-							msg: nextMsg,
-							cfgUserId: undefined,
-						});
-					}
-					break;
-				default:
-					message.textSnippets = message.textSnippets.map((t: string) => {
-						if (t.includes("<prompt>")) {
-							const parts = t.split("<prompt>");
-							const end = parts[1].split("</prompt>");
-							return parts[0] + end[1];
-						}
-						return t.trim();
-					});
-					message.textSnippets = message.textSnippets.filter((t: string) => t.length > 0);
-					comp.pushMessage(message);
-
-					followupPrompts = followupPrompts.filter((t: string) => t.split(" ").length > 3);
-					if (followupPrompts.length > 0) {
-						console.log("handleUserMessage->followupPrompts:", followupPrompts);
-						// TODO: better way to handle this dynamically instead of hard-coding
-						const followupPromptHelperId = user.followupPromptHelperId;
-						if (!followupPromptHelperId) {
-							console.error(`Error: ${user.id} generated ${followupPrompts.length} prompts, but no promptHelperId was specified.`);
-							break
-						}
-						for (let i = 0; i < followupPrompts.length; i++) {
-							const prompt = `<result>${followupPrompts[i]}</result>`
-							/*
-							// msg.textSnippets.push(prompt);
-							const nextMsg: ChatMessage = createMessageFromUserId(
-								msg.userId,
-								comp,
-							);
-							msg.followupMsgIds.push(nextMsg.id);
-							nextMsg.textSnippets.push(prompt);
-							nextMsg.dateCreated = msg.dateCreated
-							comp.pushMessage(nextMsg);
-							followups.push({
-								msg: nextMsg,
-								cfgUserId: followupPromptHelperId,
-							});
-							*/
-
-							message.textSnippets.push(prompt);
-							const nextMsg: ChatMessage = this.createMessageFromUserId(
-								followupPromptHelperId,
-								comp,
-							);
-							message.followupMsgIds.push(nextMsg.id);
-							// nextMsg.textSnippets.push(prompt);
-							nextMsg.dateCreated = message.dateCreated
-							// comp.pushMessage(nextMsg);
-							followups.push({
-								msg: nextMsg,
-								cfgUserId: undefined,
-							});
-						}
-					}
-					break;
-			}
-			comp.pushMessage(message);
-			for (const nextMsg of followups) {
-				if (thread.prefs.orderedResponses) {
-					await this.handleUserMessage(nextMsg.msg, comp, nextMsg.cfgUserId);
-				} else {
-					this.handleUserMessage(nextMsg.msg, comp, nextMsg.cfgUserId);
-				}
-			}
+		clearCachedResponses() {
+			smartNotify(`Clearing complete cache...`);
+			this.cachedResponses = {};
+			this.saveState();
+			return this.cachedResponses;
 		},
-		handleAssistantCfg(cfg: User, comp: any) {
-			const msg = createMessageFromUserConfig(cfg, comp);
-			return this.handleUserMessage(msg, comp);
-		}
+		resetPrefs() {
+			smartNotify(`Resetting preferences...`);
+			this.prefs = StatePrefs.getDefault()
+			this.saveState();
+			return this.prefs;
+		},
+		resetActiveThread() {
+			smartNotify(`Resetting active thread...`);
+			const activeThread: Thread = this.getActiveThread();
+			activeThread.resetAll();
+			this.saveState();
+			return activeThread;
+		},
+		clearActiveThreadMessages() {
+			smartNotify(`Clearing active thread messages...`);
+			const activeThread: Thread = this.getActiveThread();
+			activeThread.clearMessages();
+			this.saveState();
+			return activeThread;
+		},
+		resetAllThreads() {
+			smartNotify(`Resetting all threads data...`);
+			this.threadData = StateThreads.getDefault();
+			this.saveState();
+			return this.threadData;
+		},
+		resetAllUsers() {
+			smartNotify(`Resetting all users data...`);
+			this.userData = StateUsers.getDefault();
+			this.saveState();
+			return this.userData;
+		},
 	},
 });
-

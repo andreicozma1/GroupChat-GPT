@@ -24,6 +24,11 @@ export interface ApiResponse {
 	data: any;
 }
 
+interface FollowUp {
+	userId: string,
+	prompt?: string
+}
+
 export const useChatStore = defineStore("chatStore", {
 	state: () => StateGlobalStore.getState(),
 	getters: {
@@ -174,18 +179,24 @@ export const useChatStore = defineStore("chatStore", {
 			}
 
 
-			let followups = message.textSnippets.flatMap((text: string) => {
-				const fups: string[] = [];
+			let followups: FollowUp[] = message.textSnippets.flatMap((text: string) => {
+				const fups: FollowUp[] = [];
 
 				text.match(/@([a-zA-Z0-9_]+)/g)?.forEach((m: string) => {
-					fups.push(m.slice(1));
+					fups.push({
+						userId: m.slice(1),
+						prompt: undefined
+					});
 				});
 
 				text.match(rHtmlTagWithContent)?.forEach((m: string) => {
 					// get the name of the html tag
 					const tag = m.match(rHtmlTagStart)?.[0].slice(1, -1);
 					// get the content of the html tag
-					if (tag) fups.push(tag);
+					if (tag) fups.push({
+						userId: tag,
+						prompt: undefined
+					});
 				});
 				return fups;
 			});
@@ -194,23 +205,26 @@ export const useChatStore = defineStore("chatStore", {
 				const joinedUserIds = thread
 					.getJoinedUsers(this.getUserById)
 					.map((u) => u.id);
-				followups = followups.filter((m: string) => {
-					const isInChat = joinedUserIds.includes(m);
-					if (!isInChat) {
-						smartNotify(`User ${m} is not a member of this chat thread.`);
-					}
+				followups = followups.filter((f: FollowUp) => {
+					const uid = f.userId
+					const isInChat = joinedUserIds.includes(uid);
+					if (!isInChat) smartNotify(`User ${uid} is not a member of this chat thread.`);
 					return isInChat;
 				});
-			}
-
-			if (user.id === this.getMyUser().id && followups.length === 0) {
-				followups.push(this.userData.usersMap.coordinator.id);
+			} else if (user.type === UserTypes.HUMAN) {
+				followups = [
+					{
+						userId: this.userData.usersMap.coordinator.id,
+						prompt: undefined
+					},
+				];
 			}
 
 			console.warn("handleUserMessage->followupActors:", followups);
 
-			for (const followUpUserId of followups) {
-				const nextMsg: Message = this.createMessageFromUserId(followUpUserId);
+			for (const fup of followups) {
+				const uid = fup.userId;
+				const nextMsg: Message = this.createMessageFromUserId(uid);
 				message.followupMsgIds.push(nextMsg.id);
 				// increment the DateCreated from the previous message
 				// nextMsg.dateCreated = message.dateCreated;

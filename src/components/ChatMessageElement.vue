@@ -103,7 +103,7 @@
         </template>
 
         <template v-slot:stamp>
-            <div class="row items-center">
+            <div class="row items-center justify-between">
                 <q-btn :disable="!canRegenerate"
                        :icon="typeIcon"
                        class="q-ma-none q-pa-none"
@@ -130,60 +130,60 @@
                     </q-tooltip>
                 </div>
                 <q-space />
-
                 <CompletionUsageBadges v-if="modelValue?.apiResponse?.data?.usage"
                                        :model-usage="modelValue?.apiResponse?.data?.usage" />
-
-                <div v-if="shouldDelete"
-                     class="text-bold">Delete?
+                <div>
+                    <div v-if="shouldDelete"
+                         class="text-bold">Delete?
+                    </div>
+                    <q-btn v-if="!shouldDelete"
+                           color="blue-grey-8"
+                           dense
+                           flat
+                           icon="edit"
+                           round
+                           size="xs"
+                           @click.stop="onClickEdit"
+                    >
+                        <q-tooltip> Edit message</q-tooltip>
+                    </q-btn>
+                    <q-btn v-if="!shouldDelete"
+                           :icon="modelValue.isIgnored ? 'visibility' : 'visibility_off'"
+                           color="blue-grey-8"
+                           dense
+                           flat
+                           round
+                           size="xs"
+                           @click.stop="modelValue.toggleIgnored()"
+                    >
+                        <q-tooltip>
+                            {{ modelValue.isIgnored ? "Use message" : "Ignore message" }}
+                        </q-tooltip>
+                    </q-btn>
+                    <q-btn :color="shouldDelete ? 'black' : 'blue-grey-8'"
+                           :icon="shouldDelete ? 'delete_forever' : 'delete'"
+                           dense
+                           flat
+                           round
+                           size="xs"
+                           @click.stop="toggleShouldDelete()"
+                    >
+                        <q-tooltip>
+                            {{ shouldDelete ? "Yes, delete" : "Delete" }}
+                        </q-tooltip>
+                    </q-btn>
+                    <q-btn v-if="shouldDelete"
+                           :color="shouldDelete ? 'black' : 'blue-grey-8'"
+                           dense
+                           flat
+                           icon="restore"
+                           round
+                           size="xs"
+                           @click.stop="toggleShouldDelete(false)"
+                    >
+                        <q-tooltip> Restore</q-tooltip>
+                    </q-btn>
                 </div>
-                <q-btn v-if="!shouldDelete"
-                       color="blue-grey-8"
-                       dense
-                       flat
-                       icon="edit"
-                       round
-                       size="xs"
-                       @click.stop="onClickEdit"
-                >
-                    <q-tooltip> Edit message</q-tooltip>
-                </q-btn>
-                <q-btn v-if="!shouldDelete"
-                       :icon="modelValue.isIgnored ? 'visibility' : 'visibility_off'"
-                       color="blue-grey-8"
-                       dense
-                       flat
-                       round
-                       size="xs"
-                       @click.stop="modelValue.toggleIgnored()"
-                >
-                    <q-tooltip>
-                        {{ modelValue.isIgnored ? "Use message" : "Ignore message" }}
-                    </q-tooltip>
-                </q-btn>
-                <q-btn :color="shouldDelete ? 'black' : 'blue-grey-8'"
-                       :icon="shouldDelete ? 'delete_forever' : 'delete'"
-                       dense
-                       flat
-                       round
-                       size="xs"
-                       @click.stop="toggleShouldDelete()"
-                >
-                    <q-tooltip>
-                        {{ shouldDelete ? "Yes, delete" : "Delete" }}
-                    </q-tooltip>
-                </q-btn>
-                <q-btn v-if="shouldDelete"
-                       :color="shouldDelete ? 'black' : 'blue-grey-8'"
-                       dense
-                       flat
-                       icon="restore"
-                       round
-                       size="xs"
-                       @click.stop="toggleShouldDelete(false)"
-                >
-                    <q-tooltip> Restore</q-tooltip>
-                </q-btn>
             </div>
         </template>
     </q-chat-message>

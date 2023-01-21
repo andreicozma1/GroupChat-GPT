@@ -4,7 +4,6 @@ import {smartNotify} from "src/util/SmartNotify";
 import {parseDate} from "src/util/DateUtils";
 import {Message} from "src/util/chat/Message";
 import {User} from "src/util/chat/User";
-import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 
 export interface ChatThreadPrefs {
 	hiddenUserIds: string[];
@@ -43,17 +42,9 @@ export class Thread {
 	}
 
 	getJoinedUsers(getUserCallback: (id: string) => User | undefined): User[] {
-		const res = this.joinedUserIds
+		return this.joinedUserIds
 			.map(getUserCallback)
 			.filter((u: User | undefined) => u !== undefined) as User[];
-		const joinedAssistants = res.filter(assistantFilter);
-		if (joinedAssistants.length === 0) {
-			smartNotify(
-				"Warning: There are no assistants in this thread!",
-				"You can add assistants in the thread preferences menu."
-			);
-		}
-		return res;
 	}
 
 	getMessageIdMap(): { [key: string]: Message } {

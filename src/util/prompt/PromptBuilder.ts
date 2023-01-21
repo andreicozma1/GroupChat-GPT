@@ -3,6 +3,8 @@ import {wrapInHtmlTag} from "src/util/TextUtils";
 import {Message} from "src/util/chat/Message";
 import {User} from "src/util/chat/User";
 import {createRegexHtmlTagWithContent} from "src/util/Utils";
+import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
+import {smartNotify} from "src/util/SmartNotify";
 
 export interface PromptConfig {
 	promptType: string;
@@ -64,22 +66,26 @@ export class PromptBuilder {
 		usersArr: User[],
 		header = "MEMBERS"
 	): string {
-		const availableUsers: User[] = usersArr.filter(
+		const availableAssistants: User[] = usersArr.filter(
 			(a: User): boolean => {
 				if (a.showInMembersInfo === undefined) return true;
 				return a.showInMembersInfo;
 			}
-		);
-		if (!availableUsers || availableUsers.length === 0) {
-			throw new Error("No users are available at the moment.");
-			// return ""
+		).filter(assistantFilter);
+		
+		if (!availableAssistants || availableAssistants.length === 0) {
+			throw new Error("No assistants are available at the moment.");
+			smartNotify(
+				"Warning: There are no assistants in this thread!",
+				"You can add assistants in the thread preferences menu."
+			);
 		}
 
-		const isAvailable = availableUsers.some(
+		const isAvailable = availableAssistants.some(
 			(a: User) => a.id === currentUser.id
 		);
 		// sort such that the current user is last
-		availableUsers.sort((a: User, b: User) => {
+		availableAssistants.sort((a: User, b: User) => {
 			if (a.id === currentUser.id) return 1;
 			if (b.id === currentUser.id) return -1;
 			return 0;
@@ -87,12 +93,12 @@ export class PromptBuilder {
 
 		const info: string[] = [];
 		if (!isAvailable) {
-			availableUsers.forEach((user: User) => {
+			availableAssistants.forEach((user: User) => {
 				info.push(this.promptAssistantInfo(user));
 			});
 		} else {
 			info.push(this.promptAssistantInfo(currentUser, "You"));
-			availableUsers
+			availableAssistants
 				.filter((a: User) => a.id !== currentUser.id)
 				.forEach((user: User) => {
 					info.push(this.promptAssistantInfo(user));

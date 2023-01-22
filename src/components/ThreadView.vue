@@ -1,4 +1,5 @@
 <template>
+
     <q-linear-progress v-if="isLoading"
                        color="primary"
                        indeterminate />
@@ -21,6 +22,10 @@
             />
         </div>
     </q-scroll-area>
+
+    <div v-if="msgContextIds.length"
+         class="text-center">
+    </div>
 </template>
 
 <script lang="ts"
@@ -33,6 +38,8 @@ import CustomChatMessage from "components/ChatMessageElement.vue";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import {colors, colorsRgba} from "quasar";
+import {useInfoStore} from "stores/infoStore";
+import {getSingularOrPlural} from "src/util/TextUtils";
 import getPaletteColor = colors.getPaletteColor;
 import textToRgb = colors.textToRgb;
 
@@ -45,6 +52,7 @@ const props = defineProps({
 });
 
 const store = useChatStore();
+const infoStore = useInfoStore();
 const threadElem: any = ref(null);
 
 const threadMessages: Ref<Message[]> = ref([]);
@@ -66,6 +74,8 @@ const msgContextIds: Ref<string[]> = ref([]);
 
 const onMsgMouseOver = (msg: Message) => {
 	if (msg.prompt?.messageContextIds) {
+		const len = msg.prompt.messageContextIds.length;
+		infoStore.setInfo(`${len} ${getSingularOrPlural("message", len)} in context`);
 		msgContextIds.value = [...msg.prompt.messageContextIds, msg.id];
 		msgContextParentColorRgba.value = textToRgb(getPaletteColor(msg.getBackgroundColor()))
 	} else {
@@ -77,6 +87,7 @@ const onMsgMouseOut = (msg: Message) => {
 	console.log("onMsgMouseOut->msg: ", {...msg});
 	msgContextIds.value = [];
 	msgContextParentColorRgba.value = defaultBackgroundColor;
+	infoStore.resetInfo()
 };
 
 const msgStyle = (msg: Message) => {

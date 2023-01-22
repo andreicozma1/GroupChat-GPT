@@ -9,6 +9,12 @@
                    @click="toggleSideMenu"
             />
             <q-toolbar-title> {{ activeThread.name }}</q-toolbar-title>
+
+            <q-chip v-if="infoStore.message"
+                    class="absolute-center q-ma-none">
+                {{ infoStore.message }}
+            </q-chip>
+
             <ChatThreadPrefs />
             <!--            <div class="q-ml-sm">Quasar v{{ $q.version }}</div>-->
         </q-toolbar>
@@ -26,8 +32,10 @@ import ChatThreadPrefs from "components/ThreadPrefs.vue";
 import SideMenu from "components/SideMenu.vue";
 import {useChatStore} from "stores/chatStore";
 import {Thread} from "src/util/chat/Thread";
+import {useInfoStore} from "stores/infoStore";
 
 const store = useChatStore();
+const infoStore = useInfoStore();
 const activeThread: ComputedRef<Thread> = computed(() =>
 	store.getActiveThread()
 );

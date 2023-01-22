@@ -84,7 +84,7 @@
                                             label="Ordered Responses"
                                             left-label
                                     >
-                                        <q-tooltip>Could not load thread preferences</q-tooltip>
+                                        <CustomTooltip>Could not load thread preferences</CustomTooltip>
                                     </q-checkbox>
                                 </q-item>
 
@@ -101,7 +101,7 @@
                                             label="Hide Ignored Messages"
                                             left-label
                                     >
-                                        <q-tooltip>Could not load thread preferences</q-tooltip>
+                                        <CustomTooltip>Could not load thread preferences</CustomTooltip>
                                     </q-checkbox>
                                 </q-item>
                             </q-list>
@@ -119,6 +119,7 @@ import {computed, ComputedRef, Ref, ref, watch} from "vue";
 import {User} from "src/util/chat/User";
 import {Thread} from "src/util/chat/Thread";
 import {smartNotify} from "src/util/SmartNotify";
+import CustomTooltip from "components/CustomTooltip.vue";
 
 
 const defaultExpansionItemProps = {

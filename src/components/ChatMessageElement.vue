@@ -20,7 +20,9 @@
                            :href="chunk"
                            target="_blank">
                             {{ chunk }}
-                            <q-tooltip>{{ chunk }}</q-tooltip>
+                            <CustomTooltip>
+                                {{ chunk }}
+                            </CustomTooltip>
                         </a>
                         <span v-else>
                             {{ chunk }}
@@ -32,25 +34,24 @@
                 </span>
             </div>
 
-            <q-tooltip v-if="modelValue.apiResponse?.data?.usage"
-                       :delay="750">
+            <CustomTooltip v-if="modelValue.apiResponse?.data?.usage">
                 {{ modelUsageStr() }}
-            </q-tooltip>
+            </CustomTooltip>
 
             <q-badge v-if="modelValue.apiResponse && (modelValue.apiResponse.data === undefined || modelValue.apiResponse.error)"
                      color="red"
                      floating
                      label="Error"
                      rounded>
-                <q-tooltip v-if="modelValue.apiResponse.error">
+                <CustomTooltip v-if="modelValue.apiResponse.error">
                     {{ apiErrorToString(modelValue.apiResponse.error) }}
-                </q-tooltip>
-                <q-tooltip v-else-if="modelValue.apiResponse.data === undefined">
+                </CustomTooltip>
+                <CustomTooltip v-else-if="modelValue.apiResponse.data === undefined">
                     Response data is undefined
-                </q-tooltip>
-                <q-tooltip v-else>
+                </CustomTooltip>
+                <CustomTooltip v-else>
                     Unknown error
-                </q-tooltip>
+                </CustomTooltip>
             </q-badge>
         </div>
 
@@ -86,18 +87,15 @@
                          color="orange"
                          label="Ignored"
                          v-bind="defaultBadgeProps">
-                    <q-tooltip>
+                    <CustomTooltip>
                         This message will be ignored in future prompts.
-                    </q-tooltip>
+                    </CustomTooltip>
                 </q-badge>
                 <q-badge :label="chatStore.getUserById(modelValue.userId)?.type.toUpperCase()"
                          color="green"
                          outline
                          rounded
                          v-bind="defaultBadgeProps">
-                    <q-tooltip>
-                        {{ modelUsageStr() }}
-                    </q-tooltip>
                 </q-badge>
             </span>
         </template>
@@ -114,20 +112,20 @@
                        size="xs"
                        @click.stop="onClickRegenerate"
                 >
-                    <q-tooltip v-if="canRegenerate">
+                    <CustomTooltip v-if="canRegenerate">
                         Re-generate completion
-                    </q-tooltip>
-                    <q-tooltip v-else>
+                    </CustomTooltip>
+                    <CustomTooltip v-else>
                         Cannot regenerate completion
-                    </q-tooltip>
+                    </CustomTooltip>
                 </q-btn>
 
                 <div class="text-caption text-blue-grey-10">
                     <DateText :modelValue="modelValue.dateCreated"
                               :suffix="getStamp()" />
-                    <q-tooltip>
+                    <CustomTooltip>
                         {{ stampHoverHint }}
-                    </q-tooltip>
+                    </CustomTooltip>
                 </div>
                 <q-space />
                 <CompletionUsageBadges v-if="modelValue?.apiResponse?.data?.usage"
@@ -145,7 +143,7 @@
                            size="xs"
                            @click.stop="onClickEdit"
                     >
-                        <q-tooltip> Edit message</q-tooltip>
+                        <CustomTooltip> Edit message</CustomTooltip>
                     </q-btn>
                     <q-btn v-if="!shouldDelete"
                            :icon="modelValue.isIgnored ? 'visibility' : 'visibility_off'"
@@ -156,9 +154,9 @@
                            size="xs"
                            @click.stop="modelValue.toggleIgnored()"
                     >
-                        <q-tooltip>
+                        <CustomTooltip>
                             {{ modelValue.isIgnored ? "Use message" : "Ignore message" }} in future contexts
-                        </q-tooltip>
+                        </CustomTooltip>
                     </q-btn>
                     <q-btn :color="shouldDelete ? 'black' : 'blue-grey-8'"
                            :icon="shouldDelete ? 'delete_forever' : 'delete'"
@@ -168,9 +166,9 @@
                            size="xs"
                            @click.stop="toggleShouldDelete()"
                     >
-                        <q-tooltip>
+                        <CustomTooltip>
                             {{ shouldDelete ? "Yes, delete" : "Delete message" }}
-                        </q-tooltip>
+                        </CustomTooltip>
                     </q-btn>
                     <q-btn v-if="shouldDelete"
                            :color="shouldDelete ? 'black' : 'blue-grey-8'"
@@ -181,7 +179,7 @@
                            size="xs"
                            @click.stop="toggleShouldDelete(false)"
                     >
-                        <q-tooltip> Restore</q-tooltip>
+                        <CustomTooltip> Restore</CustomTooltip>
                     </q-btn>
                 </div>
             </div>
@@ -199,6 +197,7 @@ import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
 import DateText from "components/DateText.vue";
 import CompletionUsageBadges from "components/CompletionUsageBadges.vue";
+import CustomTooltip from "components/CustomTooltip.vue";
 
 const props = defineProps({
 	modelValue: {

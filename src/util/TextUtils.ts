@@ -1,5 +1,15 @@
 import {createRegexHtmlTagEnd, createRegexHtmlTagStart, createRegexHtmlTagWithContent} from "src/util/RegexUtils";
 
+/*
+Capitalize the first letter of each word in a string
+ */
+export const capitalizeFirstLetter = (str: string) => {
+	// return str.charAt(0).toUpperCase() + str.slice(1);
+	let words = str.split(" ");
+	words = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+	return words.join(" ");
+}
+
 export const getSingularOrPlural = (singularStr: string, count: number) => {
 	return count === 1 ? singularStr : `${singularStr}s`;
 };

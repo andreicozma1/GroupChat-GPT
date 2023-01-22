@@ -29,7 +29,7 @@ Well, this application is a step towards that world.
     - Prompts for each AI assistant are dynamically created, including various characteristics and rules (outlined
       below)
 - Response Coordinator
-    - Dictates which assistant(s) needs to respond to the promptUser's message.
+    - Dictates which assistant(s) needs to respond to the user's message.
     - For example, if the promptUser asks "hey, how are you all?", multiple assistants may respond, each with their own unique
       response.
     - If the promptUser asks "Hey DALL-E, I need to generate an image", then only DALL-E will respond.

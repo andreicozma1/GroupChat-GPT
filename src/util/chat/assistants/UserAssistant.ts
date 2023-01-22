@@ -9,17 +9,17 @@ export class UserAssistant extends User {
 		super(id, name, UserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.CONVERSATION;
 		this.addTraits({
-			personality: ["friendly", "polite", "truthful"],
-			strengths: ["making conversation", "answering questions"],
-			weaknesses: [],
-			abilities: [],
-		})
+						   personality: ["friendly", "polite", "truthful"],
+						   strengths: ["making conversation", "answering questions"],
+						   weaknesses: [],
+						   abilities: [],
+					   })
 		this.addRules({
-			always: [
-				"Strictly follow the rules of the conversation.",
-				"Follow instructions, requests, and answer questions if appropriate to do so.",
-			],
-			never: ["Respond to other assistants or on behalf of other assistants."],
-		})
+						  always: [
+							  "Strictly follow the rules of the conversation.",
+							  "Follow instructions, requests, and answer questions if appropriate to do so.",
+						  ],
+						  never: ["Respond to other assistants or on behalf of other assistants."],
+					  })
 	}
 }

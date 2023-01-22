@@ -22,7 +22,9 @@ export const copyClipboard = (text: string) => {
 
 export const apiErrorToString = (error: any, short = false) => {
 	let errorMsg = "";
-	if (error.message) errorMsg += error.message;
+	if (error.message) {
+		errorMsg += error.message;
+	}
 	if (error.response) {
 		errorMsg += "\n"
 		errorMsg += "Status: " + error.response.status;

@@ -20,15 +20,15 @@ import {getSeededQColor} from "src/util/Colors";
 import CustomTooltip from "components/CustomTooltip.vue";
 
 const props = defineProps({
-	modelUsage: {
-		type: Object,
-	},
-	badgeProps: {
-		type: Object,
-		required: false,
-		default: null,
-	},
-});
+							  modelUsage: {
+								  type: Object,
+							  },
+							  badgeProps: {
+								  type: Object,
+								  required: false,
+								  default: null,
+							  },
+						  });
 
 const getBadgeColor = (key: string, value: string) => {
 	return getSeededQColor(key + '^', 4, 5)

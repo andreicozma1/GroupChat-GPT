@@ -200,21 +200,21 @@ import CompletionUsageBadges from "components/UsageBadges.vue";
 import CustomTooltip from "components/CustomTooltip.vue";
 
 const props = defineProps({
-	modelValue: {
-		type: Object as PropType<Message>,
-		required: true,
-	},
-	loading: {
-		type: Boolean as PropType<boolean>,
-		required: false,
-		default: false,
-	},
-	style: {
-		type: Object as PropType<Record<string, any>>,
-		required: false,
-		default: () => ({}),
-	},
-});
+							  modelValue: {
+								  type: Object as PropType<Message>,
+								  required: true,
+							  },
+							  loading: {
+								  type: Boolean as PropType<boolean>,
+								  required: false,
+								  default: false,
+							  },
+							  style: {
+								  type: Object as PropType<Record<string, any>>,
+								  required: false,
+								  default: () => ({}),
+							  },
+						  });
 
 const chatStore = useChatStore();
 
@@ -236,7 +236,9 @@ const parsedTextSnippets = computed((): string[] => {
 			return line.trim();
 		});
 	});
-	if ((!texts || texts.length === 0) && !props.loading) return [];
+	if ((!texts || texts.length === 0) && !props.loading) {
+		return [];
+	}
 	return texts;
 });
 
@@ -301,8 +303,12 @@ const typeIcon = computed(() => {
 });
 
 const getStamp = () => {
-	if (props.modelValue.apiResponse?.fromCache) return '(from cache)';
-	if (props.modelValue.apiResponse?.cacheIgnored) return '(cache ignored)';
+	if (props.modelValue.apiResponse?.fromCache) {
+		return '(from cache)';
+	}
+	if (props.modelValue.apiResponse?.cacheIgnored) {
+		return '(cache ignored)';
+	}
 	return undefined
 }
 
@@ -318,14 +324,20 @@ const stampHoverHint = computed(() => {
 
 const modelUsageStr = () => {
 	const usage = props.modelValue.apiResponse?.data?.usage;
-	if (!usage) return undefined
+	if (!usage) {
+		return undefined
+	}
 	const keys = Object.keys(usage)
-	if (keys.length === 0) return undefined
+	if (keys.length === 0) {
+		return undefined
+	}
 	return keys.map(key => `${key}: ${usage[key]} `).join('; ')
 }
 
 const bgColor = computed(() => {
-	if (shouldDelete.value) return "red-2";
+	if (shouldDelete.value) {
+		return "red-2";
+	}
 	return props.modelValue.getBackgroundColor()
 });
 
@@ -334,8 +346,8 @@ const style = computed(() => {
 		...props.style,
 		borderRadius: "1.0rem",
 		opacity: props.modelValue.isIgnored
-			? chatStore.prefs.ignoredMessageOpacity.value
-			: 1.0,
+				 ? chatStore.prefs.ignoredMessageOpacity.value
+				 : 1.0,
 		outline: shouldDelete.value ? "2px solid red" : null,
 	};
 });

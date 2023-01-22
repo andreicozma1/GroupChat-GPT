@@ -37,7 +37,7 @@ import {useInfoStore} from "stores/infoStore";
 const chatStore = useChatStore();
 const infoStore = useInfoStore();
 const activeThread: ComputedRef<Thread> = computed(() =>
-	chatStore.getActiveThread()
+													   chatStore.getActiveThread()
 );
 
 const sideMenuOpen = ref(false);

@@ -27,9 +27,15 @@ export const parseMessagesHistory = (
 	// filter out messages whose textSnippets stripped and joined are empty
 	// unless the message has an image
 	messages = messages.filter((message: Message) => {
-		if (excludeLoading && message.loading) return false;
-		if (excludeIgnored && message.isIgnored) return false;
-		if (excludeNoText && !message.hasTextSnippets()) return false;
+		if (excludeLoading && message.loading) {
+			return false;
+		}
+		if (excludeIgnored && message.isIgnored) {
+			return false;
+		}
+		if (excludeNoText && !message.hasTextSnippets()) {
+			return false;
+		}
 		return true;
 	});
 	// console.log("getMessageHistory->original:", messages);
@@ -38,8 +44,12 @@ export const parseMessagesHistory = (
 		// console.log("getMessageHistory->maxMessages:", messages);
 	}
 	messages = messages.filter((message: Message) => {
-		if (config.maxDate && config.maxDate <= message.dateCreated) return false;
-		if (config.minDate && config.minDate >= message.dateCreated) return false;
+		if (config.maxDate && config.maxDate <= message.dateCreated) {
+			return false;
+		}
+		if (config.minDate && config.minDate >= message.dateCreated) {
+			return false;
+		}
 		if (
 			config.forceShowKeywords &&
 			message.containsKeywords(config.forceShowKeywords)

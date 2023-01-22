@@ -61,7 +61,7 @@ export const smartNotify = (message: string, caption?: string) => {
 		for (const value of Object.values(typeMap)) {
 			const matchKeywords = value.keywords;
 			const lowerKeywords = matchKeywords.map((keyword) =>
-				keyword.toLowerCase()
+														keyword.toLowerCase()
 			);
 			// split by space for each word and also every 2 words
 
@@ -72,20 +72,24 @@ export const smartNotify = (message: string, caption?: string) => {
 				break;
 			}
 		}
-		if (found) break;
+		if (found) {
+			break;
+		}
 	}
 
 	console.warn("smartNotify->message:", message);
-	if (caption) console.log("smartNotify->caption:", caption);
+	if (caption) {
+		console.log("smartNotify->caption:", caption);
+	}
 
 	notifyQueue.push({
-		color: color,
-		textColor: textColor,
-		message: message,
-		caption: caption,
-		timeout: msgTimeout,
-		progress: true,
-	});
+						 color: color,
+						 textColor: textColor,
+						 message: message,
+						 caption: caption,
+						 timeout: msgTimeout,
+						 progress: true,
+					 });
 
 	if (notifyTimeout) {
 		clearTimeout(notifyTimeout);
@@ -94,7 +98,9 @@ export const smartNotify = (message: string, caption?: string) => {
 	notifyTimeout = setTimeout(async () => {
 		while (notifyQueue.length > 0) {
 			const opts: QNotifyCreateOptions | undefined = notifyQueue.shift();
-			if (!opts) continue;
+			if (!opts) {
+				continue;
+			}
 			Notify.create(opts);
 			await sleepPromise(1000);
 		}

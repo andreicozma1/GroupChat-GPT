@@ -32,8 +32,9 @@ export class PromptBuilder {
 	constructor(protected promptConfig: PromptConfig) {}
 
 	buildPrompt(...promptParts: string[]): string {
-		if (this.promptConfig.responseHeader)
+		if (this.promptConfig.responseHeader) {
 			promptParts.push(`### ${this.promptConfig.responseHeader}:`);
+		}
 		promptParts = promptParts.filter((s) => s.length > 0);
 		promptParts = promptParts.map((s) => s.trim());
 		return promptParts.join("\n\n");
@@ -55,7 +56,9 @@ export class PromptBuilder {
 	): string {
 		const availableAssistants: User[] = usersArr.filter(
 			(a: User): boolean => {
-				if (a.showInMembersInfo === undefined) return true;
+				if (a.showInMembersInfo === undefined) {
+					return true;
+				}
 				return a.showInMembersInfo;
 			}
 		).filter(assistantFilter);
@@ -73,8 +76,12 @@ export class PromptBuilder {
 		);
 		// sort such that the current user is last
 		availableAssistants.sort((a: User, b: User) => {
-			if (a.id === currentUser.id) return 1;
-			if (b.id === currentUser.id) return -1;
+			if (a.id === currentUser.id) {
+				return 1;
+			}
+			if (b.id === currentUser.id) {
+				return -1;
+			}
 			return 0;
 		});
 
@@ -96,16 +103,20 @@ export class PromptBuilder {
 	}
 
 	getPromptRules(header = "RULES"): string {
-		if (!this.promptConfig.rules) return "";
+		if (!this.promptConfig.rules) {
+			return "";
+		}
 
 		const rules = Object.entries(this.promptConfig.rules)
-			.map(([k, v]) => {
-				const s = v.map((s: string) => s.trim()).join("");
-				if (s.length === 0) return undefined;
-				k = k.toUpperCase();
-				return processItemizedList(k, v, {keyPrefix: "###"});
-			})
-			.filter((s: string | undefined) => s !== undefined);
+							.map(([k, v]) => {
+								const s = v.map((s: string) => s.trim()).join("");
+								if (s.length === 0) {
+									return undefined;
+								}
+								k = k.toUpperCase();
+								return processItemizedList(k, v, {keyPrefix: "###"});
+							})
+							.filter((s: string | undefined) => s !== undefined);
 
 		return [this.h1(header), ...rules].join("\n\n");
 	}
@@ -115,29 +126,32 @@ export class PromptBuilder {
 		responseHeaderFallback = "Response",
 		header = "EXAMPLES"
 	): string {
-		if (!this.promptConfig.examples || this.promptConfig.examples.length == 0)
+		if (!this.promptConfig.examples || this.promptConfig.examples.length == 0) {
 			return "";
+		}
 
 		const examples: string = this.promptConfig.examples
-			.map((example: string, i) => {
-				let msgPrompt = example.trim();
-				const isQuery: boolean = i % 2 === 0;
-				if (isQuery && this.promptConfig.promptWrapTag) {
-					msgPrompt = wrapInHtmlTag(this.promptConfig.promptWrapTag, msgPrompt);
-				}
-				if (!isQuery && this.promptConfig.responseWrapTag) {
-					msgPrompt = wrapInHtmlTag(
-						this.promptConfig.responseWrapTag,
-						msgPrompt
-					);
-				}
-				const identifier = isQuery
-					? this.promptConfig.promptHeader ?? promptHeaderFallback
-					: this.promptConfig.responseHeader ?? responseHeaderFallback
-				if (identifier) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
-				return msgPrompt;
-			})
-			.join("\n\n");
+									 .map((example: string, i) => {
+										 let msgPrompt = example.trim();
+										 const isQuery: boolean = i % 2 === 0;
+										 if (isQuery && this.promptConfig.promptWrapTag) {
+											 msgPrompt = wrapInHtmlTag(this.promptConfig.promptWrapTag, msgPrompt);
+										 }
+										 if (!isQuery && this.promptConfig.responseWrapTag) {
+											 msgPrompt = wrapInHtmlTag(
+												 this.promptConfig.responseWrapTag,
+												 msgPrompt
+											 );
+										 }
+										 const identifier = isQuery
+															? this.promptConfig.promptHeader ?? promptHeaderFallback
+															: this.promptConfig.responseHeader ?? responseHeaderFallback
+										 if (identifier) {
+											 msgPrompt = `### ${identifier}:\n${msgPrompt}`;
+										 }
+										 return msgPrompt;
+									 })
+									 .join("\n\n");
 
 		return [this.h1(header), examples].join("\n");
 	}
@@ -149,8 +163,8 @@ export class PromptBuilder {
 		const res: string = messagesCtx
 			.map((msg: Message, i) => {
 				let msgPrompt = msg.textSnippets
-					.map((s: string) => s.trim())
-					.join("\n");
+								   .map((s: string) => s.trim())
+								   .join("\n");
 				const isQuery = i % 2 === 0;
 				if (isQuery && this.promptConfig.promptWrapTag) {
 					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
@@ -173,18 +187,24 @@ export class PromptBuilder {
 
 	private promptAssistantInfo(user: User, parenthesesTag?: string): string {
 		let header = `### ${user.name} (id: ${user.id})`;
-		if (parenthesesTag) header += ` [${parenthesesTag.toUpperCase()}]`;
+		if (parenthesesTag) {
+			header += ` [${parenthesesTag.toUpperCase()}]`;
+		}
 		header += ":";
 
-		if (!user.promptConfig.traits) return header;
+		if (!user.promptConfig.traits) {
+			return header;
+		}
 
 		const info = Object.entries(user.promptConfig.traits)
-			.map(([k, v]) => {
-				const s = v.map((s: string) => s.trim()).join("");
-				if (s.length === 0) return undefined;
-				return processItemizedList(k, v, {keyPrefix: "-"});
-			})
-			.filter((s: string | undefined) => s !== undefined);
+						   .map(([k, v]) => {
+							   const s = v.map((s: string) => s.trim()).join("");
+							   if (s.length === 0) {
+								   return undefined;
+							   }
+							   return processItemizedList(k, v, {keyPrefix: "-"});
+						   })
+						   .filter((s: string | undefined) => s !== undefined);
 
 		return [header, ...info].join("\n");
 	}

@@ -26,8 +26,9 @@ const isTypingTimeout: Ref<any> = ref(null);
 const updateScrollAreaStyle = () => {
 	setTimeout(() => {
 		let controlsHeight = 0;
-		if (controlsCard.value)
+		if (controlsCard.value) {
 			controlsHeight = controlsCard.value.$el.clientHeight;
+		}
 		const newStyle = {bottom: controlsHeight + "px"};
 		if (newStyle.bottom !== scrollAreaStyle.value.bottom) {
 			scrollAreaStyle.value = newStyle;
@@ -40,7 +41,9 @@ watch(userMsgStr, () => {
 	// introduce a delay to detect if the promptUser is typing.
 	// The coordinator will not be called until the promptUser stops typing for a while.
 	isTyping.value = true;
-	if (isTypingTimeout.value) clearTimeout(isTypingTimeout.value);
+	if (isTypingTimeout.value) {
+		clearTimeout(isTypingTimeout.value);
+	}
 	isTypingTimeout.value = setTimeout(
 		() => (isTyping.value = false),
 		userMsgValid.value ? 1000 : 250

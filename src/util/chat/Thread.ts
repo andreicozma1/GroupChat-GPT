@@ -37,15 +37,17 @@ export class Thread {
 
 	addUser(user: User): void {
 		this.joinedUserIds.push(user.id);
-		if (user.requiresUserIds) this.joinedUserIds.push(...user.requiresUserIds);
+		if (user.requiresUserIds) {
+			this.joinedUserIds.push(...user.requiresUserIds);
+		}
 		// de-duplicate
 		this.joinedUserIds = Array.from(new Set(this.joinedUserIds));
 	}
 
 	getJoinedUsers(getUserCallback: (id: string) => User | undefined): User[] {
 		return this.joinedUserIds
-			.map(getUserCallback)
-			.filter((u: User | undefined) => u !== undefined) as User[];
+				   .map(getUserCallback)
+				   .filter((u: User | undefined) => u !== undefined) as User[];
 	}
 
 	getMessageIdMap(): { [key: string]: Message } {

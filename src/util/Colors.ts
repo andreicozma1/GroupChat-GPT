@@ -27,7 +27,9 @@ export const getSeededQColor = (
 		.slice(minNum, maxNum + 1)
 		.reduce((acc, val) => {
 			val.forEach((v, i) => {
-				if (!acc[i]) acc[i] = [];
+				if (!acc[i]) {
+					acc[i] = [];
+				}
 				acc[i].push(v);
 			});
 			return acc;
@@ -84,6 +86,8 @@ const baseQuasarColors = [
 ];
 
 const allQuasarColors = Array.from(Array(15).keys()).map((i) => {
-	if (i === 0) return baseQuasarColors;
+	if (i === 0) {
+		return baseQuasarColors;
+	}
 	return baseQuasarColors.map((c) => c + "-" + i);
 });

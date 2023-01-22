@@ -75,13 +75,16 @@ export const useChatStore = defineStore("chatStore", {
 		},
 		getUserById(id: string, verbose = true): User {
 			// console.warn("getUserById:", id);
-			if (!this.usersMap[id] && verbose) smartNotify('User not found', id);
+			if (!this.usersMap[id] && verbose) {
+				smartNotify('User not found', id);
+			}
 			return this.usersMap[id];
 		},
 		getMyUser(): User {
 			console.warn("getMyUser");
-			if (!this.getUserById(this.myUserId, false))
+			if (!this.getUserById(this.myUserId, false)) {
 				return this.registerUser(new UserHuman(this.myUserId), false);
+			}
 			return this.getUserById(this.myUserId);
 		},
 		/**************************************************************************************************************/
@@ -115,8 +118,9 @@ export const useChatStore = defineStore("chatStore", {
 		getActiveThread(): Thread {
 			console.warn("=".repeat(60));
 			console.warn("getActiveThread");
-			if (!this.activeThreadId)
+			if (!this.activeThreadId) {
 				return this.registerThread(new Thread(this.myUserId), false) as Thread;
+			}
 			return this.getThreadById(this.activeThreadId) as Thread;
 		},
 		/**************************************************************************************************************/
@@ -146,8 +150,8 @@ export const useChatStore = defineStore("chatStore", {
 					messages = parseMessagesHistory(messages, {
 						excludeUserIds:
 							user.id !== this.userData.usersMap.coordinator.id
-								? [this.userData.usersMap.coordinator.id]
-								: [],
+							? [this.userData.usersMap.coordinator.id]
+							: [],
 						maxMessages: 10,
 						maxDate: message.dateCreated,
 						excludeLoading: false,
@@ -173,18 +177,18 @@ export const useChatStore = defineStore("chatStore", {
 				for (const match of directMention) {
 					console.log("followups->directMention:", match);
 					fups.push({
-						userId: match[1],
-						promptText: undefined
-					});
+								  userId: match[1],
+								  promptText: undefined
+							  });
 				}
 
 				const promptedFollowup = text.matchAll(createRegexHtmlTagWithContent())
 				for (const match of promptedFollowup) {
 					console.log("followups->prompt:", match);
 					fups.push({
-						userId: match[1],
-						promptText: match[2]
-					});
+								  userId: match[1],
+								  promptText: match[2]
+							  });
 				}
 
 				return fups;
@@ -196,9 +200,13 @@ export const useChatStore = defineStore("chatStore", {
 					.map((u) => u.id);
 				followups = followups.filter((f: FollowUp) => {
 					const uid = f.userId
-					if (uid === user.id) return false;
+					if (uid === user.id) {
+						return false;
+					}
 					const isInChat = joinedUserIds.includes(uid);
-					if (!isInChat) smartNotify(`User ${uid} is not a member of this chat thread.`);
+					if (!isInChat) {
+						smartNotify(`User ${uid} is not a member of this chat thread.`);
+					}
 					return isInChat;
 				});
 			} else if (user.type === UserTypes.HUMAN) {
@@ -278,7 +286,9 @@ export const useChatStore = defineStore("chatStore", {
 				}
 			} catch (error: any) {
 				console.error(error);
-				if (error.stack) console.error(error.stack);
+				if (error.stack) {
+					console.error(error.stack);
+				}
 				result.error = error;
 			}
 
@@ -286,7 +296,7 @@ export const useChatStore = defineStore("chatStore", {
 		},
 		/**************************************************************************************************************/
 		/* DATA & STORAGE
-			/**************************************************************************************************************/
+		 /**************************************************************************************************************/
 		saveState(verbose = true) {
 			StateGlobalStore.saveState(this.$state, verbose);
 		},

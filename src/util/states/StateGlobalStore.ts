@@ -31,7 +31,9 @@ const getState = (): StateGlobalStore => {
 	let state: StateGlobalStore = getDefault()
 
 	const item: string | null = LocalStorage.getItem(localStorageKey);
-	if (!item) return state;
+	if (!item) {
+		return state;
+	}
 	const parsedJson = JSON.parse(item);
 	// recursively assign from parsedJson to state
 	// if a key in parsedJson is not in state, it will be ignored and error will be logged
@@ -41,7 +43,9 @@ const getState = (): StateGlobalStore => {
 };
 
 const saveState = (state: StateGlobalStore, verbose = true): void => {
-	if (verbose) smartNotify("Saving changes...");
+	if (verbose) {
+		smartNotify("Saving changes...");
+	}
 	console.log("saveState:", {...state});
 	state.dateLastSaved = new Date();
 	LocalStorage.set(localStorageKey, JSON.stringify(state));

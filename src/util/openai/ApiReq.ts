@@ -131,6 +131,8 @@ export const makeCompletion = async (apiReqConfig: string, prompt: string, debug
 		prompt,
 	};
 	console.log("=> config:", config);
-	if (debug) return JSON.stringify(config);
+	if (debug) {
+		return JSON.stringify(config);
+	}
 	return await config.func(config.opts);
 };

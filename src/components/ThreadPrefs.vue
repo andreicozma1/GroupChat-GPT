@@ -129,19 +129,25 @@ const defaultExpansionItemProps = {
 }
 const chatStore = useChatStore();
 const activeThread: ComputedRef<Thread> = computed(() =>
-	chatStore.getActiveThread()
+													   chatStore.getActiveThread()
 );
 
 const newThreadName: Ref<string> = ref(activeThread.value.name);
 
 const isNewThreadNameValid: ComputedRef<boolean> = computed(() => {
-	if (newThreadName.value === activeThread.value.name) return false;
-	if (newThreadName.value?.length < 2) return false;
+	if (newThreadName.value === activeThread.value.name) {
+		return false;
+	}
+	if (newThreadName.value?.length < 2) {
+		return false;
+	}
 	return true;
 });
 
 const saveThreadName = () => {
-	if (!isNewThreadNameValid.value) smartNotify("Please enter a valid new thread name");
+	if (!isNewThreadNameValid.value) {
+		smartNotify("Please enter a valid new thread name");
+	}
 	activeThread.value.name = newThreadName.value;
 	chatStore.saveState(true);
 }

@@ -165,7 +165,9 @@ const fabActionProps = {
 }
 
 const sendMessage = () => {
-	if (!userMsgValid.value) return;
+	if (!userMsgValid.value) {
+		return;
+	}
 	console.warn("=".repeat(60));
 	console.warn("=".repeat(60));
 	console.warn("=> sendMessage:");
@@ -175,7 +177,9 @@ const sendMessage = () => {
 	userMsgObj.value.textSnippets.push(userMsgStr.value);
 	userMsgStr.value = "";
 
-	if (responseTimeout.value) clearInterval(responseTimeout.value);
+	if (responseTimeout.value) {
+		clearInterval(responseTimeout.value);
+	}
 	responseTimeout.value = setInterval(() => {
 		if (!isTyping.value) {
 			console.log("=> userMsgObj:", {...userMsgObj.value});
@@ -197,7 +201,9 @@ watch(userMsgStr, () => {
 	// introduce a delay to detect if the promptUser is typing.
 	// The coordinator will not be called until the promptUser stops typing for a while.
 	isTyping.value = true;
-	if (isTypingTimeout.value) clearTimeout(isTypingTimeout.value);
+	if (isTypingTimeout.value) {
+		clearTimeout(isTypingTimeout.value);
+	}
 	isTypingTimeout.value = setTimeout(
 		() => {
 			isTyping.value = false;

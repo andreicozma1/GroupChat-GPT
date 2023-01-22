@@ -3,8 +3,9 @@ import {getSingularOrPlural} from "src/util/TextUtils";
 export type ValidDateTypes = Date | string | number;
 
 export const parseDate = (dateRepr: ValidDateTypes): Date => {
-	if (typeof dateRepr === "string" || typeof dateRepr === "number")
+	if (typeof dateRepr === "string" || typeof dateRepr === "number") {
 		dateRepr = new Date(dateRepr);
+	}
 	return dateRepr;
 };
 
@@ -53,7 +54,9 @@ export const dateToTimeAgo = (date: ValidDateTypes) => {
 
 	// Get the first unit that is greater than 0
 	for (const [key, value] of Object.entries(timeAgo)) {
-		if (value > 0) return parseTimeAgoStr(key, value);
+		if (value > 0) {
+			return parseTimeAgoStr(key, value);
+		}
 	}
 	// If we get here, it's been less than a second
 	return "just now";

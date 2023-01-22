@@ -1,7 +1,7 @@
 import {createRegexHtmlTagEnd, createRegexHtmlTagStart, createRegexHtmlTagWithContent} from "src/util/RegexUtils";
 
 /*
-Capitalize the first letter of each word in a string
+ Capitalize the first letter of each word in a string
  */
 export const capitalizeFirstLetter = (str: string) => {
 	// return str.charAt(0).toUpperCase() + str.slice(1);
@@ -55,7 +55,9 @@ export const removeSpecifiedHtmlTags = (
 	tag: string | string[],
 	removeContent = false
 ): string => {
-	if (!Array.isArray(tag)) tag = [tag];
+	if (!Array.isArray(tag)) {
+		tag = [tag];
+	}
 	tag.forEach((t) => {
 		if (removeContent) {
 			text = text.replace(createRegexHtmlTagWithContent(t), "");
@@ -74,7 +76,9 @@ export const getTextHash = (prompt: string): string => {
 	let promptText = prompt.toLowerCase();
 	promptText = promptText.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
 	promptText = promptText.trim();
-	if (promptText.length === 0) return hashStr;
+	if (promptText.length === 0) {
+		return hashStr;
+	}
 
 	let hashInt = 0;
 	for (let i = 0; i < promptText.length; i++) {

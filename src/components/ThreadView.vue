@@ -13,7 +13,7 @@
         <div v-for="msg in threadMessages"
              :key="msg.id">
             <CustomChatMessage
-                    :class="msgClass(msg)"
+                    :class="getMessageClass(msg)"
                     :loading="msg.loading"
                     :model-value="msg"
                     :style="msgStyle(msg)"
@@ -44,12 +44,12 @@ import getPaletteColor = colors.getPaletteColor;
 import textToRgb = colors.textToRgb;
 
 const props = defineProps({
-	scrollAreaStyle: {
-		type: Object,
-		required: false,
-		default: null,
-	},
-});
+							  scrollAreaStyle: {
+								  type: Object,
+								  required: false,
+								  default: null,
+							  },
+						  });
 
 const chatStore = useChatStore();
 const infoStore = useInfoStore();
@@ -84,7 +84,7 @@ const onMsgMouseOver = (msg: Message) => {
 };
 
 const onMsgMouseOut = (msg: Message) => {
-	console.log("onMsgMouseOut->msg: ", {...msg});
+	// console.log("onMsgMouseOut->msg: ", {...msg});
 	msgContextIds.value = [];
 	msgContextParentColorRgba.value = defaultBackgroundColor;
 	infoStore.resetInfo()
@@ -112,7 +112,7 @@ const msgStyle = (msg: Message) => {
 	return style;
 };
 
-const msgClass = (msg: Message) => {
+const getMessageClass = (msg: Message) => {
 	const contextIdx = msgContextIds.value.indexOf(msg.id);
 	if (contextIdx >= 0) {
 		return "transSlow"
@@ -163,7 +163,9 @@ watchEffect(() => {
 			return !(thread.prefs.hideIgnoredMessages && message.isIgnored);
 		});
 		// console.log("getThreadMessages->messages:", messages);
-		if (messages.length > prevMessageCount.value) scrollToBottom(1000);
+		if (messages.length > prevMessageCount.value) {
+			scrollToBottom(1000);
+		}
 		prevMessageCount.value = messages.length;
 	} catch (err: any) {
 		console.error("Error loading chat thread", err);
@@ -184,7 +186,9 @@ watchEffect(() => {
 	}
 
 	threadMessages.value = messages;
-	if (loadingTimeout) clearTimeout(loadingTimeout);
+	if (loadingTimeout) {
+		clearTimeout(loadingTimeout);
+	}
 	loadingTimeout = setTimeout(() => {
 		isLoading.value = false;
 	}, 1500);

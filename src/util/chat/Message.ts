@@ -5,6 +5,7 @@ import {User} from "src/util/chat/User";
 import {ValidDateTypes} from "src/util/DateUtils";
 import {getSeededQColor} from "src/util/Colors";
 import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
+import {apiErrorToString} from "src/util/Utils";
 
 export class Message {
 	public static defaultBackgroundColor = "blue-grey-1";
@@ -56,14 +57,7 @@ export class Message {
 
 		if (apiResponse.error) {
 			console.error("parseApiResponse->apiResponse.error:", apiResponse.error);
-			let errorMsg = "";
-			if (apiResponse.error.message) errorMsg += apiResponse.error.message;
-			if (apiResponse.error.response) {
-				errorMsg += "\n" + "Status: " + apiResponse.error.response.status;
-				errorMsg +=
-					"\n" + "Data: " + JSON.stringify(apiResponse.error.response.data, null, 4);
-			}
-			this.textSnippets = ["[ERROR]" + "\n" + errorMsg];
+			this.textSnippets = ["[ERROR]" + "\n" + apiErrorToString(apiResponse.error)];
 		}
 
 		this.loading = false;

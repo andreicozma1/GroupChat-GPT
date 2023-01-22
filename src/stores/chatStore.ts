@@ -14,7 +14,7 @@ import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import StatePrefs from "src/util/states/StatePrefs";
-import {createRegexHtmlTagWithContent, validTagPattern} from "src/util/Utils";
+import {createRegexHtmlTagWithContent, validTagPattern} from "src/util/RegexUtils";
 
 export interface ApiResponse {
 	data: any;

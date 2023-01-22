@@ -31,10 +31,27 @@
                     {{ text }}
                 </span>
             </div>
+
             <q-tooltip v-if="modelValue.apiResponse?.data?.usage"
                        :delay="750">
                 {{ modelUsageStr() }}
             </q-tooltip>
+
+            <q-badge v-if="modelValue.apiResponse && (modelValue.apiResponse.data === undefined || modelValue.apiResponse.error)"
+                     color="red"
+                     floating
+                     label="Error"
+                     rounded>
+                <q-tooltip v-if="modelValue.apiResponse.error">
+                    {{ apiErrorToString(modelValue.apiResponse.error) }}
+                </q-tooltip>
+                <q-tooltip v-else-if="modelValue.apiResponse.data === undefined">
+                    Response data is undefined
+                </q-tooltip>
+                <q-tooltip v-else>
+                    Unknown error
+                </q-tooltip>
+            </q-badge>
         </div>
 
         <div v-if="modelValue.imageUrls.length > 0">
@@ -52,6 +69,7 @@
                 </q-card-section>
             </q-card>
         </div>
+
 
         <div v-if="loading">
             <q-spinner-dots class="q-ml-md"
@@ -193,7 +211,7 @@ import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {useChatStore} from "stores/chatStore";
 import {computed, PropType, ref} from "vue";
-import {copyClipboard} from "src/util/Utils";
+import {apiErrorToString, copyClipboard} from "src/util/Utils";
 import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
 import DateText from "components/DateText.vue";

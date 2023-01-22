@@ -1,4 +1,4 @@
-import {createRegexHtmlTagEnd, createRegexHtmlTagStart, createRegexHtmlTagWithContent} from "src/util/Utils";
+import {createRegexHtmlTagEnd, createRegexHtmlTagStart, createRegexHtmlTagWithContent} from "src/util/RegexUtils";
 
 export const getSingularOrPlural = (singularStr: string, count: number) => {
 	return count === 1 ? singularStr : `${singularStr}s`;

@@ -196,7 +196,7 @@ import {apiErrorToString, copyClipboard} from "src/util/Utils";
 import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
 import DateText from "components/DateText.vue";
-import CompletionUsageBadges from "components/CompletionUsageBadges.vue";
+import CompletionUsageBadges from "components/UsageBadges.vue";
 import CustomTooltip from "components/CustomTooltip.vue";
 
 const props = defineProps({

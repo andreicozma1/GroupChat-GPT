@@ -28,7 +28,6 @@ export class User {
 		this.name = name;
 		this.type = type;
 		this.promptConfig = {
-			promptType: "createAssistantPrompt",
 			responseHeader: this.name
 		};
 		this.promptConfig.traits = {

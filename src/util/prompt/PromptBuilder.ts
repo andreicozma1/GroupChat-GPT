@@ -2,20 +2,18 @@ import {processItemizedList} from "src/util/ItemizedList";
 import {newlineSeparated, wrapInHtmlTag} from "src/util/TextUtils";
 import {Message} from "src/util/chat/Message";
 import {User} from "src/util/chat/User";
-import {createRegexHtmlTagWithContent} from "src/util/Utils";
 import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr} from "src/util/DateUtils";
 
 export interface PromptConfig {
-	promptType: string;
 	promptHeader?: string;
 	responseHeader?: string;
+	promptWrapTag?: string;
+	responseWrapTag?: string;
 	traits?: PromptTraits;
 	rules?: PromptRules;
 	examples?: string[]; // Order: Human, AI, Human, AI, etc.
-	promptWrapTag?: string;
-	responseWrapTag?: string;
 }
 
 export interface PromptTraits {
@@ -32,27 +30,6 @@ export interface PromptRules {
 
 export class PromptBuilder {
 	constructor(protected promptConfig: PromptConfig) {}
-
-	public static filterMessagesWithTags(messages: Message[]): Message[] {
-		return messages.filter((msg: Message) => {
-			return msg.textSnippets.some((text: string) => {
-				return createRegexHtmlTagWithContent().test(text);
-			});
-		});
-	}
-
-	public static filterSnippetsWithTags(
-		textSnipets: string[],
-		tag?: string
-	): string[] {
-		let regex = createRegexHtmlTagWithContent();
-		if (tag?.trim()) regex = createRegexHtmlTagWithContent(tag);
-		return textSnipets.flatMap((text: string) => {
-			const matches = text.match(regex);
-			if (!matches) return [];
-			return matches;
-		});
-	}
 
 	buildPrompt(...promptParts: string[]): string {
 		if (this.promptConfig.responseHeader)

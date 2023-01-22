@@ -5,16 +5,17 @@ Well, this application is a step towards that world.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 ## Table of Contents
 
 - [Features:](#features)
 - [Setup Project & Dependencies](#setup-project--dependencies)
 - [Run & Build](#run--build)
-  - [Start the app in development mode](#start-the-app-in-development-mode)
-  - [Build the app for production](#build-the-app-for-production)
+    - [Start the app in development mode](#start-the-app-in-development-mode)
+    - [Build the app for production](#build-the-app-for-production)
 - [Additional Commands](#additional-commands)
-  - [Lint the files](#lint-the-files)
-  - [Format the files](#format-the-files)
+    - [Lint the files](#lint-the-files)
+    - [Format the files](#format-the-files)
 - [License & Credit](#license--credit)
 - [Demo Screenshots](#demo-screenshots)
 
@@ -29,7 +30,7 @@ Well, this application is a step towards that world.
       below)
 - Response Coordinator
     - Dictates which assistant(s) needs to respond to the user's message.
-    - For example, if the promptUser asks "hey, how are you all?", multiple assistants may respond, each with their own unique
+    - For example, if the promptUser asks "hey, how are you all?", multiple assistants follow up, each with their own unique
       response.
     - If the promptUser asks "Hey DALL-E, I need to generate an image", then only DALL-E will respond.
 - User Traits, Characteristics, and Rules

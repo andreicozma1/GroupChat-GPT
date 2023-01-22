@@ -4,7 +4,7 @@ import {User, UserTypes} from "src/util/chat/User";
 
 export class UserDalleGen extends User {
 	constructor() {
-		super("dalle_gen", "DALL-E", UserTypes.HELPER);
+		super("dalle_gen", "DALL-E Generator", UserTypes.HELPER);
 		this.apiReqConfig = ApiRequestConfigTypes.DALLE_GEN;
 		this.promptConfig.promptType = "createPromptDalleGen";
 		this.showInMembersInfo = false;
@@ -13,7 +13,7 @@ export class UserDalleGen extends User {
 
 export class UserCodexGen extends User {
 	constructor() {
-		super("codex_gen", "Codex", UserTypes.HELPER);
+		super("codex_gen", "Codex Generator", UserTypes.HELPER);
 		this.apiReqConfig = ApiRequestConfigTypes.CODEX_GEN;
 		this.promptConfig.promptType = "createPromptCodexGen";
 

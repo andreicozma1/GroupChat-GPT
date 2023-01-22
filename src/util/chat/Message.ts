@@ -80,6 +80,6 @@ export class Message {
 	}
 
 	getBackgroundColor() {
-		return getSeededQColor(this.userName, 1, 2)
+		return getSeededQColor(this.userName, 1, 2, ["light"])
 	}
 }

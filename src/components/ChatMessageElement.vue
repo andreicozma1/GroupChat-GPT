@@ -100,23 +100,6 @@
                     </q-tooltip>
                 </q-badge>
             </span>
-
-            <!--            <q-badge :label="parsedTextSnippets.length + ' text snippets'"-->
-            <!--                     align="middle"-->
-            <!--                     class="q-mx-xs"-->
-            <!--                     color="primary"-->
-            <!--                     outline-->
-            <!--                     rounded-->
-            <!--                     style="font-size: 0.7rem; padding: 0 3px">-->
-            <!--            </q-badge>-->
-            <!--            <q-badge :label="modelValue.imageUrls.length + ' images'"-->
-            <!--                     align="middle"-->
-            <!--                     class="q-mx-xs"-->
-            <!--                     color="accent"-->
-            <!--                     outline-->
-            <!--                     rounded-->
-            <!--                     style="font-size: 0.7rem; padding: 0 3px">-->
-            <!--            </q-badge>-->
         </template>
 
         <template v-slot:stamp>
@@ -174,7 +157,7 @@
                            @click.stop="modelValue.toggleIgnored()"
                     >
                         <q-tooltip>
-                            {{ modelValue.isIgnored ? "Use message" : "Ignore message" }}
+                            {{ modelValue.isIgnored ? "Use message" : "Ignore message" }} in future contexts
                         </q-tooltip>
                     </q-btn>
                     <q-btn :color="shouldDelete ? 'black' : 'blue-grey-8'"
@@ -186,7 +169,7 @@
                            @click.stop="toggleShouldDelete()"
                     >
                         <q-tooltip>
-                            {{ shouldDelete ? "Yes, delete" : "Delete" }}
+                            {{ shouldDelete ? "Yes, delete" : "Delete message" }}
                         </q-tooltip>
                     </q-btn>
                     <q-btn v-if="shouldDelete"

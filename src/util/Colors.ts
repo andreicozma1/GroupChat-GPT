@@ -14,7 +14,8 @@ export interface ColorConfig {
 export const getSeededQColor = (
 	seed: string | number,
 	minNum?: number,
-	maxNum?: number
+	maxNum?: number,
+	excludeKeywords?: string[]
 ) => {
 	// based on the seed pick a color from the list of all quasar colors
 	// do not use random here, because we want the same seed to always return the same color
@@ -32,12 +33,17 @@ export const getSeededQColor = (
 			return acc;
 		}, [] as string[][]);
 	// now flatten the array
-	const flattenedColors = interleavedColors.flat();
+	let colors = interleavedColors.flat();
 	if (typeof seed === "string") {
 		seed = seed.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
 	}
+	if (excludeKeywords) {
+		colors = colors.filter((color) => {
+			return !excludeKeywords.some((keyword) => color.includes(keyword));
+		});
+	}
 
-	return flattenedColors[seed % flattenedColors.length];
+	return colors[seed % colors.length];
 };
 
 const getSeededColorHex = (seed: string, config: ColorConfig) => {

@@ -126,9 +126,9 @@ const defaultExpansionItemProps = {
 	expandSeparator: true,
 	popup: true,
 }
-const store = useChatStore();
+const chatStore = useChatStore();
 const activeThread: ComputedRef<Thread> = computed(() =>
-	store.getActiveThread()
+	chatStore.getActiveThread()
 );
 
 const newThreadName: Ref<string> = ref(activeThread.value.name);
@@ -142,11 +142,11 @@ const isNewThreadNameValid: ComputedRef<boolean> = computed(() => {
 const saveThreadName = () => {
 	if (!isNewThreadNameValid.value) smartNotify("Please enter a valid new thread name");
 	activeThread.value.name = newThreadName.value;
-	store.saveState(true);
+	chatStore.saveState(true);
 }
 
 const threadUsers: ComputedRef<User[]> = computed(() => {
-	return activeThread.value.getJoinedUsers(store.getUserById);
+	return activeThread.value.getJoinedUsers(chatStore.getUserById);
 });
 
 const isUserVisible = (user: User): boolean => {
@@ -172,6 +172,6 @@ const toggleUserVisibility = (user: User) => {
 
 watch(activeThread.value.prefs, () => {
 	console.log("activeThread.prefs changed");
-	store.saveState();
+	chatStore.saveState();
 });
 </script>

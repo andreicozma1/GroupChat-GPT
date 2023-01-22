@@ -51,7 +51,7 @@ const props = defineProps({
 	},
 });
 
-const store = useChatStore();
+const chatStore = useChatStore();
 const infoStore = useInfoStore();
 const threadElem: any = ref(null);
 
@@ -100,8 +100,8 @@ const msgStyle = (msg: Message) => {
 	const g = msgContextParentColorRgba.value.g;
 	const b = msgContextParentColorRgba.value.b;
 	if (contextIdx >= 0) {
-		const ctxMsgAlphaMin = store.prefs.contextMessageOpacity.min;
-		const ctxMsgAlphaMax = store.prefs.contextMessageOpacity.max;
+		const ctxMsgAlphaMin = chatStore.prefs.contextMessageOpacity.min;
+		const ctxMsgAlphaMax = chatStore.prefs.contextMessageOpacity.max;
 		const ctxMsgAlphaDelta = (ctxMsgAlphaMax - ctxMsgAlphaMin) / (msgContextIds.value.length - 1);
 		const ctxMsgAlpha = ctxMsgAlphaMin + (ctxMsgAlphaDelta * contextIdx);
 		style = {
@@ -148,7 +148,7 @@ const scrollAreaStyle = computed(() => {
 });
 
 watchEffect(() => {
-	const thread = store.getActiveThread();
+	const thread = chatStore.getActiveThread();
 	let messages: Message[] = [];
 	isLoading.value = true;
 	try {

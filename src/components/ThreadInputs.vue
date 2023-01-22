@@ -24,10 +24,10 @@
                     @click="sendMessage"
             />
             <div>
-                <DateText :modelValue="store.getDateCreated"
+                <DateText :modelValue="chatStore.getDateCreated"
                           class="q-pl-md"
                           prefix="Created:" />
-                <DateText :modelValue="store.getDateLastSaved"
+                <DateText :modelValue="chatStore.getDateLastSaved"
                           class="q-pl-md"
                           prefix="Last Saved:" />
             </div>
@@ -43,7 +43,7 @@
             <!--                        outline-->
             <!--                        size="sm"-->
             <!--                        title="Reset app preferences to default values"-->
-            <!--                        @click="store.resetPrefs"-->
+            <!--                        @click="chatStore.resetPrefs"-->
             <!--                />-->
             <!--                <q-btn-->
             <!--                        color="light-blue"-->
@@ -53,7 +53,7 @@
             <!--                        outline-->
             <!--                        size="sm"-->
             <!--                        title="Clear all messages in the active thread"-->
-            <!--                        @click="store.getActiveThread().clearMessages"-->
+            <!--                        @click="chatStore.getActiveThread().clearMessages"-->
             <!--                />-->
             <!--                <q-btn-->
             <!--                        color="green"-->
@@ -63,7 +63,7 @@
             <!--                        outline-->
             <!--                        size="sm"-->
             <!--                        title="Clear the global completion cache"-->
-            <!--                        @click="store.clearCachedResponses"-->
+            <!--                        @click="chatStore.clearCachedResponses"-->
             <!--                />-->
             <!--                <q-btn-->
             <!--                        color="red"-->
@@ -73,7 +73,7 @@
             <!--                        outline-->
             <!--                        size="sm"-->
             <!--                        title="Reset all application data from local storage"-->
-            <!--                        @click="store.clearAllData"-->
+            <!--                        @click="chatStore.clearAllData"-->
             <!--                />-->
             <!--            </q-btn-group>-->
             <q-fab v-model="fab"
@@ -91,14 +91,14 @@
                               size="sm"
                               title="Clear all messages in the active thread"
                               v-bind="fabActionProps"
-                              @click="store.clearActiveThreadMessages" />
+                              @click="chatStore.clearActiveThreadMessages" />
                 <q-fab-action color="light-blue"
                               icon="forum"
                               label="Full Reset Active Thread"
                               size="sm"
                               title="Reset the active thread by clearing messages, joined users, and the thread preferences"
                               v-bind="fabActionProps"
-                              @click="store.resetActiveThread" />
+                              @click="chatStore.resetActiveThread" />
 
                 <q-fab-action color="green"
                               icon="cached"
@@ -106,28 +106,28 @@
                               size="sm"
                               title="Clear the global completion cache"
                               v-bind="fabActionProps"
-                              @click="store.clearCachedResponses"
+                              @click="chatStore.clearCachedResponses"
                 />
                 <q-fab-action color="orange"
                               icon="settings"
                               label="Reset Global Prefs Data"
                               title="Reset all app preferences to default values"
                               v-bind="fabActionProps"
-                              @click="store.resetPrefs" />
+                              @click="chatStore.resetPrefs" />
 
                 <q-fab-action color="orange"
                               icon="group"
                               label="Reset Global Users Data"
                               title="Reset all user data to default values"
                               v-bind="fabActionProps"
-                              @click="store.resetAllUsers" />
+                              @click="chatStore.resetAllUsers" />
                 <q-fab-action color="red"
                               icon="delete_forever"
                               label="Full Reset App Data"
                               size="sm"
                               title="Reset all application data from local storage"
                               v-bind="fabActionProps"
-                              @click="store.clearAllData"
+                              @click="chatStore.clearAllData"
                 />
             </q-fab>
 
@@ -143,7 +143,7 @@ import {smartNotify} from "src/util/SmartNotify";
 import {Message} from "src/util/chat/Message";
 import DateText from "components/DateText.vue";
 
-const store = useChatStore();
+const chatStore = useChatStore();
 
 const userMsgEl: Ref<QInput | null> = ref(null);
 const userMsgStr = ref("");
@@ -170,7 +170,7 @@ const sendMessage = () => {
 	console.warn("=".repeat(60));
 	console.warn("=> sendMessage:");
 	if (userMsgObj.value === null) {
-		userMsgObj.value = new Message(store.getMyUser());
+		userMsgObj.value = new Message(chatStore.getMyUser());
 	}
 	userMsgObj.value.textSnippets.push(userMsgStr.value);
 	userMsgStr.value = "";
@@ -181,7 +181,7 @@ const sendMessage = () => {
 			console.log("=> userMsgObj:", {...userMsgObj.value});
 			if (userMsgObj.value !== null) {
 				userMsgObj.value.loading = false;
-				store.handleUserMessage(userMsgObj.value);
+				chatStore.handleUserMessage(userMsgObj.value);
 				userMsgObj.value = null;
 			} else {
 				console.error("User message not found");
@@ -210,13 +210,13 @@ const kbShortcuts = (e: KeyboardEvent) => {
 	// ctrl/cmd+shift+x clears thread
 	if (e.key.toLowerCase() === "x" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
 		e.preventDefault();
-		store.resetAllThreads();
+		chatStore.resetAllThreads();
 		return;
 	}
 	// ctrl/cmd+shift+r clears cache
 	if (e.key.toLowerCase() === "r" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
 		e.preventDefault();
-		store.clearAllData();
+		chatStore.clearAllData();
 		return;
 	}
 	// enter sends userMsgStr

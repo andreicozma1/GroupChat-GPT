@@ -90,7 +90,7 @@
                         This message will be ignored in future prompts.
                     </q-tooltip>
                 </q-badge>
-                <q-badge :label="store.getUserById(modelValue.userId)?.type.toUpperCase()"
+                <q-badge :label="chatStore.getUserById(modelValue.userId)?.type.toUpperCase()"
                          color="green"
                          outline
                          rounded
@@ -234,7 +234,7 @@ const props = defineProps({
 	},
 });
 
-const store = useChatStore();
+const chatStore = useChatStore();
 
 const shouldDelete = ref(false);
 
@@ -271,7 +271,7 @@ const canRegenerate = computed(() => {
 const onClickRegenerate = () => {
 	console.warn("*".repeat(40));
 	console.log("onClickRegenerate->message:", {...props.modelValue});
-	store.handleUserMessage(props.modelValue, true);
+	chatStore.handleUserMessage(props.modelValue, true);
 };
 
 const toggleShouldDelete = (value?: boolean) => {
@@ -284,7 +284,7 @@ const toggleShouldDelete = (value?: boolean) => {
 	// 2nd click - confirmation and delete
 	if (shouldDelete.value) {
 		console.log("=> delete:", {...props.modelValue});
-		store.getActiveThread().deleteMessage(props.modelValue.id);
+		chatStore.getActiveThread().deleteMessage(props.modelValue.id);
 		return;
 	}
 	// 1st click - will need 2nd click to confirm
@@ -292,7 +292,7 @@ const toggleShouldDelete = (value?: boolean) => {
 };
 
 const isSentByMe = computed(() => {
-	const myUser = store.getMyUser();
+	const myUser = chatStore.getMyUser();
 	return (
 		props.modelValue.userId === myUser.id &&
 		props.modelValue.userName === myUser.name
@@ -300,7 +300,7 @@ const isSentByMe = computed(() => {
 });
 
 const typeIcon = computed(() => {
-	const user: User = store.getUserById(props.modelValue.userId);
+	const user: User = chatStore.getUserById(props.modelValue.userId);
 	if (!user) {
 		const ic = "send";
 		console.error(
@@ -352,7 +352,7 @@ const style = computed(() => {
 		...props.style,
 		borderRadius: "1.0rem",
 		opacity: props.modelValue.isIgnored
-			? store.prefs.ignoredMessageOpacity.value
+			? chatStore.prefs.ignoredMessageOpacity.value
 			: 1.0,
 		outline: shouldDelete.value ? "2px solid red" : null,
 	};

@@ -34,10 +34,10 @@ import {useChatStore} from "stores/chatStore";
 import {Thread} from "src/util/chat/Thread";
 import {useInfoStore} from "stores/infoStore";
 
-const store = useChatStore();
+const chatStore = useChatStore();
 const infoStore = useInfoStore();
 const activeThread: ComputedRef<Thread> = computed(() =>
-	store.getActiveThread()
+	chatStore.getActiveThread()
 );
 
 const sideMenuOpen = ref(false);

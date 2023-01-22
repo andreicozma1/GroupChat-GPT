@@ -164,11 +164,6 @@ const fabActionProps = {
 	externalLabel: true,
 }
 
-const onClickFabAction = (e) => {
-	smartNotify("onClickFabAction->e:", e);
-};
-
-
 const sendMessage = () => {
 	if (!userMsgValid.value) return;
 	console.warn("=".repeat(60));

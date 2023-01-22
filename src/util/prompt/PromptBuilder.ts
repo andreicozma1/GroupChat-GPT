@@ -72,13 +72,13 @@ export class PromptBuilder {
 				return a.showInMembersInfo;
 			}
 		).filter(assistantFilter);
-		
+
 		if (!availableAssistants || availableAssistants.length === 0) {
-			throw new Error("No assistants are available at the moment.");
 			smartNotify(
 				"Warning: There are no assistants in this thread!",
 				"You can add assistants in the thread preferences menu."
 			);
+			throw new Error("No assistants are available at the moment.");
 		}
 
 		const isAvailable = availableAssistants.some(

@@ -3,7 +3,7 @@ import {PromptBuilder} from "src/util/prompt/PromptBuilder";
 import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
 
-export class AssistantPrompt extends PromptBuilder {
+export class UserPrompt extends PromptBuilder {
 
 	public finalPromptText = "undefined";
 	public hash = "undefined";
@@ -40,38 +40,4 @@ export class AssistantPrompt extends PromptBuilder {
 		this.hash = getTextHash(removeSpecifiedHtmlTags(text, "nocache", true));
 		this.finalPromptText = removeSpecifiedHtmlTags(text, "nocache", false);
 	}
-
-	// public createPromptDalleGen(): string | undefined {
-	// 	// now get the actual textSnippet that contains the html tag
-	//
-	// 	const prompts = PromptBuilder.filterSnippetsWithTags(
-	// 		this.allTextSnippets,
-	// 		"dalle_gen"
-	// 	);
-	//
-	// 	if (prompts.length === 0) {
-	// 		smartNotify("Prompt not found");
-	// 		return undefined;
-	// 	}
-	//
-	// 	return removeAllHtmlTags(prompts[prompts.length - 1]);
-	// }
-	//
-	// public createPromptCodexGen(): string | undefined {
-	// 	const start = "### CODE GENERATION ###\n";
-	//
-	// 	const prompts = PromptBuilder.filterSnippetsWithTags(
-	// 		this.allTextSnippets,
-	// 		"codex_gen"
-	// 	);
-	//
-	// 	if (prompts.length === 0) {
-	// 		smartNotify("Prompt not found");
-	// 		return undefined;
-	// 	}
-	//
-	// 	const prompt = removeAllHtmlTags(prompts[prompts.length - 1]);
-	//
-	// 	return this.buildPrompt(start, this.tRules, this.tExamples, prompt);
-	// }
 }

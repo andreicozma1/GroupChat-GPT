@@ -2,7 +2,7 @@ import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {smartNotify} from "src/util/SmartNotify";
 import {makeCompletion} from "src/util/openai/ApiReq";
-import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
+import {UserPrompt} from "src/util/prompt/UserPrompt";
 import {parseDate} from "src/util/DateUtils";
 import StateGlobalStore from "src/util/states/StateGlobalStore";
 import StateThreads from "src/util/states/StateThreads";
@@ -154,12 +154,12 @@ export const useChatStore = defineStore("chatStore", {
 						excludeNoText: true,
 						excludeIgnored: true,
 					});
-					message.prompt = new AssistantPrompt(user)
+					message.prompt = new UserPrompt(user)
 					message.prompt.fromThread(thread.name, thread.getJoinedUsers(this.getUserById), messages);
 				}
 
 				message.loading = true;
-				const response = await this.generate(
+				const response = await this.handleApiRequest(
 					message.prompt,
 					ignoreCache
 				);
@@ -224,7 +224,7 @@ export const useChatStore = defineStore("chatStore", {
 				);
 
 				if (fup.promptText !== undefined) {
-					nextMsg.prompt = new AssistantPrompt(nextUser)
+					nextMsg.prompt = new UserPrompt(nextUser)
 					nextMsg.prompt.messageContextIds = [message.id];
 					nextMsg.prompt.fromText(fup.promptText);
 				}
@@ -241,13 +241,12 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 		// API Responses
 		/**************************************************************************************************************/
-		getPromptResponse(prompt: AssistantPrompt): any {
+		getPromptResponse(prompt: UserPrompt): any {
 			console.log("getCachedResponseFromPrompt->prompt:", prompt);
 			return this.cachedResponses[prompt.hash];
 		},
-
-		async generate(
-			prompt: AssistantPrompt,
+		async handleApiRequest(
+			prompt: UserPrompt,
 			ignoreCache = false,
 			debug = false
 		): Promise<ApiResponse> {
@@ -275,6 +274,7 @@ export const useChatStore = defineStore("chatStore", {
 						debug
 					);
 					this.cachedResponses[prompt.hash] = response;
+					result.data = response.data;
 				}
 			} catch (error: any) {
 				console.error(error);

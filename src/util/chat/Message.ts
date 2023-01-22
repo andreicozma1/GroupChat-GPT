@@ -4,7 +4,7 @@ import {getRobohashUrl} from "src/util/ImageUtils";
 import {User} from "src/util/chat/User";
 import {ValidDateTypes} from "src/util/DateUtils";
 import {getSeededQColor} from "src/util/Colors";
-import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
+import {UserPrompt} from "src/util/prompt/UserPrompt";
 import {apiErrorToString} from "src/util/Utils";
 
 export class Message {
@@ -20,7 +20,7 @@ export class Message {
 	textSnippets: string[] = [];
 	imageUrls: string[] = [];
 	apiResponse?: ApiResponse;
-	prompt?: AssistantPrompt;
+	prompt?: UserPrompt;
 
 	constructor(chatUser?: User) {
 		this.userId = chatUser?.id || "unknown";

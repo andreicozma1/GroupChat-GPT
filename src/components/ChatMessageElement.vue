@@ -132,7 +132,7 @@
                        @click.stop="onClickRegenerate"
                 >
                     <q-tooltip v-if="canRegenerate">
-                        Re-generate message ({{ modelValue.userId }})
+                        Re-handleApiRequest message ({{ modelValue.userId }})
                     </q-tooltip>
                     <q-tooltip v-else>
                         This message cannot be re-generated ({{ modelValue.userId }})

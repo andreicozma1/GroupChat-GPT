@@ -115,10 +115,10 @@
                        @click.stop="onClickRegenerate"
                 >
                     <q-tooltip v-if="canRegenerate">
-                        Re-handleApiRequest message ({{ modelValue.userId }})
+                        Re-generate completion
                     </q-tooltip>
                     <q-tooltip v-else>
-                        This message cannot be re-generated ({{ modelValue.userId }})
+                        Cannot regenerate completion
                     </q-tooltip>
                 </q-btn>
 

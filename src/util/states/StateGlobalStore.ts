@@ -4,13 +4,14 @@ import GlobalPrefs, {ChatStoreGlobalPrefs} from "src/util/states/StatePrefs";
 import UsersState, {ChatStoreUserData} from "src/util/states/StateUsers";
 import {smartNotify} from "src/util/SmartNotify";
 import {merge} from "lodash-es";
+import {ApiResponse} from "stores/chatStore";
 
 export const localStorageKey = "data";
 
 interface StateGlobalStore {
 	userData: ChatStoreUserData;
 	threadData: ChatStoreThreadData;
-	cachedResponses: Record<string, any>;
+	cachedResponses: Record<string, ApiResponse>;
 	prefs: ChatStoreGlobalPrefs;
 	dateCreated: Date;
 	dateLastSaved?: Date;

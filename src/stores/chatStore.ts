@@ -1,7 +1,7 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {smartNotify} from "src/util/SmartNotify";
-import {makeApiRequest} from "src/util/openai/ApiReq";
+import {makeCompletion} from "src/util/openai/ApiReq";
 import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
 import {parseDate} from "src/util/DateUtils";
 import StateGlobalStore from "src/util/states/StateGlobalStore";
@@ -17,10 +17,10 @@ import StatePrefs from "src/util/states/StatePrefs";
 import {createRegexHtmlTagWithContent, validTagPattern} from "src/util/Utils";
 
 export interface ApiResponse {
-	fromCache: boolean;
-	cacheIgnored: boolean;
-	errorMsg: string | undefined;
 	data: any;
+	cacheIgnored: boolean;
+	fromCache?: boolean;
+	error?: any;
 }
 
 interface FollowUp {
@@ -241,65 +241,48 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 		// API Responses
 		/**************************************************************************************************************/
-		getCachedResponseFromPrompt(prompt: AssistantPrompt): any {
+		getPromptResponse(prompt: AssistantPrompt): any {
 			console.log("getCachedResponseFromPrompt->prompt:", prompt);
 			return this.cachedResponses[prompt.hash];
 		},
 
 		async generate(
 			prompt: AssistantPrompt,
-			ignoreCache?: boolean
+			ignoreCache = false,
+			debug = false
 		): Promise<ApiResponse> {
-			ignoreCache = ignoreCache ?? false;
 			ignoreCache = prompt.promptUser.alwaysIgnoreCache || ignoreCache;
 			console.warn("-".repeat(20));
 			console.log("generate->ignoreCache:", ignoreCache);
-
+			console.log("generate->debug:", debug);
+			console.log("generate->prompt:", prompt);
+			console.error("generate->prompt.text:");
+			console.error(prompt.finalPromptText);
 			// if we already have a response for this prompt, return it
-			let response;
-			let cached;
+			const result: ApiResponse = {
+				cacheIgnored: ignoreCache,
+				fromCache: undefined,
+				data: undefined
+			}
 			try {
-				console.log("generate->prompt:", prompt);
-				console.log("generate->prompt.hash:", prompt.hash);
-				console.error("generate->prompt.text:");
-				console.error(prompt.finalPromptText);
-
-				const cachedResponse = this.getCachedResponseFromPrompt(prompt);
-				if (!ignoreCache && cachedResponse) {
-					response = cachedResponse;
-					cached = true;
-				} else {
-					response = await makeApiRequest(
+				result.fromCache = true
+				let response = this.getPromptResponse(prompt);
+				if (ignoreCache || !response) {
+					result.fromCache = false;
+					response = await makeCompletion(
 						prompt.promptUser.apiReqConfig,
-						prompt.finalPromptText
+						prompt.finalPromptText,
+						debug
 					);
-					cached = false;
+					this.cachedResponses[prompt.hash] = response;
 				}
 			} catch (error: any) {
 				console.error(error);
 				if (error.stack) console.error(error.stack);
-				let errorMsg = "";
-				if (error.message) errorMsg += error.message;
-				if (error.response) {
-					errorMsg += "\n" + "Status: " + error.response.status;
-					errorMsg +=
-						"\n" + "Data: " + JSON.stringify(error.response.data, null, 4);
-				}
-				return {
-					fromCache: false,
-					cacheIgnored: ignoreCache,
-					errorMsg: errorMsg,
-					data: undefined,
-				} as ApiResponse;
+				result.error = error;
 			}
-			this.cachedResponses[prompt.hash] = response;
 
-			return {
-				fromCache: cached,
-				cacheIgnored: ignoreCache,
-				errorMsg: undefined,
-				data: this.cachedResponses[prompt.hash].data,
-			} as ApiResponse;
+			return result;
 		},
 		/**************************************************************************************************************/
 		/* DATA & STORAGE

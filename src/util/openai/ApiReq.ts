@@ -93,7 +93,7 @@ export const ApiRequestConfigsMap: ApiRequestConfigs = {
 	custom: {},
 };
 
-export const makeApiRequest = async (apiReqConfig: string, prompt: string) => {
+export const makeCompletion = async (apiReqConfig: string, prompt: string, debug = false) => {
 	console.warn("makeApiRequest->apiReqConfig:", apiReqConfig);
 	// Recursively build the final config
 	const configs = {
@@ -131,5 +131,6 @@ export const makeApiRequest = async (apiReqConfig: string, prompt: string) => {
 		prompt,
 	};
 	console.log("=> config:", config);
+	if (debug) return JSON.stringify(config);
 	return await config.func(config.opts);
 };

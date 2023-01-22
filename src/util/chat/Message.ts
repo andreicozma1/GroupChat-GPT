@@ -33,25 +33,37 @@ export class Message {
 		this.apiResponse = apiResponse;
 		console.log("ChatMessage.parseApiResponse:", this.apiResponse);
 
-		const textSnippets = apiResponse.data?.choices?.flatMap((c: any) => {
-			return c.text.trim();
-		});
-		if (textSnippets) {
-			console.error("=> text:");
-			textSnippets?.forEach((t: string) => console.error(t));
-			this.textSnippets = textSnippets;
+		if (apiResponse.data) {
+			const textSnippets = apiResponse.data.choices?.flatMap((c: any) => {
+				return c.text.trim();
+			});
+			if (textSnippets) {
+				console.error("=> text:");
+				textSnippets?.forEach((t: string) => console.error(t));
+				this.textSnippets = textSnippets;
+			}
+
+			const imageUrls = apiResponse.data.data?.map((d: any) => d.url);
+			if (imageUrls) {
+				console.error("=> images:");
+				imageUrls?.forEach((i: string) => console.log(i));
+				this.imageUrls = imageUrls;
+			}
+		} else {
+			console.error("parseApiResponse->apiResponse.data was undefined");
+			this.textSnippets = ["[ERROR]" + "\n" + "Response data was undefined."];
 		}
 
-		const imageUrls = apiResponse.data?.data?.map((d: any) => d.url);
-		if (imageUrls) {
-			console.error("=> images:");
-			imageUrls?.forEach((i: string) => console.log(i));
-			this.imageUrls = imageUrls;
-		}
-
-		if (apiResponse.errorMsg) {
-			console.error("Error generating response:", apiResponse.errorMsg);
-			this.textSnippets = ["[ERROR]" + "\n" + apiResponse.errorMsg];
+		if (apiResponse.error) {
+			console.error("parseApiResponse->apiResponse.error:", apiResponse.error);
+			let errorMsg = "";
+			if (apiResponse.error.message) errorMsg += apiResponse.error.message;
+			if (apiResponse.error.response) {
+				errorMsg += "\n" + "Status: " + apiResponse.error.response.status;
+				errorMsg +=
+					"\n" + "Data: " + JSON.stringify(apiResponse.error.response.data, null, 4);
+			}
+			this.textSnippets = ["[ERROR]" + "\n" + errorMsg];
 		}
 
 		this.loading = false;

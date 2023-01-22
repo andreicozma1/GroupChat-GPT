@@ -37,7 +37,7 @@ export class User {
 			abilities: [],
 		};
 		this.promptConfig.rules = {
-			always: ["Strictly follow the rules of the conversation."],
+			always: [],
 			never: [],
 		};
 		this.promptConfig.examples = [];

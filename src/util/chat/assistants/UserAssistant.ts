@@ -16,6 +16,7 @@ export class UserAssistant extends User {
 		})
 		this.addRules({
 			always: [
+				"Strictly follow the rules of the conversation.",
 				"Follow instructions, requests, and answer questions if appropriate to do so.",
 			],
 			never: ["Respond to other assistants or on behalf of other assistants."],

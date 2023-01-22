@@ -35,11 +35,13 @@ const getBadgeColor = (key: string, value: string) => {
 };
 
 const getBadgeLabel = (key: string, value: string) => {
-	key = key.replace('_tokens', '');
-	return [
-		key,
-		value,
-	].join(' ');
+	// key = key.replace('_tokens', '');
+	// key = key[0].toUpperCase()
+	// return [
+	// 	// key,
+	// 	value,
+	// ].join(': ');
+	return value
 };
 
 const getBadgeTooltip = (key: string, value: string) => {

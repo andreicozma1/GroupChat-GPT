@@ -147,15 +147,7 @@ export const useChatStore = defineStore("chatStore", {
 
 			if (user.type !== UserTypes.HUMAN) {
 				let messages: Message[];
-
-				// const prevMsgContextIds = message.apiResponse?.prompt?.messagesCtxIds;
-				// if (prevMsgContextIds) {
-				// Re-generation from specified context
-				// messages = thread.getMessagesArrayFromIds(prevMsgContextIds)
-				// TODO: This will end up with less messages than expected if there are any undefined messages
-				// } else {
 				messages = thread.getMessagesArray();
-				// }
 				messages = parseMessagesHistory(messages, {
 					excludeUserIds:
 						user.id !== this.userData.usersMap.coordinator.id
@@ -200,28 +192,6 @@ export const useChatStore = defineStore("chatStore", {
 					});
 				}
 
-				// text.match(/@([a-zA-Z0-9_]+)/g)?.forEach((m: string) => {
-				// 	fups.push({
-				// 		userId: m.slice(1),
-				// 		prompt: undefined
-				// 	});
-				// });
-				//
-				// text.match(createRegexHtmlTagWithContent())?.forEach((m: string) => {
-				// 	// get the name of the html tag
-				// 	console.error("followup", m)
-				//
-				// 	const match = m.matchAll(createRegexHtmlTagStart())
-				// 	console.log("match:", match)
-				// 	const prompt = m.matchAll(createRegexHtmlTagWithContent())
-				//
-				// 	console.error("followup", prompt)
-				// 	// get the content of the html tag
-				// 	// if (tag) fups.push({
-				// 	// 	userId: tag,
-				// 	// 	prompt: undefined
-				// 	// });
-				// });
 				return fups;
 			});
 
@@ -231,6 +201,7 @@ export const useChatStore = defineStore("chatStore", {
 					.map((u) => u.id);
 				followups = followups.filter((f: FollowUp) => {
 					const uid = f.userId
+					if (uid === user.id) return false;
 					const isInChat = joinedUserIds.includes(uid);
 					if (!isInChat) smartNotify(`User ${uid} is not a member of this chat thread.`);
 					return isInChat;
@@ -283,18 +254,6 @@ export const useChatStore = defineStore("chatStore", {
 			console.log("generate->actor:", user);
 			console.log("generate->ignoreCache:", ignoreCache);
 
-			// const contextIds: string[] = ;
-			// console.log("generate->contextIds:", contextIds);
-
-			for (let i = 0; i < msgHist.length; i++) {
-				console.log("----------------");
-				console.log(
-					`msgHist[${i}] -> (${msgHist[i].textSnippets.length} texts & ${msgHist[i].imageUrls.length} images)`,
-					[...msgHist[i].textSnippets],
-					{...msgHist[i]}
-				);
-			}
-
 			let prompt = undefined
 
 			// if we already have a response for this prompt, return it
@@ -305,7 +264,6 @@ export const useChatStore = defineStore("chatStore", {
 					// this.currentThreadName,
 					// this.humanUserName,
 					thread.name,
-					this.getMyUser().name,
 					user,
 					thread.getJoinedUsers(this.getUserById),
 					msgHist

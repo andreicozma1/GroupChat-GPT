@@ -1,10 +1,11 @@
 import {processItemizedList} from "src/util/ItemizedList";
-import {wrapInHtmlTag} from "src/util/TextUtils";
+import {newlineSeparated, wrapInHtmlTag} from "src/util/TextUtils";
 import {Message} from "src/util/chat/Message";
 import {User} from "src/util/chat/User";
 import {createRegexHtmlTagWithContent} from "src/util/Utils";
 import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 import {smartNotify} from "src/util/SmartNotify";
+import {dateToLocaleStr} from "src/util/DateUtils";
 
 export interface PromptConfig {
 	promptType: string;
@@ -61,7 +62,16 @@ export class PromptBuilder {
 		return promptParts.join("\n\n");
 	}
 
-	promptMembersInfo(
+	getPromptInfo(): string {
+		return newlineSeparated(
+			"The following is a group-chat conversation between a human and several AI assistants.",
+			wrapInHtmlTag(
+				"nocache",
+				`Current Date-Time: ${dateToLocaleStr(new Date())}`
+			))
+	}
+
+	getPromptMembersInfo(
 		currentUser: User,
 		usersArr: User[],
 		header = "MEMBERS"

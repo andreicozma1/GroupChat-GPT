@@ -1,6 +1,5 @@
 import {smartNotify} from "src/util/SmartNotify";
-import {getTextHash, removeAllHtmlTags, removeSpecifiedHtmlTags, wrapInHtmlTag,} from "src/util/TextUtils";
-import {dateToLocaleStr} from "src/util/DateUtils";
+import {getTextHash, removeAllHtmlTags, removeSpecifiedHtmlTags,} from "src/util/TextUtils";
 import {PromptBuilder} from "src/util/prompt/PromptBuilder";
 import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
@@ -12,6 +11,8 @@ export class AssistantPrompt extends PromptBuilder {
 
 	public finalPromptText: string;
 	public hash: string;
+	public tHeader: string;
+	public tInfo: string;
 	public tRules: string;
 	public tMembers: string;
 	public tExamples: string;
@@ -20,7 +21,6 @@ export class AssistantPrompt extends PromptBuilder {
 	// create a constructor
 	constructor(
 		public threadName: string,
-		public humanUserName: string,
 		public promptUser: User,
 		allMembersArr: User[],
 		messagesCtx: Message[]
@@ -29,7 +29,9 @@ export class AssistantPrompt extends PromptBuilder {
 		this.messageContextIds = messagesCtx.map((m: Message) => m.id);
 		this.allTextSnippets = messagesCtx.flatMap((m: Message) => m.textSnippets);
 
-		this.tMembers = this.promptMembersInfo(this.promptUser, allMembersArr);
+		this.tHeader = `=== AI GROUP CHAT: "${this.threadName}" ===`;
+		this.tInfo = this.getPromptInfo()
+		this.tMembers = this.getPromptMembersInfo(this.promptUser, allMembersArr);
 		this.tRules = this.getPromptRules();
 		this.tExamples = this.getPromptExamples();
 		this.tConversation = this.getPromptConversation(messagesCtx);
@@ -54,18 +56,9 @@ export class AssistantPrompt extends PromptBuilder {
 	}
 
 	public createAssistantPrompt(): string | undefined {
-		const start = `=== AI GROUP CHAT: "${this.threadName}" ===`;
-		const desc = [
-			"The following is a group-chat conversation between a human and several AI assistants.",
-			wrapInHtmlTag(
-				"nocache",
-				`Current Date-Time: ${dateToLocaleStr(new Date())}`
-			),
-		];
-
 		return this.buildPrompt(
-			start,
-			desc.join("\n"),
+			this.tHeader,
+			this.tInfo,
 			this.tMembers,
 			this.tRules,
 			this.tExamples,
@@ -102,7 +95,7 @@ export class AssistantPrompt extends PromptBuilder {
 			return undefined;
 		}
 
-		const prompt = prompts[prompts.length - 1];
+		const prompt = removeAllHtmlTags(prompts[prompts.length - 1]);
 
 		return this.buildPrompt(start, this.tRules, this.tExamples, prompt);
 	}

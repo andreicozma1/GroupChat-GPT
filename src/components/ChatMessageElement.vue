@@ -72,9 +72,8 @@
                         This message will be ignored in future prompts.
                     </q-tooltip>
                 </q-badge>
-                <q-badge v-if="modelValue.apiResponse !== undefined"
+                <q-badge :label="store.getUserById(modelValue.userId)?.type.toUpperCase()"
                          color="green"
-                         label="AI"
                          outline
                          rounded
                          v-bind="defaultBadgeProps">
@@ -225,7 +224,6 @@ const defaultBadgeProps = {
 	style: "font-size: 0.6rem; padding: 0 5px; margin-bottom: 2px; margin-top: 2px; margin-left: 4px",
 	align: "middle",
 }
-
 
 const onClickMsg = () => {
 	console.log("onClickMsg:", {...props.modelValue});

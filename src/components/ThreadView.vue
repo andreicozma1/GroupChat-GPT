@@ -65,8 +65,8 @@ const msgContextParentColorRgba: Ref<colorsRgba> = ref(defaultBackgroundColor);
 const msgContextIds: Ref<string[]> = ref([]);
 
 const onMsgMouseOver = (msg: Message) => {
-	if (msg.apiResponse?.prompt?.messageContextIds) {
-		msgContextIds.value = [...msg.apiResponse.prompt.messageContextIds, msg.id];
+	if (msg.prompt?.messageContextIds) {
+		msgContextIds.value = [...msg.prompt.messageContextIds, msg.id];
 		msgContextParentColorRgba.value = textToRgb(getPaletteColor(msg.getBackgroundColor()))
 	} else {
 		console.warn("onMsgMouseOver: no context ids found for msg: ", msg);

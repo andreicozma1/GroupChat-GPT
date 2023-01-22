@@ -4,6 +4,7 @@ import {getRobohashUrl} from "src/util/ImageUtils";
 import {User} from "src/util/chat/User";
 import {ValidDateTypes} from "src/util/DateUtils";
 import {getSeededQColor} from "src/util/Colors";
+import {AssistantPrompt} from "src/util/prompt/AssistantPrompt";
 
 export class Message {
 	public static defaultBackgroundColor = "blue-grey-1";
@@ -18,6 +19,7 @@ export class Message {
 	textSnippets: string[] = [];
 	imageUrls: string[] = [];
 	apiResponse?: ApiResponse;
+	prompt?: AssistantPrompt;
 
 	constructor(chatUser?: User) {
 		this.userId = chatUser?.id || "unknown";
@@ -36,7 +38,7 @@ export class Message {
 		});
 		if (textSnippets) {
 			console.error("=> text:");
-			textSnippets?.forEach((t: string) => console.log(t));
+			textSnippets?.forEach((t: string) => console.error(t));
 			this.textSnippets = textSnippets;
 		}
 

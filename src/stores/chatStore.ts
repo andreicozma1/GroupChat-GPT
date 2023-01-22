@@ -20,13 +20,12 @@ export interface ApiResponse {
 	fromCache: boolean;
 	cacheIgnored: boolean;
 	errorMsg: string | undefined;
-	prompt: AssistantPrompt;
 	data: any;
 }
 
 interface FollowUp {
 	userId: string,
-	prompt?: string
+	promptText?: string
 }
 
 export const useChatStore = defineStore("chatStore", {
@@ -123,11 +122,6 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 		// Messages
 		/**************************************************************************************************************/
-		createMessageFromUserId(id: string): Message {
-			id = id.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
-			const cfg: User = this.getUserById(id);
-			return new Message(cfg);
-		},
 
 		async handleUserMessage(message: Message, ignoreCache = false) {
 			const user: User = this.getUserById(message.userId);
@@ -146,30 +140,31 @@ export const useChatStore = defineStore("chatStore", {
 			}
 
 			if (user.type !== UserTypes.HUMAN) {
-				let messages: Message[];
-				messages = thread.getMessagesArray();
-				messages = parseMessagesHistory(messages, {
-					excludeUserIds:
-						user.id !== this.userData.usersMap.coordinator.id
-							? [this.userData.usersMap.coordinator.id]
-							: [],
-					maxMessages: 10,
-					maxDate: message.dateCreated,
-					excludeLoading: false,
-					excludeNoText: true,
-					excludeIgnored: true,
-				});
-				message.loading = true;
+				if (message.prompt === undefined) {
+					let messages: Message[];
+					messages = thread.getMessagesArray();
+					messages = parseMessagesHistory(messages, {
+						excludeUserIds:
+							user.id !== this.userData.usersMap.coordinator.id
+								? [this.userData.usersMap.coordinator.id]
+								: [],
+						maxMessages: 10,
+						maxDate: message.dateCreated,
+						excludeLoading: false,
+						excludeNoText: true,
+						excludeIgnored: true,
+					});
+					message.prompt = new AssistantPrompt(user)
+					message.prompt.fromThread(thread.name, thread.getJoinedUsers(this.getUserById), messages);
+				}
 
+				message.loading = true;
 				const response = await this.generate(
-					user,
-					messages,
-					thread,
+					message.prompt,
 					ignoreCache
 				);
 				message.parseApiResponse(response);
 			}
-
 
 			let followups: FollowUp[] = message.textSnippets.flatMap((text: string) => {
 				const fups: FollowUp[] = [];
@@ -179,7 +174,7 @@ export const useChatStore = defineStore("chatStore", {
 					console.log("followups->directMention:", match);
 					fups.push({
 						userId: match[1],
-						prompt: undefined
+						promptText: undefined
 					});
 				}
 
@@ -188,7 +183,7 @@ export const useChatStore = defineStore("chatStore", {
 					console.log("followups->prompt:", match);
 					fups.push({
 						userId: match[1],
-						prompt: match[2]
+						promptText: match[2]
 					});
 				}
 
@@ -210,22 +205,30 @@ export const useChatStore = defineStore("chatStore", {
 				followups = [
 					{
 						userId: this.userData.usersMap.coordinator.id,
-						prompt: undefined
+						promptText: undefined
 					},
 				];
 			}
 
 			console.warn("handleUserMessage->followupActors:", followups);
-
 			for (const fup of followups) {
-				const uid = fup.userId;
-				const nextMsg: Message = this.createMessageFromUserId(uid);
+				const nextUserId = fup.userId.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
+
+				const nextUser: User = this.getUserById(nextUserId);
+				const nextMsg: Message = new Message(nextUser);
 				message.followupMsgIds.push(nextMsg.id);
 				// increment the DateCreated from the previous message
 				// nextMsg.dateCreated = message.dateCreated;
 				nextMsg.dateCreated = new Date(
 					parseDate(message.dateCreated).getTime() + 1
 				);
+
+				if (fup.promptText !== undefined) {
+					nextMsg.prompt = new AssistantPrompt(nextUser)
+					nextMsg.prompt.messageContextIds = [message.id];
+					nextMsg.prompt.fromText(fup.promptText);
+				}
+
 				if (thread.prefs.orderedResponses) {
 					await this.handleUserMessage(nextMsg, ignoreCache);
 				} else {
@@ -242,32 +245,20 @@ export const useChatStore = defineStore("chatStore", {
 			console.log("getCachedResponseFromPrompt->prompt:", prompt);
 			return this.cachedResponses[prompt.hash];
 		},
+
 		async generate(
-			user: User,
-			msgHist: Message[],
-			thread: Thread,
+			prompt: AssistantPrompt,
 			ignoreCache?: boolean
 		): Promise<ApiResponse> {
 			ignoreCache = ignoreCache ?? false;
-			ignoreCache = user.alwaysIgnoreCache || ignoreCache;
+			ignoreCache = prompt.promptUser.alwaysIgnoreCache || ignoreCache;
 			console.warn("-".repeat(20));
-			console.log("generate->actor:", user);
 			console.log("generate->ignoreCache:", ignoreCache);
-
-			let prompt = undefined
 
 			// if we already have a response for this prompt, return it
 			let response;
 			let cached;
 			try {
-				prompt = new AssistantPrompt(
-					// this.currentThreadName,
-					// this.humanUserName,
-					thread.name,
-					user,
-					thread.getJoinedUsers(this.getUserById),
-					msgHist
-				);
 				console.log("generate->prompt:", prompt);
 				console.log("generate->prompt.hash:", prompt.hash);
 				console.error("generate->prompt.text:");
@@ -279,7 +270,7 @@ export const useChatStore = defineStore("chatStore", {
 					cached = true;
 				} else {
 					response = await makeApiRequest(
-						user.apiReqConfig,
+						prompt.promptUser.apiReqConfig,
 						prompt.finalPromptText
 					);
 					cached = false;
@@ -298,7 +289,6 @@ export const useChatStore = defineStore("chatStore", {
 					fromCache: false,
 					cacheIgnored: ignoreCache,
 					errorMsg: errorMsg,
-					prompt: prompt,
 					data: undefined,
 				} as ApiResponse;
 			}
@@ -308,7 +298,6 @@ export const useChatStore = defineStore("chatStore", {
 				fromCache: cached,
 				cacheIgnored: ignoreCache,
 				errorMsg: undefined,
-				prompt: prompt,
 				data: this.cachedResponses[prompt.hash].data,
 			} as ApiResponse;
 		},

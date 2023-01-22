@@ -8,12 +8,12 @@ import {smartNotify} from "src/util/SmartNotify";
 
 export interface PromptConfig {
 	promptType: string;
+	promptHeader?: string;
+	responseHeader?: string;
 	traits?: PromptTraits;
 	rules?: PromptRules;
 	examples?: string[]; // Order: Human, AI, Human, AI, etc.
-	exampleQueryHeader?: string;
-	responseHeader: string;
-	queryWrapTag?: string;
+	promptWrapTag?: string;
 	responseWrapTag?: string;
 }
 
@@ -124,7 +124,8 @@ export class PromptBuilder {
 	}
 
 	getPromptExamples(
-		exampleQueryHeaderFallback = "Query",
+		promptHeaderFallback = "Prompt",
+		responseHeaderFallback = "Response",
 		header = "EXAMPLES"
 	): string {
 		if (!this.promptConfig.examples || this.promptConfig.examples.length == 0)
@@ -134,8 +135,8 @@ export class PromptBuilder {
 			.map((example: string, i) => {
 				let msgPrompt = example.trim();
 				const isQuery: boolean = i % 2 === 0;
-				if (isQuery && this.promptConfig.queryWrapTag) {
-					msgPrompt = wrapInHtmlTag(this.promptConfig.queryWrapTag, msgPrompt);
+				if (isQuery && this.promptConfig.promptWrapTag) {
+					msgPrompt = wrapInHtmlTag(this.promptConfig.promptWrapTag, msgPrompt);
 				}
 				if (!isQuery && this.promptConfig.responseWrapTag) {
 					msgPrompt = wrapInHtmlTag(
@@ -144,8 +145,8 @@ export class PromptBuilder {
 					);
 				}
 				const identifier = isQuery
-					? this.promptConfig.exampleQueryHeader ?? exampleQueryHeaderFallback
-					: this.promptConfig.responseHeader;
+					? this.promptConfig.promptHeader ?? promptHeaderFallback
+					: this.promptConfig.responseHeader ?? responseHeaderFallback
 				if (identifier) msgPrompt = `### ${identifier}:\n${msgPrompt}`;
 				return msgPrompt;
 			})
@@ -164,9 +165,9 @@ export class PromptBuilder {
 					.map((s: string) => s.trim())
 					.join("\n");
 				const isQuery = i % 2 === 0;
-				if (isQuery && this.promptConfig.queryWrapTag) {
+				if (isQuery && this.promptConfig.promptWrapTag) {
 					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
-					msgPrompt = wrapInHtmlTag(this.promptConfig.queryWrapTag, msgPrompt);
+					msgPrompt = wrapInHtmlTag(this.promptConfig.promptWrapTag, msgPrompt);
 				}
 				if (!isQuery && this.promptConfig.responseWrapTag) {
 					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
@@ -204,4 +205,5 @@ export class PromptBuilder {
 	private h1(header: string) {
 		return `=== ${header} ===`;
 	}
+
 }

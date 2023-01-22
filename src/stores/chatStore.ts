@@ -14,7 +14,7 @@ import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import StatePrefs from "src/util/states/StatePrefs";
-import {createRegexHtmlTagStart, createRegexHtmlTagWithContent} from "src/util/Utils";
+import {createRegexHtmlTagWithContent, validTagPattern} from "src/util/Utils";
 
 export interface ApiResponse {
 	fromCache: boolean;
@@ -163,7 +163,7 @@ export const useChatStore = defineStore("chatStore", {
 							: [],
 					maxMessages: 10,
 					maxDate: message.dateCreated,
-					excludeLoading: true,
+					excludeLoading: false,
 					excludeNoText: true,
 					excludeIgnored: true,
 				});
@@ -182,27 +182,46 @@ export const useChatStore = defineStore("chatStore", {
 			let followups: FollowUp[] = message.textSnippets.flatMap((text: string) => {
 				const fups: FollowUp[] = [];
 
-				text.match(/@([a-zA-Z0-9_]+)/g)?.forEach((m: string) => {
+				const directMention = text.matchAll(new RegExp(`@(${validTagPattern})`, "gi"));
+				for (const match of directMention) {
+					console.log("followups->directMention:", match);
 					fups.push({
-						userId: m.slice(1),
+						userId: match[1],
 						prompt: undefined
 					});
-				});
+				}
 
-				text.match(createRegexHtmlTagWithContent())?.forEach((m: string) => {
-					// get the name of the html tag
-					console.error("followup", m)
-
-					const tag = m.match(createRegexHtmlTagStart())?.[0].slice(1, -1);
-					const prompt = m.match(createRegexHtmlTagWithContent())
-
-					console.error("followup", prompt)
-					// get the content of the html tag
-					if (tag) fups.push({
-						userId: tag,
-						prompt: undefined
+				const promptedFollowup = text.matchAll(createRegexHtmlTagWithContent())
+				for (const match of promptedFollowup) {
+					console.log("followups->prompt:", match);
+					fups.push({
+						userId: match[1],
+						prompt: match[2]
 					});
-				});
+				}
+
+				// text.match(/@([a-zA-Z0-9_]+)/g)?.forEach((m: string) => {
+				// 	fups.push({
+				// 		userId: m.slice(1),
+				// 		prompt: undefined
+				// 	});
+				// });
+				//
+				// text.match(createRegexHtmlTagWithContent())?.forEach((m: string) => {
+				// 	// get the name of the html tag
+				// 	console.error("followup", m)
+				//
+				// 	const match = m.matchAll(createRegexHtmlTagStart())
+				// 	console.log("match:", match)
+				// 	const prompt = m.matchAll(createRegexHtmlTagWithContent())
+				//
+				// 	console.error("followup", prompt)
+				// 	// get the content of the html tag
+				// 	// if (tag) fups.push({
+				// 	// 	userId: tag,
+				// 	// 	prompt: undefined
+				// 	// });
+				// });
 				return fups;
 			});
 
@@ -293,8 +312,8 @@ export const useChatStore = defineStore("chatStore", {
 				);
 				console.log("generate->prompt:", prompt);
 				console.log("generate->prompt.hash:", prompt.hash);
-				console.log("generate->prompt.text:");
-				console.log(prompt.finalPromptText);
+				console.error("generate->prompt.text:");
+				console.error(prompt.finalPromptText);
 
 				const cachedResponse = this.getCachedResponseFromPrompt(prompt);
 				if (!ignoreCache && cachedResponse) {

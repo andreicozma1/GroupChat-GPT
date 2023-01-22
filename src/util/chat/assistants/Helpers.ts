@@ -15,7 +15,6 @@ export class UserCodexGen extends User {
 	constructor() {
 		super("codex_gen", "Codex Generator", UserTypes.HELPER);
 		this.apiReqConfig = ApiRequestConfigTypes.CODEX_GEN;
-		this.promptConfig.responseWrapTag = "markdown";
 		this.promptConfig.promptType = "createPromptCodexGen";
 
 		this.promptConfig.rules?.always?.push(

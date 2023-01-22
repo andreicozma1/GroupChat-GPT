@@ -10,20 +10,21 @@ export const wrapInHtmlTag = (tag: string, ...msgPrompt: string[]) => {
 
 export const wrapInCodeBlock = (lang: string, ...lines: string[]): string => {
 	let res = "```" + lang + "\n";
-	for (let i = 0; i < lines.length; i++) {
-		res += lines[i] + "\n";
-	}
-	res += "```\n";
+	// for (let i = 0; i < lines.length; i++) {
+	// 	res += lines[i] + "\n";
+	// }
+	res += lines.join("\n");
+	res += "```";
 	return res;
 };
 
 export const newlineSeparated = (...lines: string[]): string => {
-	let res = "";
-	for (let i = 0; i < lines.length; i++) {
-		res += lines[i] + "\n";
-	}
-	res += "\n";
-	return res;
+	// let res = "";
+	// for (let i = 0; i < lines.length; i++) {
+	// 	res += lines[i] + "\n";
+	// }
+	// res += "\n";
+	return lines.join("\n")
 };
 
 export const removeAllHtmlTags = (

@@ -20,14 +20,33 @@ export const copyClipboard = (text: string) => {
 	});
 };
 
-export const createRegexHtmlTagWithContent = (tag = '([a-zA-Z0-9_]+)') => {
-	return new RegExp(`<${tag}>\\s*(.+?)\\s*</?${tag}>`, "gis");
+export const validTagPattern = '[a-zA-Z0-9_]+'
+
+export const getStrHtmlTagStart = (tag = validTagPattern) => {
+	return `<(${tag})>\\s*`
 };
 
-export const createRegexHtmlTagStart = (tag = '([a-zA-Z0-9_]+)') => {
-	return new RegExp(`<${tag}>`, "gi");
+export const getStrHtmlTagEnd = (tag = validTagPattern) => {
+	return `\\s*</?(${tag})>`
 };
 
-export const createRegexHtmlTagEnd = (tag = '([a-zA-Z0-9_]+)') => {
-	return new RegExp(`</?${tag}>`, "gi");
+export const getStrHtmlTagWithContent = (tag = validTagPattern) => {
+	const content = '(.+?)';
+	return `${getStrHtmlTagStart(tag)}${content}${getStrHtmlTagEnd(tag)}`
 };
+
+export const createRegexHtmlTagWithContent = (tag = validTagPattern) => {
+	return new RegExp(getStrHtmlTagWithContent(tag), 'gis');
+};
+
+export const createRegexHtmlTagStart = (tag = validTagPattern) => {
+	return new RegExp(getStrHtmlTagStart(tag), 'gis');
+};
+
+export const createRegexHtmlTagEnd = (tag = validTagPattern) => {
+	return new RegExp(getStrHtmlTagEnd(tag), 'gis');
+};
+
+
+
+

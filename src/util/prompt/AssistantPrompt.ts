@@ -31,7 +31,7 @@ export class AssistantPrompt extends PromptBuilder {
 
 		this.tMembers = this.promptMembersInfo(this.promptUser, allMembersArr);
 		this.tRules = this.getPromptRules();
-		this.tExamples = this.getPromptExamples(this.humanUserName);
+		this.tExamples = this.getPromptExamples();
 		this.tConversation = this.getPromptConversation(messagesCtx);
 
 		// promptType if a function part of this class.
@@ -86,17 +86,11 @@ export class AssistantPrompt extends PromptBuilder {
 			return undefined;
 		}
 
-		const prompt = removeAllHtmlTags(prompts[prompts.length - 1]);
-
-		return prompt;
+		return removeAllHtmlTags(prompts[prompts.length - 1]);
 	}
 
 	public createPromptCodexGen(): string | undefined {
 		const start = "### CODE GENERATION ###\n";
-
-		const rules = this.getPromptRules();
-
-		const examples = this.getPromptExamples();
 
 		const prompts = PromptBuilder.filterSnippetsWithTags(
 			this.allTextSnippets,
@@ -108,8 +102,8 @@ export class AssistantPrompt extends PromptBuilder {
 			return undefined;
 		}
 
-		const prompt = removeAllHtmlTags(prompts[prompts.length - 1]);
+		const prompt = prompts[prompts.length - 1];
 
-		return this.buildPrompt(start, rules, examples, prompt);
+		return this.buildPrompt(start, this.tRules, this.tExamples, prompt);
 	}
 }

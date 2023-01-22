@@ -35,14 +35,14 @@ export class Message {
 			return c.text.trim();
 		});
 		if (textSnippets) {
-			console.warn("=> text:");
+			console.error("=> text:");
 			textSnippets?.forEach((t: string) => console.log(t));
 			this.textSnippets = textSnippets;
 		}
 
 		const imageUrls = apiResponse.data?.data?.map((d: any) => d.url);
 		if (imageUrls) {
-			console.warn("=> images:");
+			console.error("=> images:");
 			imageUrls?.forEach((i: string) => console.log(i));
 			this.imageUrls = imageUrls;
 		}

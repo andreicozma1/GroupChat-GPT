@@ -83,7 +83,7 @@
                 <span class="text-weight-bold q-mr-xs">
                     {{ modelValue.userName }}
                 </span>
-                <q-chip :label="chatStore.getUserById(modelValue.userId)?.type.toUpperCase()"
+                <q-chip :label="messageUser?.type.toUpperCase()"
                         class="q-my-none"
                         color="green"
                         dense
@@ -223,6 +223,8 @@ const props = defineProps({
 
 const chatStore = useChatStore();
 
+const messageUser = computed(() => chatStore.getUserById(props.modelValue.userId));
+
 const shouldDelete = ref(false);
 
 const onClickMsg = () => {
@@ -232,9 +234,10 @@ const onClickMsg = () => {
 
 const parsedTextSnippets = computed((): string[] => {
 	const texts = props.modelValue.textSnippets.flatMap((snippet: string) => {
-		return snippet.split("\n\n").map((line: string) => {
-			return line.trim();
-		});
+		// return snippet.split("\n\n").map((line: string) => {
+		// 	return line.trim();
+		// });
+		return snippet.trim();
 	});
 	if ((!texts || texts.length === 0) && !props.loading) {
 		return [];
@@ -284,7 +287,7 @@ const isSentByMe = computed(() => {
 });
 
 const typeIcon = computed(() => {
-	const user: User = chatStore.getUserById(props.modelValue.userId);
+	const user: User = messageUser.value
 	if (!user) {
 		const ic = "send";
 		console.error(

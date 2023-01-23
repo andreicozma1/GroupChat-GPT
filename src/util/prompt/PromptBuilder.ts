@@ -132,8 +132,10 @@ export class PromptBuilder {
 		const examples: string = this.promptConfig.examples
 									 .map((example: string, i) => {
 										 const isQuery: boolean = i % 2 === 0;
-										 return this.getPromptMessage(isQuery,
-																	  example);
+										 const header = isQuery
+														? this.promptConfig.promptHeader ?? "Prompt"
+														: this.promptConfig.responseHeader ?? "Response"
+										 return this.getPromptMessage(example, header);
 									 })
 									 .join("\n\n");
 
@@ -145,11 +147,10 @@ export class PromptBuilder {
 		header = "CONVERSATION"
 	): string {
 		const res: string = messagesCtx
-			.map((msg: Message, i) => {
-				const isQuery = i % 2 === 0;
-				return this.getPromptMessage(isQuery, msg.textSnippets
-														 .map((s: string) => s.trim())
-														 .join("\n"), msg.userId);
+			.map((msg: Message) => {
+				return this.getPromptMessage(msg.textSnippets
+												.map((s: string) => s.trim())
+												.join("\n"), msg.userId);
 			})
 			.join("\n\n");
 
@@ -157,9 +158,8 @@ export class PromptBuilder {
 	}
 
 	private getPromptMessage(
-		isPrompt: boolean,
 		text: string,
-		promptHeader?: string
+		header: string
 	): string {
 		// if (isPrompt && this.promptConfig.promptWrapTag) {
 		// 	text = wrapInHtmlTag(this.promptConfig.promptWrapTag, text);
@@ -170,12 +170,8 @@ export class PromptBuilder {
 		// 		text
 		// 	);
 		// }
-		const identifier = isPrompt
-						   ? promptHeader ?? this.promptConfig.promptHeader ?? "Prompt"
-						   : this.promptConfig.responseHeader ?? "Response"
-		if (identifier) {
-			text = `### ${identifier}:\n${text}`;
-		}
+
+		text = `### ${header}:\n${text}`;
 		return text;
 	}
 

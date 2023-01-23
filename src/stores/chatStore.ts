@@ -7,14 +7,13 @@ import {parseDate} from "src/util/DateUtils";
 import StateGlobalStore from "src/util/states/StateGlobalStore";
 import StateThreads from "src/util/states/StateThreads";
 import StateUsers from "src/util/states/StateUsers";
-import {User, UserTypes} from "src/util/chat/User";
 import {Thread} from "src/util/chat/Thread";
-import {UserHuman} from "src/util/chat/UserHuman";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import StatePrefs from "src/util/states/StatePrefs";
 import {createRegexHtmlTagWithContent, validUserIdPattern} from "src/util/RegexUtils";
-import {assistantFilter} from "src/util/chat/assistants/chatting/UserAssistant";
+import {assistantFilter, User, UserTypes} from "src/util/chat/users/User";
+import {UserHuman} from "src/util/chat/users/conversational/UserHuman";
 
 export interface ApiResponse {
 	data: any;
@@ -175,9 +174,14 @@ export const useChatStore = defineStore("chatStore", {
 				message.textSnippets = []
 				message.imageUrls = []
 				message.prompt = new UserPrompt(user)
+				message.prompt.addStart(thread)
+				message.prompt.addMembersInfo(threadUsers)
+				message.prompt.addRules()
+				message.prompt.addExamples()
+
 				if (followUp && followUp.promptText) {
 					message.prompt.messageContextIds = [followUp.ctxMsgId];
-					message.prompt.fromText(followUp.promptText);
+					message.prompt.addPromptText(followUp.promptText);
 				} else {
 					let messages: Message[];
 					messages = thread.getMessagesArray();
@@ -193,8 +197,9 @@ export const useChatStore = defineStore("chatStore", {
 						excludeIgnored: true,
 					});
 					console.error("messages:", messages);
-					message.prompt.fromThread(thread.name, threadUsers, messages);
+					message.prompt.addConversationContext(messages);
 				}
+				message.prompt.addPromptEnd()
 
 				message.loading = true;
 				const response = await this.handleApiRequest(
@@ -297,7 +302,7 @@ export const useChatStore = defineStore("chatStore", {
 			console.log("generate->debug:", debug);
 			console.log("generate->prompt:", prompt);
 			console.error("generate->prompt.text:");
-			console.error(prompt.finalPromptText);
+			console.error(prompt.text);
 			// if we already have a response for this prompt, return it
 			const result: ApiResponse = {
 				cacheIgnored: ignoreCache,
@@ -311,7 +316,7 @@ export const useChatStore = defineStore("chatStore", {
 					result.fromCache = false;
 					response = await makeCompletion(
 						prompt.promptUser.apiReqConfig,
-						prompt.finalPromptText,
+						prompt.text,
 						debug
 					);
 					this.cachedResponses[prompt.hash] = response;

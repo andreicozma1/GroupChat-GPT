@@ -1,7 +1,7 @@
 import {wrapInHtmlTag} from "src/util/TextUtils";
-import {UserAssistant} from "src/util/chat/assistants/chatting/UserAssistant";
+import {UserChatAssistantConv} from "src/util/chat/users/conversational/UserChatAssistantConv";
 
-export class UserCodex extends UserAssistant {
+export class UserCodex extends UserChatAssistantConv {
 	constructor() {
 		super("codex", "Codex");
 		this.defaultJoin = true;

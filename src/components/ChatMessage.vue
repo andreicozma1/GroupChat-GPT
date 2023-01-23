@@ -204,12 +204,12 @@ import {smartNotify} from "src/util/SmartNotify";
 import {useChatStore} from "stores/chatStore";
 import {computed, ComputedRef, PropType, ref} from "vue";
 import {apiErrorToString, copyClipboard} from "src/util/Utils";
-import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
 import DateText from "components/DateText.vue";
 import UsageBadges from "components/UsageBadges.vue";
 import CustomTooltip from "components/CustomTooltip.vue";
 import UserAvatar from "components/UserAvatar.vue";
+import {User} from "src/util/chat/users/User";
 
 const props = defineProps({
 							  modelValue: {

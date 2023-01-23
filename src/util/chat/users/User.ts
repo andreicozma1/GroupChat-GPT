@@ -3,12 +3,16 @@ import {PromptConfig, PromptRules, PromptTraits} from "src/util/prompt/PromptBui
 import {merge} from "lodash-es";
 import {getRobohashUrl} from "src/util/ImageUtils";
 import {getRegexValidUserId} from "src/util/RegexUtils";
+import {Thread} from "src/util/chat/Thread";
 
 export enum UserTypes {
 	HUMAN = "human",
 	ASSISTANT = "assistant",
 	HELPER = "helper",
 }
+
+export const assistantFilter = (user?: User) =>
+	!user || user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER;
 
 export class User {
 	id: string;
@@ -22,7 +26,7 @@ export class User {
 	requiresUserIds: string[] = [];
 	defaultJoin = false;
 	defaultIgnored = false;
-	promptConfig: PromptConfig;
+	promptConfig: PromptConfig = {}
 
 	constructor(id: string, name: string, type: UserTypes) {
 		this.id = id;
@@ -36,9 +40,6 @@ export class User {
 		this.id = this.id.replace(/\s/g, "");
 		this.name = name;
 		this.type = type;
-		this.promptConfig = {
-			responseHeader: this.id
-		};
 	}
 
 	addTraits(traits: PromptTraits) {
@@ -77,6 +78,10 @@ export class User {
 			this.promptConfig.examples = [];
 		}
 		this.promptConfig.examples?.push(...examples);
+	}
+
+	getPromptStart(thread: Thread): string | undefined {
+		return undefined;
 	}
 
 	getUserAvatarUrl() {

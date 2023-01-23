@@ -1,22 +1,24 @@
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {newlineSeparated, wrapInCodeBlock} from "src/util/TextUtils";
-import {User, UserTypes} from "src/util/chat/User";
+import {User, UserTypes} from "src/util/chat/users/User";
 
 export class UserDalleGen extends User {
 	constructor() {
 		super("dalle_gen", "DALL-E Generator", UserTypes.HELPER);
+		this.icon = "image"
 		this.apiReqConfig = ApiRequestConfigTypes.DALLE_GEN;
 		this.showInMembersInfo = false;
-		this.icon = "image"
 	}
 }
 
 export class UserCodexGen extends User {
 	constructor() {
 		super("codex_gen", "Codex Generator", UserTypes.HELPER);
+		this.icon = "code"
 		this.apiReqConfig = ApiRequestConfigTypes.CODEX_GEN;
 		this.showInMembersInfo = false;
-		this.icon = "code"
+		this.promptConfig.promptHeader = "Instructions"
+		this.promptConfig.responseHeader = "Response"
 
 		this.addRules({
 						  always: [

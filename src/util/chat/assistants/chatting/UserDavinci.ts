@@ -1,4 +1,4 @@
-import {UserChattingAssistant} from "src/util/chat/assistants/UserChattingAssistant";
+import {UserChattingAssistant} from "src/util/chat/assistants/chatting/UserChattingAssistant";
 
 export class UserDavinci extends UserChattingAssistant {
 	constructor() {

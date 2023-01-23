@@ -10,11 +10,11 @@ import StateUsers from "src/util/states/StateUsers";
 import {User, UserTypes} from "src/util/chat/User";
 import {Thread} from "src/util/chat/Thread";
 import {UserHuman} from "src/util/chat/UserHuman";
-import {assistantFilter} from "src/util/chat/assistants/UserChattingAssistant";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import StatePrefs from "src/util/states/StatePrefs";
 import {createRegexHtmlTagWithContent, validUserIdPattern} from "src/util/RegexUtils";
+import {assistantFilter} from "src/util/chat/assistants/chatting/UserChattingAssistant";
 
 export interface ApiResponse {
 	data: any;

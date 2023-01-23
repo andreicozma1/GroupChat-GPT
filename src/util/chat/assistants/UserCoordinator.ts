@@ -3,7 +3,7 @@ import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 
 export class UserCoordinator extends User {
 	constructor() {
-		super("coordinator", "Coordinator", UserTypes.ASSISTANT);
+		super("coordinator", "Coordinator", UserTypes.HELPER);
 		this.apiReqConfig = ApiRequestConfigTypes.COORDINATOR;
 		this.defaultIgnored = true;
 		this.showInMembersInfo = false;

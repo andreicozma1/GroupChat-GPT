@@ -11,7 +11,7 @@ export interface ChatMessageHistoryConfig {
 	minDate?: string | number | Date;
 	// don't return messages from these users, unless the message contains keywords in forceShowKeywords
 	excludeUserIds?: string[];
-	// always return messages with these keywords,  regardless of whether the message is from a user in hiddenUserIds
+	// always return messages with these keywords, regardless of whether the message is from a user in hiddenUserIds
 	forceShowKeywords?: string[];
 	excludeLoading?: boolean;
 	excludeNoText?: boolean;

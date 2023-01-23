@@ -9,7 +9,7 @@ export class UserAssistant extends User {
 		super(id, name, UserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.CONVERSATION;
 		this.addTraits({
-						   personality: ["friendly", "polite", "helpful"],
+						   personality: ["friendly", "polite"],
 						   strengths: ["making conversation", "answering general questions"],
 						   weaknesses: [],
 						   abilities: []

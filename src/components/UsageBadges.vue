@@ -24,7 +24,7 @@ const props = defineProps({
 						  });
 
 const getBadgeColor = (key: string, value: string) => {
-	return getSeededQColor(key + '^', 4, 5)
+	return getSeededQColor(key + '^', 4, 5, [], false)
 };
 
 const getBadgeLabel = (key: string, value: string) => {

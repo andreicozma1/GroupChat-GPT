@@ -15,7 +15,8 @@ export const getSeededQColor = (
 	seed: string | number,
 	minNum?: number,
 	maxNum?: number,
-	excludeKeywords?: string[]
+	excludeKeywords?: string[],
+	shuffle = true
 ) => {
 	// based on the seed pick a color from the list of all quasar colors
 	// do not use random here, because we want the same seed to always return the same color
@@ -39,7 +40,7 @@ export const getSeededQColor = (
 	if (typeof seed === "string") {
 		seed = charSum(seed);
 	}
-	
+
 	if (excludeKeywords) {
 		colors = colors.filter((color) => {
 			return !excludeKeywords.some((keyword) => color.includes(keyword));
@@ -47,10 +48,12 @@ export const getSeededQColor = (
 	}
 
 	// shuffle the array deterministically
-	colors = colors.sort((a, b) => {
-							 return charSum(a) - charSum(b);
-						 }
-	);
+	if (shuffle) {
+		colors = colors.sort((a, b) => {
+								 return charSum(a) - charSum(b);
+							 }
+		);
+	}
 
 	return colors[seed % colors.length];
 };

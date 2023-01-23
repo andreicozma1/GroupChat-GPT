@@ -13,7 +13,7 @@ export class UserCoordinator extends User {
 							  "Only respond with the exact IDs of the assistant(s) that should respond to the user's message.",
 							  // "Separate assistant IDs with commas if more than one assistant should respond.",
 							  "Take into consideration the assistant's traits including personality, strengths, weaknesses, and abilities.",
-							  "Maintain the logical flow and consistency of the conversation."
+							  "Respond in a way that follows the logical flow and consistency of the conversation.",
 						  ],
 						  never: [
 							  "Respond with None or N/A.",

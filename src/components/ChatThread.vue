@@ -98,9 +98,11 @@ const onMsgMouseOut = (msg: Message) => {
 	msgContextParentColorRgba.value = defaultBackgroundColor;
 	if (infoMsgContexts.value) {
 		infoStore.removeMessage(infoMsgContexts.value);
+		infoMsgContexts.value = undefined;
 	}
 	if (infoMsgFollowups.value) {
 		infoStore.removeMessage(infoMsgFollowups.value);
+		infoMsgFollowups.value = undefined;
 	}
 };
 

@@ -2,7 +2,7 @@ import {processItemizedList} from "src/util/ItemizedList";
 import {newlineSeparated, wrapInHtmlTag} from "src/util/TextUtils";
 import {Message} from "src/util/chat/Message";
 import {User} from "src/util/chat/User";
-import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
+import {assistantFilter} from "src/util/chat/assistants/UserChattingAssistant";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr} from "src/util/DateUtils";
 
@@ -104,7 +104,8 @@ export class PromptBuilder {
 	}
 
 	getPromptRules(header = "RULES"): string {
-		if (!this.promptConfig.rules) {
+		// if rules is undefined or all keys have empty arrays, return empty string
+		if (!this.promptConfig.rules || Object.values(this.promptConfig.rules).every((v) => v.length === 0)) {
 			return "";
 		}
 

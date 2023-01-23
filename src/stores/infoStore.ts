@@ -18,22 +18,24 @@ export const useInfoStore = defineStore("info", {
 		messages: {},
 	}),
 	getters: {
-		getMessages(): InfoMessage[] {
-			const msgs = Object.values(this.messages);
-			msgs.sort((a, b) => {
-						  return b.dateUpdated.getTime() - a.dateUpdated.getTime();
-					  }
-			);
-			return msgs;
-		},
-		getLastMessage(): InfoMessage | undefined {
-			return this.getMessages[0];
-		},
 		hasMessages(): boolean {
 			return Object.keys(this.messages).length > 0;
 		}
 	},
 	actions: {
+		getMessages(sortByDate = false): InfoMessage[] {
+			const msgs = Object.values(this.messages);
+			if (sortByDate) {
+				msgs.sort((a, b) => {
+							  return b.dateUpdated.getTime() - a.dateUpdated.getTime();
+						  }
+				);
+			}
+			return msgs;
+		},
+		getLastMessage(): InfoMessage | undefined {
+			return this.getMessages()[0];
+		},
 		createMessage(title: string, caption?: string) {
 			const id = getTextHash(title + caption);
 			const msg = {

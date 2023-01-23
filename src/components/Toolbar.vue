@@ -17,7 +17,7 @@
                 no-caps
                 outside-arrows
                 shrink>
-            <q-tab v-for="item in infoStore.getMessages"
+            <q-tab v-for="item in infoStore.getMessages()"
                    :key="item.id"
                    class="q-px-none">
                 <q-chip :icon="getChipIcon(item)"

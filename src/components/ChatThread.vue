@@ -72,16 +72,22 @@ const threadCaptionProps = {
 const defaultBackgroundColor = textToRgb(getPaletteColor(Message.defaultBackgroundColor))
 const msgContextParentColorRgba: Ref<colorsRgba> = ref(defaultBackgroundColor);
 const msgContextIds: Ref<string[]> = ref([]);
-let infoMsg: InfoMessage | undefined = undefined
 
+let infoMsgContexts: InfoMessage | undefined = undefined
+let infoMsgFollowups: InfoMessage | undefined = undefined
 const onMsgMouseOver = (msg: Message) => {
 	if (msg.prompt?.messageContextIds) {
 		const len = msg.prompt.messageContextIds.length;
-		infoMsg = infoStore.createMessage(`${len} ${getSingularOrPlural("message", len)} in context`);
+		infoMsgContexts = infoStore.createMessage(`${len} ${getSingularOrPlural("message", len)} in context`);
 		msgContextIds.value = [...msg.prompt.messageContextIds, msg.id];
 		msgContextParentColorRgba.value = textToRgb(getPaletteColor(msg.getBackgroundColor()))
 	} else {
 		console.warn("onMsgMouseOver: no context ids found for msg: ", msg);
+	}
+	if (msg.followupMsgIds) {
+		infoMsgFollowups = infoStore.createMessage(`${msg.followupMsgIds.length} followup ${getSingularOrPlural(
+			"message",
+			msg.followupMsgIds.length)}`);
 	}
 };
 
@@ -89,8 +95,11 @@ const onMsgMouseOut = (msg: Message) => {
 	// console.log("onMsgMouseOut->msg: ", {...msg});
 	msgContextIds.value = [];
 	msgContextParentColorRgba.value = defaultBackgroundColor;
-	if (infoMsg) {
-		infoStore.removeMessage(infoMsg);
+	if (infoMsgContexts) {
+		infoStore.removeMessage(infoMsgContexts);
+	}
+	if (infoMsgFollowups) {
+		infoStore.removeMessage(infoMsgFollowups);
 	}
 };
 

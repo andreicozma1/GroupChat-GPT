@@ -1,6 +1,6 @@
-import {UserChattingAssistant} from "src/util/chat/assistants/chatting/UserChattingAssistant";
+import {UserAssistant} from "src/util/chat/assistants/chatting/UserAssistant";
 
-export class UserDavinci extends UserChattingAssistant {
+export class UserDavinci extends UserAssistant {
 	constructor() {
 		super("davinci", "Davinci");
 		this.defaultJoin = true;

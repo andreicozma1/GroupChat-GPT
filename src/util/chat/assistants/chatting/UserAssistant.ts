@@ -4,7 +4,7 @@ import {User, UserTypes} from "src/util/chat/User";
 export const assistantFilter = (user?: User) =>
 	!user || user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER;
 
-export class UserChattingAssistant extends User {
+export class UserAssistant extends User {
 	constructor(id: string, name: string) {
 		super(id, name, UserTypes.ASSISTANT);
 		this.apiReqConfig = ApiRequestConfigTypes.CONVERSATION;

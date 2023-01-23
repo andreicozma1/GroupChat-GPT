@@ -4,7 +4,7 @@ import {Message} from "src/util/chat/Message";
 import {User} from "src/util/chat/User";
 import {smartNotify} from "src/util/SmartNotify";
 import {dateToLocaleStr} from "src/util/DateUtils";
-import {assistantFilter} from "src/util/chat/assistants/chatting/UserChattingAssistant";
+import {assistantFilter} from "src/util/chat/assistants/chatting/UserAssistant";
 
 export interface PromptConfig {
 	promptHeader?: string;

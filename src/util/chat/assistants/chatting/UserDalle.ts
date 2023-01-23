@@ -1,7 +1,7 @@
 import {wrapInHtmlTag} from "src/util/TextUtils";
-import {UserChattingAssistant} from "src/util/chat/assistants/chatting/UserChattingAssistant";
+import {UserAssistant} from "src/util/chat/assistants/chatting/UserAssistant";
 
-export class UserDalle extends UserChattingAssistant {
+export class UserDalle extends UserAssistant {
 	constructor() {
 		super("dalle", "DALL-E");
 		this.defaultJoin = true;

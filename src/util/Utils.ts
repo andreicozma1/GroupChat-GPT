@@ -7,6 +7,9 @@ export const getAppVersion = () => {
 	return version.trim();
 };
 
+export const charSum = (str: string): number =>
+	!str.length ? 0 : str.charCodeAt(0) + charSum(str.substr(1));
+
 export const sleepPromise = (ms: number) =>
 	new Promise((r) => setTimeout(r, ms));
 

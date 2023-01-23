@@ -1,4 +1,4 @@
-import {getRandomMinMax} from "src/util/Utils";
+import {charSum, getRandomMinMax} from "src/util/Utils";
 
 export interface ColorConfig {
 	minLightness?: number;
@@ -37,13 +37,20 @@ export const getSeededQColor = (
 	// now flatten the array
 	let colors = interleavedColors.flat();
 	if (typeof seed === "string") {
-		seed = seed.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+		seed = charSum(seed);
 	}
+	
 	if (excludeKeywords) {
 		colors = colors.filter((color) => {
 			return !excludeKeywords.some((keyword) => color.includes(keyword));
 		});
 	}
+
+	// shuffle the array deterministically
+	colors = colors.sort((a, b) => {
+							 return charSum(a) - charSum(b);
+						 }
+	);
 
 	return colors[seed % colors.length];
 };

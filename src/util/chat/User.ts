@@ -28,7 +28,7 @@ export class User {
 		this.name = name;
 		this.type = type;
 		this.promptConfig = {
-			responseHeader: this.name
+			responseHeader: this.id
 		};
 		this.promptConfig.traits = {
 			personality: [],

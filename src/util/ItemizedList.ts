@@ -1,4 +1,6 @@
 // TODO: Find better name for these and move them to a separate file
+import {capitalizeFirstLetter} from "src/util/TextUtils";
+
 export interface ItemizedListConfig {
 	keyPrefix?: string;
 	valJoinStr?: string;
@@ -36,5 +38,5 @@ export const processItemizedList = (
 	}
 	val = val.join(valJoinStr);
 
-	return [`${keyPrefix} ${key}:`, val].join(inline ? " " : "\n");
+	return [`${keyPrefix} ${capitalizeFirstLetter(key)}:`, val].join(inline ? " " : "\n");
 };

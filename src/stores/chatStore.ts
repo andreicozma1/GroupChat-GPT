@@ -275,7 +275,6 @@ export const useChatStore = defineStore("chatStore", {
 			try {
 				result.fromCache = true
 				let response = this.getPromptResponse(prompt);
-				console.error(response)
 				if (ignoreCache || !response) {
 					result.fromCache = false;
 					response = await makeCompletion(
@@ -312,12 +311,14 @@ export const useChatStore = defineStore("chatStore", {
 			smartNotify(`Clearing complete cache...`);
 			this.cachedResponses = {};
 			this.saveState();
+			location.reload();
 			return this.cachedResponses;
 		},
 		resetPrefs() {
 			smartNotify(`Resetting preferences...`);
 			this.prefs = StatePrefs.getDefault()
 			this.saveState();
+			location.reload();
 			return this.prefs;
 		},
 		resetActiveThread() {
@@ -338,12 +339,14 @@ export const useChatStore = defineStore("chatStore", {
 			smartNotify(`Resetting all threads data...`);
 			this.threadData = StateThreads.getDefault();
 			this.saveState();
+			location.reload();
 			return this.threadData;
 		},
 		resetAllUsers() {
 			smartNotify(`Resetting all users data...`);
 			this.userData = StateUsers.getDefault();
 			this.saveState();
+			location.reload();
 			return this.userData;
 		},
 	},

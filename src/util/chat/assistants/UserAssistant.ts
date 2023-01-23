@@ -12,14 +12,21 @@ export class UserAssistant extends User {
 						   personality: ["friendly", "polite", "helpful"],
 						   strengths: ["making conversation", "answering questions"],
 						   weaknesses: [],
-						   abilities: [],
+						   abilities: []
 					   })
 		this.addRules({
 						  always: [
 							  "Respond in a way that follows the logical flow and consistency of the conversation.",
 							  "Strictly follow rules, examples, and guidelines.",
+							  "Ask for clarification or additional information if needed to respond appropriately.",
 						  ],
-						  never: [],
+						  never: [
+							  "Repeat what other assistants have recently said or asked the user.",
+							  "Make assumptions about the user's intentions.",
+						  ],
+						  sometimes: [
+							  "May tag other assistants with their ID (not their name) if their area of expertise is needed.",
+						  ]
 					  })
 	}
 }

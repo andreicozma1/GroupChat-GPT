@@ -9,8 +9,8 @@ import {dateToLocaleStr} from "src/util/DateUtils";
 export interface PromptConfig {
 	promptHeader?: string;
 	responseHeader?: string;
-	promptWrapTag?: string;
-	responseWrapTag?: string;
+	// promptWrapTag?: string;
+	// responseWrapTag?: string;
 	traits?: PromptTraits;
 	rules?: PromptRules;
 	examples?: string[]; // Order: Human, AI, Human, AI, etc.
@@ -26,6 +26,7 @@ export interface PromptTraits {
 export interface PromptRules {
 	always?: string[];
 	never?: string[];
+	sometimes?: string[];
 }
 
 export class PromptBuilder {
@@ -122,8 +123,6 @@ export class PromptBuilder {
 	}
 
 	getPromptExamples(
-		promptHeaderFallback = "Prompt",
-		responseHeaderFallback = "Response",
 		header = "EXAMPLES"
 	): string {
 		if (!this.promptConfig.examples || this.promptConfig.examples.length == 0) {
@@ -132,24 +131,9 @@ export class PromptBuilder {
 
 		const examples: string = this.promptConfig.examples
 									 .map((example: string, i) => {
-										 let msgPrompt = example.trim();
 										 const isQuery: boolean = i % 2 === 0;
-										 if (isQuery && this.promptConfig.promptWrapTag) {
-											 msgPrompt = wrapInHtmlTag(this.promptConfig.promptWrapTag, msgPrompt);
-										 }
-										 if (!isQuery && this.promptConfig.responseWrapTag) {
-											 msgPrompt = wrapInHtmlTag(
-												 this.promptConfig.responseWrapTag,
-												 msgPrompt
-											 );
-										 }
-										 const identifier = isQuery
-															? this.promptConfig.promptHeader ?? promptHeaderFallback
-															: this.promptConfig.responseHeader ?? responseHeaderFallback
-										 if (identifier) {
-											 msgPrompt = `### ${identifier}:\n${msgPrompt}`;
-										 }
-										 return msgPrompt;
+										 return this.getPromptMessage(isQuery,
+																	  example);
 									 })
 									 .join("\n\n");
 
@@ -162,35 +146,47 @@ export class PromptBuilder {
 	): string {
 		const res: string = messagesCtx
 			.map((msg: Message, i) => {
-				let msgPrompt = msg.textSnippets
-								   .map((s: string) => s.trim())
-								   .join("\n");
 				const isQuery = i % 2 === 0;
-				if (isQuery && this.promptConfig.promptWrapTag) {
-					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
-					msgPrompt = wrapInHtmlTag(this.promptConfig.promptWrapTag, msgPrompt);
-				}
-				if (!isQuery && this.promptConfig.responseWrapTag) {
-					msgPrompt = msgPrompt.replace(/(<([^>]+)>)/gi, "");
-					msgPrompt = wrapInHtmlTag(
-						this.promptConfig.responseWrapTag,
-						msgPrompt
-					);
-				}
-				msgPrompt = `### ${msg.userName}:\n${msgPrompt}`;
-				return msgPrompt;
+				return this.getPromptMessage(isQuery, msg.textSnippets
+														 .map((s: string) => s.trim())
+														 .join("\n"), msg.userId);
 			})
 			.join("\n\n");
 
 		return [this.h1(header), res].join("\n");
 	}
 
+	private getPromptMessage(
+		isPrompt: boolean,
+		text: string,
+		promptHeader?: string
+	): string {
+		// if (isPrompt && this.promptConfig.promptWrapTag) {
+		// 	text = wrapInHtmlTag(this.promptConfig.promptWrapTag, text);
+		// }
+		// if (!isPrompt && this.promptConfig.responseWrapTag) {
+		// 	text = wrapInHtmlTag(
+		// 		this.promptConfig.responseWrapTag,
+		// 		text
+		// 	);
+		// }
+		const identifier = isPrompt
+						   ? promptHeader ?? this.promptConfig.promptHeader ?? "Prompt"
+						   : this.promptConfig.responseHeader ?? "Response"
+		if (identifier) {
+			text = `### ${identifier}:\n${text}`;
+		}
+		return text;
+	}
+
 	private promptAssistantInfo(user: User, parenthesesTag?: string): string {
-		let header = `### ${user.name} (id: ${user.id})`;
+		let header = `### ${user.id}`;
 		if (parenthesesTag) {
 			header += ` [${parenthesesTag.toUpperCase()}]`;
 		}
 		header += ":";
+		header += "\n";
+		header += `# Name: ${user.name}`;
 
 		if (!user.promptConfig.traits) {
 			return header;
@@ -202,7 +198,7 @@ export class PromptBuilder {
 							   if (s.length === 0) {
 								   return undefined;
 							   }
-							   return processItemizedList(k, v, {keyPrefix: "-"});
+							   return processItemizedList(k, v, {keyPrefix: "#"});
 						   })
 						   .filter((s: string | undefined) => s !== undefined);
 

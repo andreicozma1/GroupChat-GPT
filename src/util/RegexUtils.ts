@@ -1,4 +1,4 @@
-export const validTagPattern = '[a-zA-Z0-9_]+'
+export const validTagPattern = '[a-zA-Z0-9_-]+'
 export const getStrHtmlTagStart = (tag = validTagPattern) => {
 	return `<(${tag})>\\s*`
 };

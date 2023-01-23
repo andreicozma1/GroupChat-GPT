@@ -241,10 +241,10 @@ const onClickMsg = () => {
 
 const parsedTextSnippets = computed((): string[] => {
 	const texts = props.modelValue.textSnippets.flatMap((snippet: string) => {
-		// return snippet.split("\n\n").map((line: string) => {
-		// 	return line.trim();
-		// });
-		return snippet.trim();
+		return snippet.split("\n\n").map((line: string) => {
+			return line.trim();
+		});
+		// return snippet.trim();
 	});
 	if ((!texts || texts.length === 0) && !props.loading) {
 		return [];

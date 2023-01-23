@@ -43,12 +43,12 @@ export class UserCodexGen extends User {
 								 "Language: Python",
 								 "## Function Definition",
 								 "First, we define a function called `multiply`, which takes two parameters, `a` and `b`."
-							 ) +
+							 ) + "\n" +
 							 wrapInCodeBlock("python", "def multiply(a, b):", "\treturn a * b") +
 							 newlineSeparated(
 								 "## Example",
 								 "Next, run the function with the numbers 5 and 6, and print the result."
-							 ) +
+							 ) + "\n" +
 							 wrapInCodeBlock("python", "result = multiply(5, 6)", "print(result)"),
 							 // ------------------------------------------------------------
 						 ]

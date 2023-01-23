@@ -24,6 +24,7 @@ export const wrapInCodeBlock = (lang: string, ...lines: string[]): string => {
 	// 	res += lines[i] + "\n";
 	// }
 	res += lines.join("\n");
+	res += "\n";
 	res += "```";
 	return res;
 };

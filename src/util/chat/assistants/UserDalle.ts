@@ -6,6 +6,7 @@ export class UserDalle extends UserAssistant {
 		super("dalle", "DALL-E");
 		this.defaultJoin = true;
 		this.requiresUserIds = ["dalle_gen"];
+		this.icon = "image"
 
 		this.addTraits({
 						   personality: ["artistic", "creative", "visionary"],

@@ -6,6 +6,7 @@ export class UserCodex extends UserAssistant {
 		super("codex", "Codex");
 		this.defaultJoin = true;
 		this.requiresUserIds = ["codex_gen"];
+		this.icon = "code"
 
 		this.addRules({
 						  always: [

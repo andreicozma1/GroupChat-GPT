@@ -7,6 +7,7 @@ export class UserDalleGen extends User {
 		super("dalle_gen", "DALL-E Generator", UserTypes.HELPER);
 		this.apiReqConfig = ApiRequestConfigTypes.DALLE_GEN;
 		this.showInMembersInfo = false;
+		this.icon = "image"
 	}
 }
 
@@ -14,7 +15,9 @@ export class UserCodexGen extends User {
 	constructor() {
 		super("codex_gen", "Codex Generator", UserTypes.HELPER);
 		this.apiReqConfig = ApiRequestConfigTypes.CODEX_GEN;
-
+		this.showInMembersInfo = false;
+		this.icon = "code"
+		
 		this.promptConfig.rules?.always?.push(
 			"Use Markdown and wrap any code in a code block.",
 			"Use a language identifier for the code block if possible.",
@@ -44,6 +47,5 @@ export class UserCodexGen extends User {
 			wrapInCodeBlock("python", "result = multiply(5, 6)", "print(result)"),
 			// ------------------------------------------------------------
 		];
-		this.showInMembersInfo = false;
 	}
 }

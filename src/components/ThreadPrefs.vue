@@ -45,10 +45,18 @@
                                     </q-item-section>
                                     <q-item-section>
                                         <q-item-label>
-                                            {{ user.name }}
+                                            <span class="text-weight-bold">
+                                                {{ user.name }}
+                                            </span>
                                         </q-item-label>
-                                        <q-item-label caption>
-                                            ID: {{ user.id }} ({{ user.type }})
+                                        <q-item-label>
+                                            <q-chip :label="user.type.toUpperCase()"
+                                                    class="q-ma-none"
+                                                    color="green"
+                                                    dense
+                                                    outline
+                                                    size="0.55rem">
+                                            </q-chip>
                                         </q-item-label>
                                     </q-item-section>
                                     <q-item-section side>

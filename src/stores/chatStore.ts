@@ -234,9 +234,8 @@ export const useChatStore = defineStore("chatStore", {
 				const nextMsg: Message = new Message(nextUser);
 				message.followupMsgIds.push(nextMsg.id);
 				// increment the DateCreated from the previous message
-				// nextMsg.dateCreated = message.dateCreated;
 				nextMsg.dateCreated = new Date(
-					parseDate(message.dateCreated).getTime() + 1000
+					parseDate(message.dateCreated).getTime() + 250
 				);
 
 				if (thread.prefs.orderedResponses) {

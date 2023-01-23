@@ -1,14 +1,15 @@
 <template>
-    <q-badge v-for="(value, key) in modelUsage"
-             :key="key"
-             :color="getBadgeColor(key, value)"
-             :label="getBadgeLabel(key, value)"
-             class="q-mr-xs"
-             v-bind="badgeProps">
+    <q-chip v-for="(value, key) in modelUsage"
+            :key="key"
+            :color="getBadgeColor(key, value)"
+            :label="getBadgeLabel(key, value)"
+            class="q-my-none text-weight-bold"
+            dense
+            size="0.55rem">
         <CustomTooltip>
             {{ getBadgeTooltip(key, value) }}
         </CustomTooltip>
-    </q-badge>
+    </q-chip>
 </template>
 <script lang="ts"
         setup>
@@ -19,11 +20,6 @@ import CustomTooltip from "components/CustomTooltip.vue";
 const props = defineProps({
 							  modelUsage: {
 								  type: Object,
-							  },
-							  badgeProps: {
-								  type: Object,
-								  required: false,
-								  default: null,
 							  },
 						  });
 

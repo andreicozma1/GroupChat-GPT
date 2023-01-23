@@ -79,25 +79,30 @@
         </div>
 
         <template v-slot:name>
-            <span class="row">
+            <div class="row items-center">
                 <span class="text-weight-bold q-mr-xs">
                     {{ modelValue.userName }}
                 </span>
-                <q-badge v-if="modelValue.isIgnored"
-                         color="orange"
-                         label="Ignored"
-                         v-bind="defaultBadgeProps">
+                <q-chip :label="chatStore.getUserById(modelValue.userId)?.type.toUpperCase()"
+                        class="q-my-none"
+                        color="green"
+                        dense
+                        outline
+                        size="0.55rem">
+                </q-chip>
+                <q-chip v-if="modelValue.isIgnored"
+                        class="q-my-none"
+                        color="orange"
+                        dense
+                        label="Ignored"
+                        size="0.55rem"
+                        square>
                     <CustomTooltip>
                         This message will be ignored in future prompts.
                     </CustomTooltip>
-                </q-badge>
-                <q-badge :label="chatStore.getUserById(modelValue.userId)?.type.toUpperCase()"
-                         color="green"
-                         outline
-                         rounded
-                         v-bind="defaultBadgeProps">
-                </q-badge>
-            </span>
+                </q-chip>
+            </div>
+
         </template>
 
         <template v-slot:stamp>
@@ -128,8 +133,8 @@
                     </CustomTooltip>
                 </div>
                 <q-space />
-                <CompletionUsageBadges v-if="modelValue?.apiResponse?.data?.usage"
-                                       :model-usage="modelValue?.apiResponse?.data?.usage" />
+                <UsageBadges v-if="modelValue?.apiResponse?.data?.usage"
+                             :model-usage="modelValue?.apiResponse?.data?.usage" />
                 <div>
                     <div v-if="shouldDelete"
                          class="text-bold">Delete?
@@ -196,7 +201,7 @@ import {apiErrorToString, copyClipboard} from "src/util/Utils";
 import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
 import DateText from "components/DateText.vue";
-import CompletionUsageBadges from "components/UsageBadges.vue";
+import UsageBadges from "components/UsageBadges.vue";
 import CustomTooltip from "components/CustomTooltip.vue";
 
 const props = defineProps({
@@ -219,11 +224,6 @@ const props = defineProps({
 const chatStore = useChatStore();
 
 const shouldDelete = ref(false);
-
-const defaultBadgeProps = {
-	style: "font-size: 0.6rem; padding: 0 5px; margin-bottom: 2px; margin-top: 2px; margin-left: 4px",
-	align: "middle",
-}
 
 const onClickMsg = () => {
 	console.log("onClickMsg:", {...props.modelValue});

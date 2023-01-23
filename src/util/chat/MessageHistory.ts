@@ -39,15 +39,8 @@ export const parseMessagesHistory = (
 		}
 		return true;
 	});
-	// console.log("getMessageHistory->original:", messages);
 
 	messages = messages.filter((message: Message) => {
-		if (config.maxDate) {
-			console.error(parseDate(config.maxDate));
-			console.error(parseDate(message.dateCreated));
-			console.error(config.maxDate && parseDate(config.maxDate) <= parseDate(message.dateCreated));
-			console.error(config.minDate && parseDate(config.minDate) >= parseDate(message.dateCreated));
-		}
 		if (config.maxDate && parseDate(config.maxDate) < parseDate(message.dateCreated)) {
 			return false;
 		}

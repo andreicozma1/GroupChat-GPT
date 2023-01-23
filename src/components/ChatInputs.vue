@@ -33,49 +33,7 @@
             </div>
 
             <q-space />
-            <!--            <q-btn-group flat-->
-            <!--                         rounded>-->
-            <!--                <q-btn-->
-            <!--                        color="orange"-->
-            <!--                        icon-right="clear"-->
-            <!--                        label="Reset Prefs"-->
-            <!--                        no-caps-->
-            <!--                        outline-->
-            <!--                        size="sm"-->
-            <!--                        title="Reset app preferences to default values"-->
-            <!--                        @click="chatStore.resetPrefs"-->
-            <!--                />-->
-            <!--                <q-btn-->
-            <!--                        color="light-blue"-->
-            <!--                        icon-right="clear"-->
-            <!--                        label="Clear Thread Messages"-->
-            <!--                        no-caps-->
-            <!--                        outline-->
-            <!--                        size="sm"-->
-            <!--                        title="Clear all messages in the active thread"-->
-            <!--                        @click="chatStore.getActiveThread().clearMessages"-->
-            <!--                />-->
-            <!--                <q-btn-->
-            <!--                        color="green"-->
-            <!--                        icon-right="cached"-->
-            <!--                        label="Clear Completion Cache"-->
-            <!--                        no-caps-->
-            <!--                        outline-->
-            <!--                        size="sm"-->
-            <!--                        title="Clear the global completion cache"-->
-            <!--                        @click="chatStore.clearCachedResponses"-->
-            <!--                />-->
-            <!--                <q-btn-->
-            <!--                        color="red"-->
-            <!--                        icon-right="delete_forever"-->
-            <!--                        label="Hard Reset"-->
-            <!--                        no-caps-->
-            <!--                        outline-->
-            <!--                        size="sm"-->
-            <!--                        title="Reset all application data from local storage"-->
-            <!--                        @click="chatStore.clearAllData"-->
-            <!--                />-->
-            <!--            </q-btn-group>-->
+
             <q-fab v-model="fab"
                    class="q-mr-md"
                    color="primary"

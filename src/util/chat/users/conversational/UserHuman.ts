@@ -1,5 +1,5 @@
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
-import {User, UserTypes} from "src/util/chat/User";
+import {User, UserTypes} from "src/util/chat/users/User";
 
 export class UserHuman extends User {
 	constructor(id: string) {

@@ -18,7 +18,7 @@
                     :model-value="msg"
                     :style="msgStyle(msg)"
                     @mouseenter="onMsgMouseOver(msg)"
-                    @mouseleave="onMsgMouseOut(msg)"
+                    @mouseleave="onMsgMouseOut()"
             />
         </div>
     </q-scroll-area>
@@ -77,6 +77,14 @@ const infoMsgContexts: Ref<InfoMessage | undefined> = ref(undefined)
 const infoMsgFollowups: Ref<InfoMessage | undefined> = ref(undefined)
 
 const onMsgMouseOver = (msg: Message) => {
+	if (infoMsgContexts.value) {
+		infoStore.removeMessage(infoMsgContexts.value);
+		infoMsgContexts.value = undefined;
+	}
+	if (infoMsgFollowups.value) {
+		infoStore.removeMessage(infoMsgFollowups.value);
+		infoMsgFollowups.value = undefined;
+	}
 	if (msg.prompt?.messageContextIds) {
 		const len = msg.prompt.messageContextIds.length;
 		infoMsgContexts.value = infoStore.createMessage(`${len} ${getSingularOrPlural("message", len)} in context`);
@@ -92,18 +100,10 @@ const onMsgMouseOver = (msg: Message) => {
 	}
 };
 
-const onMsgMouseOut = (msg: Message) => {
+const onMsgMouseOut = () => {
 	// console.log("onMsgMouseOut->msg: ", {...msg});
 	msgContextIds.value = [];
 	msgContextParentColorRgba.value = defaultBackgroundColor;
-	if (infoMsgContexts.value) {
-		infoStore.removeMessage(infoMsgContexts.value);
-		infoMsgContexts.value = undefined;
-	}
-	if (infoMsgFollowups.value) {
-		infoStore.removeMessage(infoMsgFollowups.value);
-		infoMsgFollowups.value = undefined;
-	}
 };
 
 const msgStyle = (msg: Message) => {

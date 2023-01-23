@@ -1,12 +1,10 @@
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
-import {User, UserTypes} from "src/util/chat/User";
+import {UserChatAssistant} from "src/util/chat/users/UserChatAssistant";
 
-export const assistantFilter = (user?: User) =>
-	!user || user.type === UserTypes.ASSISTANT || user.type === UserTypes.HELPER;
 
-export class UserAssistant extends User {
+export class UserChatAssistantConv extends UserChatAssistant {
 	constructor(id: string, name: string) {
-		super(id, name, UserTypes.ASSISTANT);
+		super(id, name);
 		this.apiReqConfig = ApiRequestConfigTypes.CONVERSATION;
 		this.addTraits({
 						   personality: ["friendly", "polite"],
@@ -16,8 +14,6 @@ export class UserAssistant extends User {
 					   })
 		this.addRules({
 						  always: [
-							  "Strictly follow rules, examples, and guidelines.",
-							  "Respond in a way that follows the logical flow and consistency of the conversation.",
 							  "If asked a question, provide an answer that is on-topic, complete, and clear.",
 						  ],
 						  never: [

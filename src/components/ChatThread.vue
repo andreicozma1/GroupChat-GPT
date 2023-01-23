@@ -18,7 +18,7 @@
                     :model-value="msg"
                     :style="msgStyle(msg)"
                     @mouseenter="onMsgMouseOver(msg)"
-                    @mouseleave="onMsgMouseOut(msg)"
+                    @mouseleave="onMsgMouseOut()"
             />
         </div>
     </q-scroll-area>

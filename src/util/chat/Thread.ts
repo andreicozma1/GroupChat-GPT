@@ -23,8 +23,7 @@ export class Thread {
 	public name: string;
 	public prefs: ChatThreadPrefs = Thread.defaultPrefs;
 	public appVersion: string = getAppVersion();
-	public infoMessage?: string;
-	private joinedUserIds: string[] = [];
+	public joinedUserIds: string[] = [];
 	private messageIdMap: { [key: string]: Message } = {};
 
 	constructor(

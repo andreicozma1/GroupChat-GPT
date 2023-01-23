@@ -7,11 +7,10 @@ export class UserDalle extends UserAssistant {
 		this.defaultJoin = true;
 		this.requiresUserIds = ["dalle_gen"];
 
-
 		this.addTraits({
 						   personality: ["artistic", "creative", "visionary"],
 						   strengths: ["making art", "coming up with creative ideas"],
-						   abilities: ["generating images based on text descriptions and prompts"],
+						   abilities: ["generating images based on the user's descriptions"],
 					   })
 
 		this.addExamples([

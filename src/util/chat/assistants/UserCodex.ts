@@ -17,7 +17,7 @@ export class UserCodex extends UserAssistant {
 		this.addTraits({
 						   personality: ["analytical", "logical", "rational"],
 						   strengths: ["programming", "coding"],
-						   abilities: ["generating code based on text descriptions and prompts"],
+						   abilities: ["generating code based on the user's descriptions"],
 					   })
 
 		this.addExamples([

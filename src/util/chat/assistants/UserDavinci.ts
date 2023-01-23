@@ -6,7 +6,7 @@ export class UserDavinci extends UserAssistant {
 		this.defaultJoin = true;
 
 		this.addTraits({
-						   personality: ["helpful"],
+						   personality: ["enthusiastic"],
 						   strengths: ["providing general information"],
 					   })
 	}

@@ -74,19 +74,21 @@ export const useChatStore = defineStore("chatStore", {
 			this.saveState(verbose);
 			return this.usersMap[user.id];
 		},
-		getUserById(id: string, verbose = true): User {
+		getUserById(id: string, verbose = true): User | undefined {
 			// console.warn("getUserById:", id);
-			if (!this.usersMap[id] && verbose) {
+			const user: User | undefined = this.usersMap[id]
+			if (!user && verbose) {
 				smartNotify('User not found', id);
 			}
-			return this.usersMap[id];
+			return user;
 		},
 		getMyUser(): User {
 			console.warn("getMyUser");
-			if (!this.getUserById(this.myUserId, false)) {
-				return this.registerUser(new UserHuman(this.myUserId), false);
+			let user = this.getUserById(this.myUserId, false)
+			if (!user) {
+				user = this.registerUser(new UserHuman(this.myUserId), false);
 			}
-			return this.getUserById(this.myUserId);
+			return user;
 		},
 		/**************************************************************************************************************/
 		// Threads
@@ -114,6 +116,14 @@ export const useChatStore = defineStore("chatStore", {
 					this.threadsMap[key]
 				);
 			}
+
+			const joinedAssistants = this.threadsMap[key].getJoinedUsers(this.getUserById).filter(assistantFilter);
+			if (joinedAssistants.length > 1 && !joinedAssistants.map((u) => u.id)
+																.includes(this.userData.usersMap.coordinator.id)) {
+				this.threadsMap[key].addUser(this.userData.usersMap.coordinator);
+				smartNotify("Thread has multiple assistants",
+							"Adding Coordinator Assistant to help manage the conversation");
+			}
 			return this.threadsMap[key];
 		},
 		getActiveThread(): Thread {
@@ -129,7 +139,11 @@ export const useChatStore = defineStore("chatStore", {
 		/**************************************************************************************************************/
 
 		async handleUserMessage(message: Message, followUp?: FollowUp) {
-			const user: User = this.getUserById(message.userId);
+			const user: User | undefined = this.getUserById(message.userId);
+			if (!user) {
+				smartNotify(`User ${message.userId} does not exist.`);
+				return;
+			}
 			const thread: Thread = this.getActiveThread();
 			thread.addMessage(message);
 			console.warn("*".repeat(40));
@@ -145,6 +159,8 @@ export const useChatStore = defineStore("chatStore", {
 			}
 
 			if (user.type !== UserTypes.HUMAN) {
+				message.textSnippets = []
+				message.imageUrls = []
 				message.prompt = new UserPrompt(user)
 				if (followUp && followUp.promptText) {
 					message.prompt.messageContextIds = [followUp.ctxMsgId];
@@ -202,19 +218,18 @@ export const useChatStore = defineStore("chatStore", {
 			});
 
 			if (followups.length > 0) {
-				const joinedUserIds = thread
-					.getJoinedUsers(this.getUserById)
-					.map((u) => u.id);
+
 				followups = followups.filter((f: FollowUp) => {
 					const uid = f.userId
 					if (uid === user.id) {
 						return false;
 					}
-					const isInChat = joinedUserIds.includes(uid);
-					if (!isInChat) {
-						smartNotify(`User ${uid} is not a member of this chat thread.`);
-					}
-					return isInChat;
+					// const isInChat = joinedUserIds.includes(uid);
+					// if (!isInChat) {
+					// 	smartNotify(`User ${uid} is not a member of this chat thread.`);
+					// }
+					// return isInChat;
+					return true;
 				});
 			} else if (user.type === UserTypes.HUMAN) {
 				followups = [
@@ -227,10 +242,17 @@ export const useChatStore = defineStore("chatStore", {
 			}
 
 			console.warn("handleUserMessage->followupActors:", followups);
-			for (const fup of followups) {
-				const nextUserId = fup.userId.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim();
+			const joinedUserIds = thread
+				.getJoinedUsers(this.getUserById)
+				.map((u) => u.id);
 
-				const nextUser: User = this.getUserById(nextUserId);
+			for (const fup of followups) {
+				const nextUserId = fup.userId.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim().toLowerCase();
+				if (!joinedUserIds.includes(nextUserId)) {
+					smartNotify(`User ${nextUserId} is not a member of this chat thread.`);
+					return
+				}
+				const nextUser: User | undefined = this.getUserById(nextUserId);
 				const nextMsg: Message = new Message(nextUser);
 				message.followupMsgIds.push(nextMsg.id);
 				// increment the DateCreated from the previous message

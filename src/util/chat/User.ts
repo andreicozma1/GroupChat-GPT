@@ -39,25 +39,30 @@ export class User {
 		this.promptConfig = {
 			responseHeader: this.id
 		};
-		this.promptConfig.traits = {
-			personality: [],
-			strengths: [],
-			weaknesses: [],
-			abilities: [],
-		};
-		this.promptConfig.rules = {
-			always: [],
-			never: [],
-			sometimes: [],
-		};
-		this.promptConfig.examples = [];
 	}
 
 	addTraits(traits: PromptTraits) {
+		if (!this.promptConfig.traits) {
+			// default traits
+			this.promptConfig.traits = {
+				personality: [],
+				strengths: [],
+				weaknesses: [],
+				abilities: [],
+			};
+		}
 		this.promptConfig.traits = merge(this.promptConfig.traits, traits);
 	}
 
 	addRules(rules: PromptRules) {
+		if (!this.promptConfig.rules) {
+			// default rules
+			this.promptConfig.rules = {
+				always: [],
+				never: [],
+				sometimes: [],
+			};
+		}
 		this.promptConfig.rules = merge(this.promptConfig.rules, rules);
 	}
 
@@ -66,6 +71,10 @@ export class User {
 		if (examples.length % 2 !== 0) {
 			console.error("Number of examples must be an even number.");
 			return;
+		}
+		if (!this.promptConfig.examples) {
+			// default examples
+			this.promptConfig.examples = [];
 		}
 		this.promptConfig.examples?.push(...examples);
 	}

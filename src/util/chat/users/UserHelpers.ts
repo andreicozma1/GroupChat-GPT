@@ -29,27 +29,46 @@ export class UserCodexGen extends User {
 					  })
 
 		this.addExamples([
-							 // TODO: Use LeetCode Examples
 							 // ------------------------------------------------------------
 							 newlineSeparated(
-								 "Language: Python",
-								 "1. Write a function that multiplies two numbers together.",
-								 "2. Run the an example with the numbers 5 and 6.",
-								 "3. Print the result."
+								 "Write Python code that tests for a valid anagram.",
+								 "An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.",
+								 "Given two strings s and t, return true if t is an anagram of s, and false otherwise.",
 							 ),
 							 // ------------------------------------------------------------
 							 newlineSeparated(
-								 "# Multiplying Numbers",
-								 "Language: Python",
-								 "## Function Definition",
-								 "First, we define a function called `multiply`, which takes two parameters, `a` and `b`."
+								 "**Valid Anagram:**",
 							 ) + "\n" +
-							 wrapInCodeBlock("python", "def multiply(a, b):", "\treturn a * b") +
+							 wrapInCodeBlock("python",
+											 "class Solution:",
+											 "\tdef isAnagram(self, s: str, t: str) -> bool:",
+											 "\t\ta = {}",
+											 "\t\tb = {}",
+											 "\t\tfor i in s:",
+											 "\t\t\tif i in a:",
+											 "\t\t\t\ta[i]+=1",
+											 "\t\t\telse:",
+											 "\t\t\t\ta[i]=1",
+											 "\t\tfor i in t:",
+											 "\t\t\tif i in b:",
+											 "\t\t\t\tb[i]+=1",
+											 "\t\t\telse:",
+											 "\t\t\t\tb[i]=1",
+											 "\t\tif a == b:",
+											 "\t\t\treturn True",
+											 "\t\telse:",
+											 "\t\t\treturn False") + "\n" +
 							 newlineSeparated(
-								 "## Example",
-								 "Next, run the function with the numbers 5 and 6, and print the result."
-							 ) + "\n" +
-							 wrapInCodeBlock("python", "result = multiply(5, 6)", "print(result)"),
+								 "**Explanation:**",
+								 "Here we make use of Dictionary in Python.",
+								 "- Dictionaries are used to store data values in key-value pairs.",
+								 "\n",
+								 "Taking each letter in the given word as keys, we can find its ***frequency*** and store it as their respective values.",
+								 "- Eg: REED. `{R:1, E:2, D:1}`, as *R* and *D* occur once, and *E* occurs twice.",
+								 "Similarly, we find the ***frequency of letters*** of both the given words and store it in ***two different dictionaries***.",
+								 "\n",
+								 "Finally, if both the dictionaries are equal we can conclude that the given words form an Anagram, and `return True`, else `return False`!"
+							 )
 							 // ------------------------------------------------------------
 						 ]
 		)

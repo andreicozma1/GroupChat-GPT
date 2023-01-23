@@ -83,7 +83,9 @@ export const ApiRequestConfigsMap: ApiRequestConfigs = {
 			parent: "createCompletion",
 			opts: {
 				model: "code-davinci-002",
+				temperature: 0.8,
 				max_tokens: 500,
+				stop: ["### Instructions"]
 			},
 		},
 		[ApiRequestConfigTypes.DALLE_GEN]: {

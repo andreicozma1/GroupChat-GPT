@@ -15,6 +15,7 @@ export class UserChatAssistantConv extends UserChatAssistant {
 		this.addRules({
 						  always: [
 							  "If asked a question, provide an answer that is on-topic, complete, and clear.",
+							  "Use Markdown formatting to make the conversation more readable."
 						  ],
 						  never: [
 							  "Repeat previous messages verbatim.",

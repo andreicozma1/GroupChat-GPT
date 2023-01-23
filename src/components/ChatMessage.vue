@@ -10,33 +10,37 @@
         <div v-for="textSnippet in parsedTextSnippets"
              :key="textSnippet"
              @click="copyClipboard(textSnippet)">
-            <div v-for="text in textSnippet.split('\n')"
-                 :key="text">
-                <span v-if="text.includes('http')">
-                    <span v-for="chunk in text.split(' ')"
-                          :key="chunk"
-                          style="padding-right: 3.5px">
-                        <a v-if="chunk.includes('http')"
-                           :href="chunk"
-                           target="_blank">
-                            {{ chunk }}
-                            <CustomTooltip>
-                                {{ chunk }}
-                            </CustomTooltip>
-                        </a>
-                        <span v-else>
-                            {{ chunk }}
-                        </span>
-                    </span>
-                </span>
-                <span v-else>
-                    {{ text }}
-                </span>
-            </div>
+            <!--            <div v-for="text in textSnippet.split('\n')"-->
+            <!--                 :key="text">-->
+            <!--                <span v-if="text.includes('http')">-->
+            <!--                    <span v-for="chunk in text.split(' ')"-->
+            <!--                          :key="chunk"-->
+            <!--                          style="padding-right: 3.5px">-->
+            <!--                        <a v-if="chunk.includes('http')"-->
+            <!--                           :href="chunk"-->
+            <!--                           target="_blank">-->
+            <!--                            {{ chunk }}-->
+            <!--                            <CustomTooltip>-->
+            <!--                                {{ chunk }}-->
+            <!--                            </CustomTooltip>-->
+            <!--                        </a>-->
+            <!--                        <span v-else>-->
+            <!--                            {{ chunk }}-->
+            <!--                        </span>-->
+            <!--                    </span>-->
+            <!--                </span>-->
+            <!--                <span v-else>-->
+            <!--                    {{ text }}-->
+            <!--                </span>-->
+            <!--            </div>-->
 
-            <CustomTooltip v-if="modelValue.apiResponse?.data?.usage">
-                {{ modelUsageStr() }}
-            </CustomTooltip>
+            <q-markdown :src="textSnippet"
+                        class="q-px-xs" />
+
+
+            <!--            <CustomTooltip v-if="modelValue.apiResponse?.data?.usage">-->
+            <!--                {{ modelUsageStr() }}-->
+            <!--            </CustomTooltip>-->
 
             <q-badge v-if="modelValue.apiResponse && (modelValue.apiResponse.data === undefined || modelValue.apiResponse.error)"
                      color="red"
@@ -241,10 +245,10 @@ const onClickMsg = () => {
 
 const parsedTextSnippets = computed((): string[] => {
 	const texts = props.modelValue.textSnippets.flatMap((snippet: string) => {
-		return snippet.split("\n\n").map((line: string) => {
-			return line.trim();
-		});
-		// return snippet.trim();
+		// return snippet.split("\n\n").map((line: string) => {
+		// 	return line.trim();
+		// });
+		return snippet.trim();
 	});
 	if ((!texts || texts.length === 0) && !props.loading) {
 		return [];

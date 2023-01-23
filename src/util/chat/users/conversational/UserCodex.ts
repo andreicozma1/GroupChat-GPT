@@ -23,27 +23,15 @@ export class UserCodex extends UserChatAssistantConv {
 
 		this.addExamples([
 							 // ------------------------------------------------------------
-							 "Hey Codex, write a Python function that adds any numbers together.",
+							 "Hey Codex, write Python code that tests for a valid anagram.",
 							 // ------------------------------------------------------------
-							 "Sure, I can do that.\n" +
-							 "Do you want it to run an example and print the result? If so, what should the numbers be?\n" +
+							 "Sure, I can do that. Let me know if there's anything else you'd like me to add or change!\n" +
 							 wrapInHtmlTag(
 								 "codex_gen",
-								 "Language: Python",
-								 "1. Write a function that can add any numbers together."
+								 "Write Python code that tests for a valid anagram.",
+								 "An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.",
+								 "Given two strings s and t, return true if t is an anagram of s, and false otherwise.",
 							 ),
-							 // ------------------------------------------------------------
-							 "Yes, use 5 and 6.",
-							 // ------------------------------------------------------------
-							 "Working on it!\n" +
-							 wrapInHtmlTag(
-								 "codex_gen",
-								 "Language: Python",
-								 "1. Write a function that can add any numbers together.",
-								 "2. Run the function with the numbers 5 and 6.",
-								 "3. Print the result."
-							 ),
-							 // ------------------------------------------------------------
 						 ]
 		)
 	}

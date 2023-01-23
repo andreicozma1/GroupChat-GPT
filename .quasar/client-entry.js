@@ -35,6 +35,8 @@ import 'quasar/dist/quasar.sass'
 
 import 'src/css/app.scss'
 
+import '@quasar/quasar-ui-qmarkdown/src/index.sass'
+
 
 import createQuasarApp from './app.js'
 import quasarUserOptions from './quasar-user-options.js'
@@ -154,7 +156,9 @@ createQuasarApp(createApp, quasarUserOptions)
 
     return Promise[ method ]([
       
-      import('boot/axios')
+      import('boot/axios'),
+      
+      import('@quasar/quasar-app-extension-qmarkdown/src/boot/register.js')
       
     ]).then(bootFiles => {
       const boot = mapFn(bootFiles).filter(entry => typeof entry === 'function')

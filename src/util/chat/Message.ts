@@ -1,6 +1,5 @@
 import {v4 as uuidv4} from "uuid";
 import {ApiResponse} from "stores/chatStore";
-import {getRobohashUrl} from "src/util/ImageUtils";
 import {User} from "src/util/chat/User";
 import {ValidDateTypes} from "src/util/DateUtils";
 import {getSeededQColor} from "src/util/Colors";
@@ -10,8 +9,6 @@ import {apiErrorToString} from "src/util/Utils";
 export class Message {
 	public static defaultBackgroundColor = "blue-grey-1";
 	userId: string;
-	userName: string;
-	userAvatarUrl: string;
 	dateCreated: ValidDateTypes = new Date();
 	id: string = uuidv4();
 	loading: boolean;
@@ -24,8 +21,6 @@ export class Message {
 
 	constructor(chatUser?: User) {
 		this.userId = chatUser?.id || "unknown";
-		this.userName = chatUser?.name || "Unknown User";
-		this.userAvatarUrl = getRobohashUrl(this.userName);
 		this.isIgnored = chatUser?.defaultIgnored ?? false;
 		this.loading = true;
 	}

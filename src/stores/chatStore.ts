@@ -76,11 +76,16 @@ export const useChatStore = defineStore("chatStore", {
 		},
 		getUserById(id: string, verbose = true): User | undefined {
 			// console.warn("getUserById:", id);
-			const user: User | undefined = this.usersMap[id]
-			if (!user && verbose) {
+			if (this.usersMap[id] && !(this.usersMap[id] instanceof User)) {
+				this.usersMap[id] = Object.assign(
+					User.prototype,
+					this.usersMap[id]
+				);
+			}
+			if (!this.usersMap[id] && verbose) {
 				smartNotify('User not found', id);
 			}
-			return user;
+			return this.usersMap[id];
 		},
 		getMyUser(): User {
 			console.warn("getMyUser");
@@ -110,19 +115,11 @@ export const useChatStore = defineStore("chatStore", {
 		},
 		getThreadById(key: string) {
 			console.warn("getThreadById:", key);
-			if (!(this.threadsMap[key] instanceof Thread)) {
+			if (this.threadsMap[key] && !(this.threadsMap[key] instanceof Thread)) {
 				this.threadsMap[key] = Object.assign(
 					Thread.prototype,
 					this.threadsMap[key]
 				);
-			}
-
-			const joinedAssistants = this.threadsMap[key].getJoinedUsers(this.getUserById).filter(assistantFilter);
-			if (joinedAssistants.length > 1 && !joinedAssistants.map((u) => u.id)
-																.includes(this.userData.usersMap.coordinator.id)) {
-				this.threadsMap[key].addUser(this.userData.usersMap.coordinator);
-				smartNotify("Thread has multiple assistants",
-							"Adding Coordinator Assistant to help manage the conversation");
 			}
 			return this.threadsMap[key];
 		},
@@ -133,6 +130,20 @@ export const useChatStore = defineStore("chatStore", {
 				return this.registerThread(new Thread(this.myUserId), false) as Thread;
 			}
 			return this.getThreadById(this.activeThreadId) as Thread;
+		},
+		getActiveThreadUsers(): User[] {
+			const thread = this.getActiveThread();
+			const users = thread.joinedUserIds
+								.map((id) => this.getUserById(id))
+								.filter((u: User | undefined) => u !== undefined) as User[];
+			const joinedAssistants = users.filter(assistantFilter);
+			if (joinedAssistants.length > 1 && !joinedAssistants.map((u) => u.id)
+																.includes(this.userData.usersMap.coordinator.id)) {
+				thread.addUser(this.userData.usersMap.coordinator);
+				smartNotify("Thread has multiple assistants",
+							"Adding Coordinator Assistant to help manage the conversation");
+			}
+			return users;
 		},
 		/**************************************************************************************************************/
 		// Messages
@@ -145,7 +156,9 @@ export const useChatStore = defineStore("chatStore", {
 				return;
 			}
 			const thread: Thread = this.getActiveThread();
+			const threadUsers: User[] = this.getActiveThreadUsers();
 			thread.addMessage(message);
+
 			console.warn("*".repeat(40));
 
 			console.log("handleUserMessage->user:", user);
@@ -180,7 +193,7 @@ export const useChatStore = defineStore("chatStore", {
 						excludeIgnored: true,
 					});
 					console.error("messages:", messages);
-					message.prompt.fromThread(thread.name, thread.getJoinedUsers(this.getUserById), messages);
+					message.prompt.fromThread(thread.name, threadUsers, messages);
 				}
 
 				message.loading = true;
@@ -242,15 +255,12 @@ export const useChatStore = defineStore("chatStore", {
 			}
 
 			console.warn("handleUserMessage->followupActors:", followups);
-			const joinedUserIds = thread
-				.getJoinedUsers(this.getUserById)
-				.map((u) => u.id);
 
 			for (const fup of followups) {
 				const nextUserId = fup.userId.replace(/[.,/#!$%^&*;:{}=\-`~() ]/g, "").trim().toLowerCase();
-				if (!joinedUserIds.includes(nextUserId)) {
+				if (!thread.joinedUserIds.includes(nextUserId)) {
 					smartNotify(`User ${nextUserId} is not a member of this chat thread.`);
-					return
+					continue;
 				}
 				const nextUser: User | undefined = this.getUserById(nextUserId);
 				const nextMsg: Message = new Message(nextUser);

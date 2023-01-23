@@ -3,8 +3,8 @@ import ThreadsState, {ChatStoreThreadData,} from "src/util/states/StateThreads";
 import GlobalPrefs, {ChatStoreGlobalPrefs} from "src/util/states/StatePrefs";
 import UsersState, {ChatStoreUserData} from "src/util/states/StateUsers";
 import {smartNotify} from "src/util/SmartNotify";
-import {merge} from "lodash-es";
 import {ApiResponse} from "stores/chatStore";
+import {merge} from "lodash-es";
 
 export const localStorageKey = "data";
 
@@ -35,10 +35,8 @@ const getState = (): StateGlobalStore => {
 		return state;
 	}
 	const parsedJson = JSON.parse(item);
-	// recursively assign from parsedJson to state
-	// if a key in parsedJson is not in state, it will be ignored and error will be logged
-	// state = mergeWith(state, parsedJson, mergeCustomizer);
 	state = merge(state, parsedJson);
+
 	return state;
 };
 

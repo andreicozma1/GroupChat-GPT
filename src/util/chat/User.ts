@@ -1,6 +1,7 @@
 import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {PromptConfig, PromptRules, PromptTraits} from "src/util/prompt/PromptBuilder";
 import {merge} from "lodash-es";
+import {getRobohashUrl} from "src/util/ImageUtils";
 
 export enum UserTypes {
 	HUMAN = "human",
@@ -58,5 +59,9 @@ export class User {
 			return;
 		}
 		this.promptConfig.examples?.push(...examples);
+	}
+
+	getUserAvatarUrl() {
+		return getRobohashUrl(this.name);
 	}
 }

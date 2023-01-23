@@ -1,6 +1,6 @@
 <template>
     <q-chat-message
-            :avatar="modelValue.userAvatarUrl"
+            :avatar="messageUser?.getUserAvatarUrl() ?? 'person_off'"
             :bg-color="bgColor"
             :sent="isSentByMe"
             :style="style"
@@ -81,9 +81,9 @@
         <template v-slot:name>
             <div class="row items-center">
                 <span class="text-weight-bold q-mr-xs">
-                    {{ modelValue.userName }}
+                    {{ messageUser?.name ?? "Deleted User" }}
                 </span>
-                <q-chip :label="messageUser?.type.toUpperCase()"
+                <q-chip :label="messageUser?.type?.toUpperCase()"
                         class="q-my-none"
                         color="green"
                         dense
@@ -196,7 +196,7 @@
 import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
 import {smartNotify} from "src/util/SmartNotify";
 import {useChatStore} from "stores/chatStore";
-import {computed, PropType, ref} from "vue";
+import {computed, ComputedRef, PropType, ref} from "vue";
 import {apiErrorToString, copyClipboard} from "src/util/Utils";
 import {User} from "src/util/chat/User";
 import {Message} from "src/util/chat/Message";
@@ -223,7 +223,7 @@ const props = defineProps({
 
 const chatStore = useChatStore();
 
-const messageUser = computed(() => chatStore.getUserById(props.modelValue.userId));
+const messageUser: ComputedRef<User | undefined> = computed(() => chatStore.getUserById(props.modelValue.userId));
 
 const shouldDelete = ref(false);
 
@@ -280,14 +280,11 @@ const toggleShouldDelete = (value?: boolean) => {
 
 const isSentByMe = computed(() => {
 	const myUser = chatStore.getMyUser();
-	return (
-		props.modelValue.userId === myUser.id &&
-		props.modelValue.userName === myUser.name
-	);
+	return props.modelValue.userId === myUser.id;
 });
 
 const typeIcon = computed(() => {
-	const user: User = messageUser.value
+	const user: User | undefined = messageUser.value
 	if (!user) {
 		const ic = "send";
 		console.error(

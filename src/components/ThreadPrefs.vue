@@ -36,10 +36,10 @@
                         <q-card bordered
                                 flat>
                             <q-list separator>
-                                <q-item v-for="user in threadUsers"
+                                <q-item v-for="user in chatStore.getActiveThreadUsers()"
                                         :key="user">
                                     <q-item-section side>
-                                        <q-avatar :icon="user.icon"
+                                        <q-avatar :icon="user.getUserAvatarUrl()"
                                                   rounded
                                                   size="sm" />
                                     </q-item-section>
@@ -159,10 +159,6 @@ const saveThreadName = () => {
 	activeThread.value.name = newThreadName.value;
 	chatStore.saveState(true);
 }
-
-const threadUsers: ComputedRef<User[]> = computed(() => {
-	return activeThread.value.getJoinedUsers(chatStore.getUserById);
-});
 
 const isUserVisible = (user: User): boolean => {
 	return !activeThread.value.prefs.hiddenUserIds.includes(user.id);

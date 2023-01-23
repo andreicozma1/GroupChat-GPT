@@ -78,6 +78,12 @@
                             size="2em" />
         </div>
 
+        <template v-slot:avatar>
+            <UserAvatar :url="messageUser?.getUserAvatarUrl()"
+                        class="q-ml-xs q-mr-sm"
+                        size="xl" />
+        </template>
+
         <template v-slot:name>
             <div class="row items-center">
                 <span class="text-weight-bold q-mr-xs">
@@ -203,6 +209,7 @@ import {Message} from "src/util/chat/Message";
 import DateText from "components/DateText.vue";
 import UsageBadges from "components/UsageBadges.vue";
 import CustomTooltip from "components/CustomTooltip.vue";
+import UserAvatar from "components/UserAvatar.vue";
 
 const props = defineProps({
 							  modelValue: {

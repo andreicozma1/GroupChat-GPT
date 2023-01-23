@@ -39,9 +39,7 @@
                                 <q-item v-for="user in chatStore.getActiveThreadUsers()"
                                         :key="user">
                                     <q-item-section side>
-                                        <q-avatar :icon="user.getUserAvatarUrl()"
-                                                  rounded
-                                                  size="sm" />
+                                        <UserAvatar :url="user.getUserAvatarUrl()" />
                                     </q-item-section>
                                     <q-item-section>
                                         <q-item-label>
@@ -128,6 +126,7 @@ import {User} from "src/util/chat/User";
 import {Thread} from "src/util/chat/Thread";
 import {smartNotify} from "src/util/SmartNotify";
 import CustomTooltip from "components/CustomTooltip.vue";
+import UserAvatar from "components/UserAvatar.vue";
 
 
 const defaultExpansionItemProps = {

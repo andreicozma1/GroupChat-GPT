@@ -17,7 +17,7 @@ export class UserCodexGen extends User {
 		this.apiReqConfig = ApiRequestConfigTypes.CODEX_GEN;
 		this.showInMembersInfo = false;
 		this.icon = "code"
-		
+
 		this.promptConfig.rules?.always?.push(
 			"Use Markdown and wrap any code in a code block.",
 			"Use a language identifier for the code block if possible.",

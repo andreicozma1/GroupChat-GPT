@@ -2,6 +2,7 @@ import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {PromptConfig, PromptRules, PromptTraits} from "src/util/prompt/PromptBuilder";
 import {merge} from "lodash-es";
 import {getRobohashUrl} from "src/util/ImageUtils";
+import {getRegexValidUserId} from "src/util/RegexUtils";
 
 export enum UserTypes {
 	HUMAN = "human",
@@ -25,6 +26,13 @@ export class User {
 
 	constructor(id: string, name: string, type: UserTypes) {
 		this.id = id;
+		// if there are any invalid characters in the user name, throw an error
+		// valid characters are a-z, A-Z, 0-9, _, -, and .
+		if (!getRegexValidUserId().test(this.id)) {
+			throw new Error(
+				`Invalid user name: ${this.id}. User names can only contain letters, numbers, underscores, dashes, and periods.`
+			);
+		}
 		this.id = this.id.replace(/\s/g, "");
 		this.name = name;
 		this.type = type;
@@ -40,6 +48,7 @@ export class User {
 		this.promptConfig.rules = {
 			always: [],
 			never: [],
+			sometimes: [],
 		};
 		this.promptConfig.examples = [];
 	}

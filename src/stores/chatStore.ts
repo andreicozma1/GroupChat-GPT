@@ -14,7 +14,7 @@ import {assistantFilter} from "src/util/chat/assistants/UserAssistant";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import StatePrefs from "src/util/states/StatePrefs";
-import {createRegexHtmlTagWithContent, validTagPattern} from "src/util/RegexUtils";
+import {createRegexHtmlTagWithContent, validUserIdPattern} from "src/util/RegexUtils";
 
 export interface ApiResponse {
 	data: any;
@@ -207,7 +207,7 @@ export const useChatStore = defineStore("chatStore", {
 			let followups: FollowUp[] = message.textSnippets.flatMap((text: string) => {
 				const fups: FollowUp[] = [];
 
-				const directMention = text.matchAll(new RegExp(`@(${validTagPattern})`, "gi"));
+				const directMention = text.matchAll(new RegExp(`@(${validUserIdPattern})`, "gi"));
 				for (const match of directMention) {
 					console.log("followups->directMention:", match);
 					fups.push({

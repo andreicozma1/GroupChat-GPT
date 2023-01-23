@@ -279,6 +279,7 @@ const toggleShouldDelete = (value?: boolean) => {
 	if (shouldDelete.value) {
 		console.log("=> delete:", {...props.modelValue});
 		chatStore.getActiveThread().deleteMessage(props.modelValue.id);
+		chatStore.saveState()
 		return;
 	}
 	// 1st click - will need 2nd click to confirm

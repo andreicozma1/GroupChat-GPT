@@ -1,4 +1,4 @@
-import {wrapInHtmlTag} from "src/util/TextUtils";
+import {newlineSeparated, wrapInHtmlTag} from "src/util/TextUtils";
 import {UserChatAssistantConv} from "src/util/chat/users/conversational/UserChatAssistantConv";
 
 export class UserCodex extends UserChatAssistantConv {
@@ -12,7 +12,7 @@ export class UserCodex extends UserChatAssistantConv {
 						  always: [
 							  "Only generate the prompt with instructions.",
 						  ],
-						  never: ["Write the code yourself."],
+						  never: ["Write any code, just the instructions."],
 					  })
 
 		this.addTraits({
@@ -23,9 +23,10 @@ export class UserCodex extends UserChatAssistantConv {
 
 		this.addExamples([
 							 // ------------------------------------------------------------
-							 "Hey Codex, write Python code that tests for a valid anagram.",
+							 "Write Python code that tests for Valid Anagram.",
 							 // ------------------------------------------------------------
-							 "Sure, I can do that. Let me know if there's anything else you'd like me to add or change!\n" +
+							 newlineSeparated("Sure, here are the steps to generate the code!",
+											  "Let me know if there's anything you want to change.") + "\n" +
 							 wrapInHtmlTag(
 								 "codex_gen",
 								 "Write Python code that tests for a valid anagram.",

@@ -1,17 +1,14 @@
 <template>
-    <div>
-        <q-badge v-for="(value, key) in modelUsage"
-                 :key="key"
-                 :color="getBadgeColor(key, value)"
-                 :label="getBadgeLabel(key, value)"
-                 class="q-mr-xs"
-                 v-bind="badgeProps">
-            <CustomTooltip>
-                {{ getBadgeTooltip(key, value) }}
-            </CustomTooltip>
-        </q-badge>
-    </div>
-
+    <q-badge v-for="(value, key) in modelUsage"
+             :key="key"
+             :color="getBadgeColor(key, value)"
+             :label="getBadgeLabel(key, value)"
+             class="q-mr-xs"
+             v-bind="badgeProps">
+        <CustomTooltip>
+            {{ getBadgeTooltip(key, value) }}
+        </CustomTooltip>
+    </q-badge>
 </template>
 <script lang="ts"
         setup>

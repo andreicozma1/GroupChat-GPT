@@ -1,56 +1,43 @@
 <template>
-    <div class="full-width">
+    <q-page :style-fn="styleFn">
         <ChatThread :scroll-area-style="scrollAreaStyle" />
-        <ChatThreadForm ref="controlsCard" />
-    </div>
+        <ChatInputs ref="chatInputsRef" />
+    </q-page>
 </template>
 
 <script lang="ts"
         setup>
-import {QCard} from "quasar";
-import {computed, onMounted, Ref, ref, watch} from "vue";
-import ChatThreadForm from "components/ThreadInputs.vue";
-import ChatThread from "components/ThreadView.vue";
+import {ref, watchEffect} from "vue";
+import ChatInputs from "components/ChatInputs.vue";
+import ChatThread from "components/ChatThread.vue";
 
-const controlsCard: Ref<QCard | null> = ref(null);
-const scrollAreaStyle = ref({});
+const chatInputsRef = ref(null);
+const scrollAreaStyle = ref({
+								bottom: '0px',
+							});
 
-const userMsgStr = ref("");
-const userMsgValid = computed(() => {
-	return userMsgStr.value.trim().length > 0;
-});
+const styleFn = (offset: number, height: number) => {
+	const pageheight = height - offset;
+	return "height: " + pageheight + "px";
+}
 
-const isTyping = ref(false);
-const isTypingTimeout: Ref<any> = ref(null);
-
-const updateScrollAreaStyle = () => {
-	setTimeout(() => {
-		let controlsHeight = 0;
-		if (controlsCard.value) {
-			controlsHeight = controlsCard.value.$el.clientHeight;
-		}
-		const newStyle = {bottom: controlsHeight + "px"};
-		if (newStyle.bottom !== scrollAreaStyle.value.bottom) {
-			scrollAreaStyle.value = newStyle;
-		}
-	}, 100);
-};
-
-watch(userMsgStr, () => {
-	updateScrollAreaStyle();
-	// introduce a delay to detect if the promptUser is typing.
-	// The coordinator will not be called until the promptUser stops typing for a while.
-	isTyping.value = true;
-	if (isTypingTimeout.value) {
-		clearTimeout(isTypingTimeout.value);
+const resizeObserver = new ResizeObserver((entries) => {
+	console.log("resizeObserver->entries:", entries);
+	const newHeight = entries[0]?.contentRect?.height;
+	if (!newHeight) {
+		console.error("resizeObserver->newHeight:", newHeight);
+		return;
 	}
-	isTypingTimeout.value = setTimeout(
-		() => (isTyping.value = false),
-		userMsgValid.value ? 1000 : 250
-	);
+
+	scrollAreaStyle.value = {bottom: newHeight + "px"}
+	console.log(scrollAreaStyle.value);
 });
 
-onMounted(() => {
-	updateScrollAreaStyle();
+watchEffect(() => {
+	if (chatInputsRef.value) {
+		resizeObserver.observe(chatInputsRef.value.$el);
+	}
 });
+
+
 </script>

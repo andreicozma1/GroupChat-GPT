@@ -12,7 +12,7 @@
 
         <div v-for="msg in threadMessages"
              :key="msg.id">
-            <CustomChatMessage
+            <ChatMessage
                     :class="getMessageClass(msg)"
                     :loading="msg.loading"
                     :model-value="msg"
@@ -26,6 +26,7 @@
     <div v-if="msgContextIds.length"
          class="text-center">
     </div>
+
 </template>
 
 <script lang="ts"
@@ -34,11 +35,11 @@ import {getAppVersion} from "src/util/Utils";
 import {computed, Ref, ref, watch, watchEffect} from "vue";
 import {smartNotify} from "src/util/SmartNotify";
 import {useChatStore} from "stores/chatStore";
-import CustomChatMessage from "components/ChatMessageElement.vue";
+import ChatMessage from "components/ChatMessage.vue";
 import {Message} from "src/util/chat/Message";
 import {parseMessagesHistory} from "src/util/chat/MessageHistory";
 import {colors, colorsRgba} from "quasar";
-import {useInfoStore} from "stores/infoStore";
+import {InfoMessage, useInfoStore} from "stores/infoStore";
 import {getSingularOrPlural} from "src/util/TextUtils";
 import getPaletteColor = colors.getPaletteColor;
 import textToRgb = colors.textToRgb;
@@ -71,11 +72,12 @@ const threadCaptionProps = {
 const defaultBackgroundColor = textToRgb(getPaletteColor(Message.defaultBackgroundColor))
 const msgContextParentColorRgba: Ref<colorsRgba> = ref(defaultBackgroundColor);
 const msgContextIds: Ref<string[]> = ref([]);
+let infoMsg: InfoMessage | undefined = undefined
 
 const onMsgMouseOver = (msg: Message) => {
 	if (msg.prompt?.messageContextIds) {
 		const len = msg.prompt.messageContextIds.length;
-		infoStore.setInfo(`${len} ${getSingularOrPlural("message", len)} in context`);
+		infoMsg = infoStore.createMessage(`${len} ${getSingularOrPlural("message", len)} in context`);
 		msgContextIds.value = [...msg.prompt.messageContextIds, msg.id];
 		msgContextParentColorRgba.value = textToRgb(getPaletteColor(msg.getBackgroundColor()))
 	} else {
@@ -87,7 +89,9 @@ const onMsgMouseOut = (msg: Message) => {
 	// console.log("onMsgMouseOut->msg: ", {...msg});
 	msgContextIds.value = [];
 	msgContextParentColorRgba.value = defaultBackgroundColor;
-	infoStore.resetInfo()
+	if (infoMsg) {
+		infoStore.removeMessage(infoMsg);
+	}
 };
 
 const msgStyle = (msg: Message) => {
@@ -133,13 +137,12 @@ const scrollAreaStyle = computed(() => {
 	const propStyle = props.scrollAreaStyle ? props.scrollAreaStyle : {};
 	const defaults = {
 		position: "absolute",
-		left: "0px",
-		right: "0px",
-		top: "50px",
-		bottom: "0px",
+		top: "0",
+		left: "0",
+		right: "0",
+		bottom: "0",
 		paddingLeft: "5vw",
 		paddingRight: "5vw",
-		paddingBottom: "2vh",
 	};
 	return {
 		...defaults,

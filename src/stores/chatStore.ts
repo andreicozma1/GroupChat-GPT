@@ -25,6 +25,7 @@ export interface ApiResponse {
 
 interface FollowUp {
 	userId: string,
+	ctxMsgId: string,
 	promptText?: string
 }
 
@@ -127,7 +128,7 @@ export const useChatStore = defineStore("chatStore", {
 		// Messages
 		/**************************************************************************************************************/
 
-		async handleUserMessage(message: Message, ignoreCache = false) {
+		async handleUserMessage(message: Message, followUp?: FollowUp) {
 			const user: User = this.getUserById(message.userId);
 			const thread: Thread = this.getActiveThread();
 			thread.addMessage(message);
@@ -144,7 +145,11 @@ export const useChatStore = defineStore("chatStore", {
 			}
 
 			if (user.type !== UserTypes.HUMAN) {
-				if (message.prompt === undefined) {
+				message.prompt = new UserPrompt(user)
+				if (followUp && followUp.promptText) {
+					message.prompt.messageContextIds = [followUp.ctxMsgId];
+					message.prompt.fromText(followUp.promptText);
+				} else {
 					let messages: Message[];
 					messages = thread.getMessagesArray();
 					messages = parseMessagesHistory(messages, {
@@ -158,14 +163,14 @@ export const useChatStore = defineStore("chatStore", {
 						excludeNoText: true,
 						excludeIgnored: true,
 					});
-					message.prompt = new UserPrompt(user)
+					console.error("messages:", messages);
 					message.prompt.fromThread(thread.name, thread.getJoinedUsers(this.getUserById), messages);
 				}
 
 				message.loading = true;
 				const response = await this.handleApiRequest(
 					message.prompt,
-					ignoreCache
+					message.apiResponse !== undefined
 				);
 				message.parseApiResponse(response);
 			}
@@ -178,6 +183,7 @@ export const useChatStore = defineStore("chatStore", {
 					console.log("followups->directMention:", match);
 					fups.push({
 								  userId: match[1],
+								  ctxMsgId: message.id,
 								  promptText: undefined
 							  });
 				}
@@ -187,6 +193,7 @@ export const useChatStore = defineStore("chatStore", {
 					console.log("followups->prompt:", match);
 					fups.push({
 								  userId: match[1],
+								  ctxMsgId: message.id,
 								  promptText: match[2]
 							  });
 				}
@@ -213,6 +220,7 @@ export const useChatStore = defineStore("chatStore", {
 				followups = [
 					{
 						userId: this.userData.usersMap.coordinator.id,
+						ctxMsgId: message.id,
 						promptText: undefined
 					},
 				];
@@ -228,19 +236,13 @@ export const useChatStore = defineStore("chatStore", {
 				// increment the DateCreated from the previous message
 				// nextMsg.dateCreated = message.dateCreated;
 				nextMsg.dateCreated = new Date(
-					parseDate(message.dateCreated).getTime() + 1
+					parseDate(message.dateCreated).getTime() + 1000
 				);
 
-				if (fup.promptText !== undefined) {
-					nextMsg.prompt = new UserPrompt(nextUser)
-					nextMsg.prompt.messageContextIds = [message.id];
-					nextMsg.prompt.fromText(fup.promptText);
-				}
-
 				if (thread.prefs.orderedResponses) {
-					await this.handleUserMessage(nextMsg, ignoreCache);
+					await this.handleUserMessage(nextMsg, fup);
 				} else {
-					this.handleUserMessage(nextMsg, ignoreCache);
+					this.handleUserMessage(nextMsg, fup);
 				}
 			}
 			thread.addMessage(message);
@@ -274,6 +276,7 @@ export const useChatStore = defineStore("chatStore", {
 			try {
 				result.fromCache = true
 				let response = this.getPromptResponse(prompt);
+				console.error(response)
 				if (ignoreCache || !response) {
 					result.fromCache = false;
 					response = await makeCompletion(
@@ -282,8 +285,8 @@ export const useChatStore = defineStore("chatStore", {
 						debug
 					);
 					this.cachedResponses[prompt.hash] = response;
-					result.data = response.data;
 				}
+				result.data = response.data;
 			} catch (error: any) {
 				console.error(error);
 				if (error.stack) {

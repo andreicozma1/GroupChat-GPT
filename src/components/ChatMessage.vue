@@ -258,7 +258,7 @@ const canRegenerate = computed(() => {
 const onClickRegenerate = () => {
 	console.warn("*".repeat(40));
 	console.log("onClickRegenerate->message:", {...props.modelValue});
-	chatStore.handleUserMessage(props.modelValue, true);
+	chatStore.handleUserMessage(props.modelValue);
 };
 
 const toggleShouldDelete = (value?: boolean) => {

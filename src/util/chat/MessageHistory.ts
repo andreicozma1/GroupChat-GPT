@@ -1,5 +1,6 @@
 // TODO: Make these configurable in UI in the future
 import {Message} from "src/util/chat/Message";
+import {parseDate} from "src/util/DateUtils";
 
 export interface ChatMessageHistoryConfig {
 	// only return this many messages, starting from the most recent
@@ -39,15 +40,18 @@ export const parseMessagesHistory = (
 		return true;
 	});
 	// console.log("getMessageHistory->original:", messages);
-	if (config.maxMessages) {
-		messages = messages.slice(-config.maxMessages);
-		// console.log("getMessageHistory->maxMessages:", messages);
-	}
+
 	messages = messages.filter((message: Message) => {
-		if (config.maxDate && config.maxDate <= message.dateCreated) {
+		if (config.maxDate) {
+			console.error(parseDate(config.maxDate));
+			console.error(parseDate(message.dateCreated));
+			console.error(config.maxDate && parseDate(config.maxDate) <= parseDate(message.dateCreated));
+			console.error(config.minDate && parseDate(config.minDate) >= parseDate(message.dateCreated));
+		}
+		if (config.maxDate && parseDate(config.maxDate) < parseDate(message.dateCreated)) {
 			return false;
 		}
-		if (config.minDate && config.minDate >= message.dateCreated) {
+		if (config.minDate && parseDate(config.minDate) > parseDate(message.dateCreated)) {
 			return false;
 		}
 		if (
@@ -65,6 +69,10 @@ export const parseMessagesHistory = (
 		return true;
 	});
 
+	if (config.maxMessages) {
+		messages = messages.slice(-config.maxMessages);
+		// console.log("getMessageHistory->maxMessages:", messages);
+	}
 	// console.log("getMessageHistory->filter:", messages);
 	return messages;
 };

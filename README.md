@@ -8,6 +8,8 @@ Well, this application is a step towards that world.
 ## Table of Contents
 
 - [Features:](#features)
+  - [Specialized  & Personalized Chatting Assistants:](#specialized---personalized-chatting-assistants)
+  - [Response Coordinator](#response-coordinator)
 - [Setup Project & Dependencies](#setup-project--dependencies)
 - [Run & Build](#run--build)
   - [Start the app in development mode](#start-the-app-in-development-mode)

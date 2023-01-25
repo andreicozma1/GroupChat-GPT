@@ -44,7 +44,7 @@ Well, this application is a step towards that world.
 ![coordinator-one](https://user-images.githubusercontent.com/14914491/214447271-36895aac-4361-431f-b35b-f0bb30c8a958.png)
 
 ### Generate Images
-- `@gen_image` is an assistant helper that directly uses the ***OpenAI DALL·E 2 2 API***, which can generate images from text prompts.
+- `@gen_image` is an assistant helper that directly uses the ***OpenAI DALL·E 2 API***, which can generate images from text prompts.
 - `@dalle` (the chatting assistant) can help you generate these text prompts to generate images as you'd like.
 - Tip: you can also directly prompt the ***OpenAI DALL·E 2 API*** just like `@dalle` did (`<gen_image>A picture of a cat.<gen_image>`)
 

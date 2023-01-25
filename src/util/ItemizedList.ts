@@ -14,9 +14,10 @@ export const processItemizedList = (
 	val: string | string[],
 	config?: ItemizedListConfig
 ): string => {
-	const commaSepMinChars = config?.commaSepMinChars || 40;
-	const keyPrefix: string = config?.keyPrefix || "#";
-	const valPrefix: string = config?.valPrefix + " " || "";
+	const commaSepMinChars = config?.commaSepMinChars || 50;
+	const keyPrefix: string = config?.keyPrefix || "-";
+	const valPrefix: string = config?.valPrefix ? `${config.valPrefix} ` : "";
+
 	let valJoinStr: string = config?.valJoinStr || ", ";
 	let inline: boolean = config?.inline || true;
 
@@ -31,7 +32,7 @@ export const processItemizedList = (
 	val = Array.isArray(val) ? val : [val];
 	val = val.map((s: string) => s.trim());
 	val = val.filter((s: string) => s.length > 0);
-	if (val.some((s: string) => s.length > commaSepMinChars)) {
+	if (val.length > 1 && val.some((s: string) => s.length > commaSepMinChars)) {
 		valJoinStr = "\n";
 		inline = false;
 		val = val.map((s: string, i: number) => {

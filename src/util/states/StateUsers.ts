@@ -1,4 +1,4 @@
-import {UserCodexGen, UserDalleGen} from "src/util/chat/users/UserHelpers";
+import {UserDalleGen} from "src/util/chat/users/UserHelpers";
 import {UserCoordinator} from "src/util/chat/users/UserCoordinator";
 import {User} from "src/util/chat/users/User";
 import {UserDavinci} from "src/util/chat/users/conversational/UserDavinci";
@@ -12,19 +12,23 @@ export interface ChatStoreUserData {
 }
 
 const getDefault = (): ChatStoreUserData => {
-	return {
-		usersMap: {
-			coordinator: new UserCoordinator(),
-			davinci: new UserDavinci(),
-			// DALL-E
-			dalle: new UserDalle(),
-			dalle_gen: new UserDalleGen(),
-			// Codex
-			codex: new UserCodex(),
-			codex_gen: new UserCodexGen(),
-		},
+	const defaultUsers = [
+		new UserCoordinator(),
+		new UserDavinci(),
+		new UserDalle(), new UserDalleGen(),
+		new UserCodex()
+	]
+
+	const data: ChatStoreUserData = {
+		usersMap: {},
 		myUserId: "human",
 	};
+
+	defaultUsers.forEach((user) => {
+		data.usersMap[user.id] = user;
+	});
+
+	return data;
 };
 
 export default {

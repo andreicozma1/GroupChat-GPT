@@ -1,7 +1,6 @@
 import {defineStore} from "pinia";
 import {LocalStorage} from "quasar";
 import {smartNotify} from "src/util/SmartNotify";
-import {makeCompletion} from "src/util/openai/ApiReq";
 import {UserPrompt} from "src/util/prompt/UserPrompt";
 import {parseDate} from "src/util/DateUtils";
 import StateGlobalStore from "src/util/states/StateGlobalStore";
@@ -14,6 +13,7 @@ import StatePrefs from "src/util/states/StatePrefs";
 import {createRegexHtmlTagWithContent, validUserIdPattern} from "src/util/RegexUtils";
 import {assistantFilter, User, UserTypes} from "src/util/chat/users/User";
 import {UserHuman} from "src/util/chat/users/conversational/UserHuman";
+import {ApiReqMap} from "src/util/openai/ApiReq";
 
 export interface ApiResponse {
 	data: any;
@@ -173,9 +173,9 @@ export const useChatStore = defineStore("chatStore", {
 			if (user.type !== UserTypes.HUMAN) {
 				message.textSnippets = []
 				message.imageUrls = []
-				message.prompt = new UserPrompt(user)
-				message.prompt.addStart(thread)
-				message.prompt.addMembersInfo(threadUsers)
+				message.prompt = new UserPrompt(user.promptConfig)
+				message.prompt.addStart(user, thread)
+				message.prompt.addMembersInfo(user, threadUsers)
 				message.prompt.addRules()
 				message.prompt.addExamples()
 
@@ -203,6 +203,7 @@ export const useChatStore = defineStore("chatStore", {
 
 				message.loading = true;
 				const response = await this.handleApiRequest(
+					user,
 					message.prompt,
 					message.apiResponse !== undefined
 				);
@@ -292,11 +293,12 @@ export const useChatStore = defineStore("chatStore", {
 			return this.cachedResponses[prompt.hash];
 		},
 		async handleApiRequest(
+			user: User,
 			prompt: UserPrompt,
 			ignoreCache = false,
 			debug = false
 		): Promise<ApiResponse> {
-			ignoreCache = prompt.promptUser.alwaysIgnoreCache || ignoreCache;
+			ignoreCache = user.alwaysIgnoreCache || ignoreCache;
 			console.warn("-".repeat(20));
 			console.log("generate->ignoreCache:", ignoreCache);
 			console.log("generate->debug:", debug);
@@ -314,11 +316,7 @@ export const useChatStore = defineStore("chatStore", {
 				let response = this.getPromptResponse(prompt);
 				if (ignoreCache || !response) {
 					result.fromCache = false;
-					response = await makeCompletion(
-						prompt.promptUser.apiReqConfig,
-						prompt.text,
-						debug
-					);
+					response = await ApiReqMap[user.apiReqType](user, prompt);
 					this.cachedResponses[prompt.hash] = response;
 				}
 				result.data = response.data;

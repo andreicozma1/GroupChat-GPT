@@ -14,9 +14,6 @@ export const getSingularOrPlural = (singularStr: string, count: number) => {
 	return count === 1 ? singularStr : `${singularStr}s`;
 };
 
-export const wrapInHtmlTag = (tag: string, ...msgPrompt: string[]) => {
-	return [`<${tag}>`, ...msgPrompt, `</${tag}>`].join("\n");
-};
 
 export const wrapInCodeBlock = (lang: string, ...lines: string[]): string => {
 	let res = "```" + lang + "\n";
@@ -60,11 +57,17 @@ export const removeSpecifiedHtmlTags = (
 		tag = [tag];
 	}
 	tag.forEach((t) => {
+		const withContentRegex = createRegexHtmlTagWithContent(t)
 		if (removeContent) {
-			text = text.replace(createRegexHtmlTagWithContent(t), "");
+			text = text.replace(withContentRegex, "");
 		} else {
-			text = text.replace(createRegexHtmlTagStart(t), "");
-			text = text.replace(createRegexHtmlTagEnd(t), "");
+			// get the inner text
+			const innerText = text.matchAll(withContentRegex);
+			for (const match of innerText) {
+				text = text.replace(match[0], match[2]);
+			}
+			// text = text.replace(createRegexHtmlTagStart(t), "");
+			// text = text.replace(createRegexHtmlTagEnd(t), "");
 		}
 	});
 	return text.trim();

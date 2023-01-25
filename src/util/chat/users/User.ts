@@ -1,9 +1,10 @@
-import {ApiRequestConfigTypes} from "src/util/openai/ApiReq";
 import {PromptConfig, PromptRules, PromptTraits} from "src/util/prompt/PromptBuilder";
-import {merge} from "lodash-es";
 import {getRobohashUrl} from "src/util/ImageUtils";
 import {getRegexValidUserId} from "src/util/RegexUtils";
 import {Thread} from "src/util/chat/Thread";
+import {smartNotify} from "src/util/SmartNotify";
+import {merge} from "lodash-es";
+import {ApiReqTypes} from "src/util/openai/ApiReq";
 
 export enum UserTypes {
 	HUMAN = "human",
@@ -19,11 +20,20 @@ export class User {
 	name: string;
 	icon = "chat";
 	type: UserTypes;
-	apiReqConfig: ApiRequestConfigTypes | string =
-		ApiRequestConfigTypes.CONVERSATION;
+	apiReqType: ApiReqTypes = ApiReqTypes.OAI_CREATE_COMPLETION;
+	apiReqOpts: any = {
+		model: "text-davinci-003",
+		max_tokens: 250,
+		temperature: 0.75,
+		top_p: 1,
+		frequency_penalty: 0.0,
+		presence_penalty: 0.0,
+		stop: ["####"]
+	}
 	showInMembersInfo = true;
 	alwaysIgnoreCache = false;
-	requiresUserIds: string[] = [];
+	// requiresUserIds: string[] = [];
+	helper: string | undefined = undefined;
 	defaultJoin = false;
 	defaultIgnored = false;
 	promptConfig: PromptConfig = {}
@@ -42,6 +52,24 @@ export class User {
 		this.type = type;
 	}
 
+	static wrapInTag(tag: string, ...msgPrompt: string[]) {
+		return [`<${tag}>`, ...msgPrompt, `</${tag}>`].join("\n");
+	}
+
+	updateArrayDict(oldDict: any, newDict: any) {
+		for (const key in newDict) {
+			if (oldDict[key]) {
+				oldDict[key].push(...newDict[key]);
+			} else {
+				oldDict[key] = newDict[key];
+			}
+		}
+	}
+
+	updateApiReqOpts(opts: any) {
+		merge(this.apiReqOpts, opts);
+	}
+
 	addTraits(traits: PromptTraits) {
 		if (!this.promptConfig.traits) {
 			// default traits
@@ -52,8 +80,9 @@ export class User {
 				abilities: [],
 			};
 		}
-		this.promptConfig.traits = merge(this.promptConfig.traits, traits);
+		this.updateArrayDict(this.promptConfig.traits, traits);
 	}
+
 
 	addRules(rules: PromptRules) {
 		if (!this.promptConfig.rules) {
@@ -64,7 +93,7 @@ export class User {
 				sometimes: [],
 			};
 		}
-		this.promptConfig.rules = merge(this.promptConfig.rules, rules);
+		this.updateArrayDict(this.promptConfig.rules, rules);
 	}
 
 	addExamples(examples: string[]) {
@@ -87,4 +116,14 @@ export class User {
 	getUserAvatarUrl() {
 		return getRobohashUrl(this.name);
 	}
+
+	wrapInHelperTag(...msgPrompt: string[]) {
+		if (!this.helper) {
+			smartNotify(`Warning: User ${this.name} requires a helper but it is not defined.`,
+						'Please report this bug on the GitHub Issues page.');
+			return msgPrompt.join("\n");
+		}
+		return User.wrapInTag(this.helper, ...msgPrompt);
+	}
+
 }

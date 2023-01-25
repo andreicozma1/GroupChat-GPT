@@ -1,10 +1,10 @@
 import {v4 as uuidv4} from "uuid";
 import {ApiResponse} from "stores/chatStore";
-import {User} from "src/util/chat/User";
 import {ValidDateTypes} from "src/util/DateUtils";
 import {getSeededQColor} from "src/util/Colors";
 import {UserPrompt} from "src/util/prompt/UserPrompt";
 import {apiErrorToString} from "src/util/Utils";
+import {User} from "src/util/chat/users/User";
 
 export class Message {
 	public static defaultBackgroundColor = "blue-grey-1";

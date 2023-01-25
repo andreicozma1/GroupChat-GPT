@@ -32,10 +32,11 @@ const getState = (): StateGlobalStore => {
 
 	const item: string | null = LocalStorage.getItem(localStorageKey);
 	if (!item) {
+		console.log("Initializing application for the first time.")
 		return state;
 	}
 	const parsedJson = JSON.parse(item);
-	state = merge(state, parsedJson);
+	state = merge(parsedJson, state);
 
 	return state;
 };

@@ -3,7 +3,7 @@ import {v4 as uuidv4} from "uuid";
 import {smartNotify} from "src/util/SmartNotify";
 import {parseDate} from "src/util/DateUtils";
 import {Message} from "src/util/chat/Message";
-import {User} from "src/util/chat/User";
+import {User} from "src/util/chat/users/User";
 
 export interface ChatThreadPrefs {
 	hiddenUserIds: string[];
@@ -36,8 +36,9 @@ export class Thread {
 
 	addUser(user: User): void {
 		this.joinedUserIds.push(user.id);
-		if (user.requiresUserIds) {
-			this.joinedUserIds.push(...user.requiresUserIds);
+		if (user.helper) {
+			smartNotify(`Adding helper ${user.helper} to thread.`, `Requested by ${user.id}.`);
+			this.joinedUserIds.push(user.helper);
 		}
 		this.joinedUserIds = Array.from(new Set(this.joinedUserIds));
 	}

@@ -201,6 +201,14 @@
         </template>
     </q-chat-message>
 </template>
+
+<style>
+
+p {
+    margin: 2px 0 2px 0;
+}
+
+</style>
 <script lang="ts"
         setup>
 import {dateToLocaleStr, dateToTimeAgo} from "src/util/DateUtils";
@@ -245,10 +253,8 @@ const onClickMsg = () => {
 
 const parsedTextSnippets = computed((): string[] => {
 	const texts = props.modelValue.textSnippets.flatMap((snippet: string) => {
-		// return snippet.split("\n\n").map((line: string) => {
-		// 	return line.trim();
-		// });
-		return snippet.trim();
+		// return snippet.trim().replace(':\n', ':\n\n').replace('```\n', '```\n\n').split('\n\n\n');
+		return snippet.trim().split("</br>")
 	});
 	if ((!texts || texts.length === 0) && !props.loading) {
 		return [];
@@ -275,7 +281,6 @@ const onClickRegenerate = () => {
 const toggleShouldDelete = (value?: boolean) => {
 	console.warn("=> toggleDelete:", {...props.modelValue});
 	if (value !== undefined) {
-		console.log("here");
 		shouldDelete.value = value;
 		return;
 	}

@@ -36,7 +36,7 @@ Well, this application is a step towards that world.
 ![introductions](https://user-images.githubusercontent.com/14914491/214446651-dc36ffe6-709a-4838-b5b7-df14eb1af72e.png)
 
 ### Response Coordinator
-- Special assistant that coordinates who should respond to the user's message by tagging them
+- Special assistant that coordinates who should respond to the user's message by tagging other assistants
 - Tip: Directly tag an assistant (ex: @davinci) to only have them respond (this skips the coordinator)
 
 ![coordinator-all](https://user-images.githubusercontent.com/14914491/214447142-4d254aee-1ba6-4c95-b562-159137c7c0b9.png)
@@ -44,9 +44,9 @@ Well, this application is a step towards that world.
 ![coordinator-one](https://user-images.githubusercontent.com/14914491/214447271-36895aac-4361-431f-b35b-f0bb30c8a958.png)
 
 ### Contexts, Follow-ups, and Ignored Messages
-- Hover over a message to visualize the messages that were used to provide context (showcased in below GIF).
-- Coordinator messages are ignored by default - they won't be used as generation context for other assistants because that would waste tokens.
-- You can manually ignore messages by clicking the 'eye' icon at the bottom-right of a message (showcased in below GIF).
+- Hover over a message to visualize the messages that were used to provide context
+- Coordinator messages are ignored by default - they won't be used as generation context for other assistants because that would waste tokens
+- You can manually ignore messages by clicking the 'eye' icon at the bottom-right of a message
 
 ![message-contexts](https://user-images.githubusercontent.com/14914491/214448848-2db88455-5063-49e7-8942-c66772228863.gif)
 

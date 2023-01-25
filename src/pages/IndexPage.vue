@@ -22,10 +22,8 @@ const styleFn = (offset: number, height: number) => {
 }
 
 const resizeObserver = new ResizeObserver((entries) => {
-	console.log("resizeObserver->entries:", entries);
 	const newHeight = entries[0]?.contentRect?.height;
 	if (!newHeight) {
-		console.error("resizeObserver->newHeight:", newHeight);
 		return;
 	}
 

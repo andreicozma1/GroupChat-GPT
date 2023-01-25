@@ -24,17 +24,28 @@ Well, this application is a step towards that world.
 
 ## Features:
 
-### Specialized  & Personalized Chatting Assistants:
+### Specialized  & Personalized Assistants:
 - Powered by GPT3
 - Current members: @davinci, @dalle, and @codex
 - Prompts for each member are dynamically created giving each assistant it's own traits, rules, examples, etc.
   - Subject to tweaks and changes over time, so read through the following files instead: [./src/util/chat/users](./src/util/chat/users)
+  
+![introductions](https://user-images.githubusercontent.com/14914491/214446651-dc36ffe6-709a-4838-b5b7-df14eb1af72e.png)
 
 ### Response Coordinator
-- Dictates which assistant(s) needs to respond to the user's message
-- For example, if the promptUser asks `"hey, how are you all?"`, multiple assistants follow up, each with their own unique
-  response
-- If the promptUser asks "Hey DALL-E, I need to generate an image", then only DALL-E will respond
+- Special assistant that coordinates who should respond to the user's message by tagging them
+- Tip: Directly tag an assistant (ex: @davinci) to only have them respond (this skips the coordinator)
+
+![coordinator-all](https://user-images.githubusercontent.com/14914491/214447142-4d254aee-1ba6-4c95-b562-159137c7c0b9.png)
+
+![coordinator-one](https://user-images.githubusercontent.com/14914491/214447271-36895aac-4361-431f-b35b-f0bb30c8a958.png)
+
+### Contexts, Follow-ups, and Ignored Messages
+- Hover over a message to visualize the messages that were used to provide context (showcased in below GIF).
+- Coordinator messages are ignored by default - they won't be used as generation context for other assistants because that would waste tokens.
+- You can manually ignore messages by clicking the 'eye' icon at the bottom-right of a message (showcased in below GIF).
+
+![message-contexts](https://user-images.githubusercontent.com/14914491/214448848-2db88455-5063-49e7-8942-c66772228863.gif)
 
 ## Setup Project & Dependencies
 

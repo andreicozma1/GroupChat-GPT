@@ -11,6 +11,7 @@ Well, this application is a step towards that world.
   - [Specialized  & Personalized Assistants:](#specialized---personalized-assistants)
   - [Response Coordinator](#response-coordinator)
   - [Contexts, Follow-ups, and Ignored Messages](#contexts-follow-ups-and-ignored-messages)
+  - [Markdown Formatting](#markdown-formatting)
 - [Setup Project & Dependencies](#setup-project--dependencies)
 - [Run & Build](#run--build)
   - [Start the app in development mode](#start-the-app-in-development-mode)
@@ -48,6 +49,10 @@ Well, this application is a step towards that world.
 - You can manually ignore messages by clicking the 'eye' icon at the bottom-right of a message (showcased in below GIF).
 
 ![message-contexts](https://user-images.githubusercontent.com/14914491/214448848-2db88455-5063-49e7-8942-c66772228863.gif)
+
+### Markdown Formatting
+
+![markdown](https://user-images.githubusercontent.com/14914491/214452561-dcaaa582-2340-47f8-8061-2dfd44d21d1b.png)
 
 ## Setup Project & Dependencies
 

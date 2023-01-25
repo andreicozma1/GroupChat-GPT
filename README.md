@@ -11,6 +11,7 @@ Well, this application is a step towards that world.
   - [Specialized  & Personalized Assistants:](#specialized---personalized-assistants)
   - [Response Coordinator](#response-coordinator)
   - [Contexts, Follow-ups, and Ignored Messages](#contexts-follow-ups-and-ignored-messages)
+  - [Markdown Formatting](#markdown-formatting)
 - [Setup Project & Dependencies](#setup-project--dependencies)
 - [Run & Build](#run--build)
   - [Start the app in development mode](#start-the-app-in-development-mode)

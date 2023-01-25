@@ -8,8 +8,9 @@ Well, this application is a step towards that world.
 ## Table of Contents
 
 - [Features:](#features)
-  - [Specialized  & Personalized Chatting Assistants:](#specialized---personalized-chatting-assistants)
+  - [Specialized  & Personalized Assistants:](#specialized---personalized-assistants)
   - [Response Coordinator](#response-coordinator)
+  - [Contexts, Follow-ups, and Ignored Messages](#contexts-follow-ups-and-ignored-messages)
 - [Setup Project & Dependencies](#setup-project--dependencies)
 - [Run & Build](#run--build)
   - [Start the app in development mode](#start-the-app-in-development-mode)

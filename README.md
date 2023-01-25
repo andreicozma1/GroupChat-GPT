@@ -49,6 +49,10 @@ Well, this application is a step towards that world.
 
 ![message-contexts](https://user-images.githubusercontent.com/14914491/214448848-2db88455-5063-49e7-8942-c66772228863.gif)
 
+### Markdown Formatting
+
+![markdown](https://user-images.githubusercontent.com/14914491/214452561-dcaaa582-2340-47f8-8061-2dfd44d21d1b.png)
+
 ## Setup Project & Dependencies
 
 Install Node.JS (version ^18 required) and Yarn:

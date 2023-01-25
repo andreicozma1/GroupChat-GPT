@@ -3,6 +3,7 @@ import {capitalizeFirstLetter} from "src/util/TextUtils";
 
 export interface ItemizedListConfig {
 	keyPrefix?: string;
+	valPrefix?: string;
 	valJoinStr?: string;
 	inline?: boolean;
 	commaSepMinChars?: number;
@@ -15,6 +16,7 @@ export const processItemizedList = (
 ): string => {
 	const commaSepMinChars = config?.commaSepMinChars || 40;
 	const keyPrefix: string = config?.keyPrefix || "#";
+	const valPrefix: string = config?.valPrefix + " " || "";
 	let valJoinStr: string = config?.valJoinStr || ", ";
 	let inline: boolean = config?.inline || true;
 
@@ -33,7 +35,7 @@ export const processItemizedList = (
 		valJoinStr = "\n";
 		inline = false;
 		val = val.map((s: string, i: number) => {
-			return `${i + 1}. ${s}`;
+			return `${i + 1}. ${valPrefix}${s}`;
 		});
 	}
 	val = val.join(valJoinStr);

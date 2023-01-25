@@ -42,7 +42,11 @@ export class PromptBuilder {
 									return undefined;
 								}
 								k = k.toUpperCase();
-								return processItemizedList(k, v, {keyPrefix: "### YOU WILL"});
+								return processItemizedList(k,
+														   v,
+														   {
+															   keyPrefix: "###",
+														   });
 							})
 							.filter((s: string | undefined) => s !== undefined);
 

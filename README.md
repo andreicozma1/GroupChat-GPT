@@ -29,9 +29,9 @@ Well, this application is a step towards that world.
 ### Chat with Specialized & Personalized Assistants:
 - Powered by the *OpenAI GPT-3 API*
 - Current members: `@davinci`, `@dalle`, and `@codex`
-- Assistants are given their own **distinct personalities, behaviors, and capabilities*** through dynamically-created generation prompts.
+- Assistants are given their own **distinct personalities, behaviors, and capabilities** through dynamically-created generation prompts.
   - Subject to tweaks and changes over time, so read through the following files instead: [./src/util/chat/users](./src/util/chat/users)
-  - Tip: if you want to see the final prompt created for each message, I'm printing them as 'error' to the JS console, lol
+  - Tip: if you want to see the final prompt text that was created for each assistant message, I am printing them as 'error' to the JS console, lol
   
 ![introductions](https://user-images.githubusercontent.com/14914491/214446651-dc36ffe6-709a-4838-b5b7-df14eb1af72e.png)
 

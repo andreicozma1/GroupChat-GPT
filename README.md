@@ -8,8 +8,9 @@ Well, this application is a step towards that world.
 ## Table of Contents
 
 - [Features:](#features)
-  - [Specialized  & Personalized Assistants:](#specialized---personalized-assistants)
+  - [Chat with Specialized & Personalized Assistants:](#chat-with-specialized--personalized-assistants)
   - [Response Coordinator](#response-coordinator)
+  - [Generate Images](#generate-images)
   - [Contexts, Follow-ups, and Ignored Messages](#contexts-follow-ups-and-ignored-messages)
   - [Markdown Formatting](#markdown-formatting)
 - [Setup Project & Dependencies](#setup-project--dependencies)
@@ -20,7 +21,6 @@ Well, this application is a step towards that world.
   - [Lint the files](#lint-the-files)
   - [Format the files](#format-the-files)
 - [License & Credit](#license--credit)
-- [Demo Screenshots](#demo-screenshots)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

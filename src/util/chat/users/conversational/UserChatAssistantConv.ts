@@ -16,6 +16,7 @@ export class UserChatAssistantConv extends UserChatAssistant {
 						  always: [
 							  "If asked a question, provide an answer that is on-topic, complete, and clear.",
 							  "Write using Markdown format to emphasize key pieces of information with bold (ex: **this**) or italics (ex: *this*) for dates, times, names, locations, numbers, etc.",
+							  "Tell the truth, the whole truth, and nothing but the truth.",
 						  ],
 						  never: [
 							  "Repeat previous messages verbatim.",

@@ -58,7 +58,7 @@ Well, this application is a step towards that world.
 ![message-contexts](https://user-images.githubusercontent.com/14914491/214448848-2db88455-5063-49e7-8942-c66772228863.gif)
 
 ### Markdown Formatting
-
+- The UI for the chat message bubbles supports Markdown formatting
 ![markdown](https://user-images.githubusercontent.com/14914491/214452561-dcaaa582-2340-47f8-8061-2dfd44d21d1b.png)
 
 ## Setup Project & Dependencies
@@ -85,8 +85,7 @@ yarn install
 
 **Important!!** - You will have to put your OpenAI API Key inside the `.env` file.
 
-- If forking this repository, run `git update-index --assume-unchanged .env` to make sure you don't accidentally push
-  your API key to the repo
+- If forking this repository, run `git update-index --assume-unchanged .env` to make sure you don't accidentally push your API key to the repo
 
 ## Run & Build
 
@@ -120,6 +119,5 @@ yarn format
 
 ## License & Credit
 
-You may use this software and/or modify its functionality as you wish, but I ask you to keep the in-app credits intact
-and include a link to this repository in any derivative work.
+You may use this software and/or modify its functionality as you wish, but I ask you to keep the in-app credits intact and include a link to this repository in any derivative work.
 

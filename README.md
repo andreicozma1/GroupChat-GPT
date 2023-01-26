@@ -59,6 +59,7 @@ Well, this application is a step towards that world.
 
 ### Markdown Formatting
 - The UI for the chat message bubbles supports Markdown formatting
+
 ![markdown](https://user-images.githubusercontent.com/14914491/214452561-dcaaa582-2340-47f8-8061-2dfd44d21d1b.png)
 
 ## Setup Project & Dependencies

@@ -29,7 +29,7 @@ export class UserGoogle extends User {
             additional_params: {
                 // add additional parameters here, see https://moz.com/blog/the-ultimate-guide-to-the-google-search-parameters and https://www.seoquake.com/blog/google-search-param/
                 hl: 'en'
-            }
+            },
         }
     }
 }

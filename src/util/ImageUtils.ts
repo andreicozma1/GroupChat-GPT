@@ -1,15 +1,15 @@
 import {getRandomMinMax} from "src/util/Utils";
 
 interface ImageOptions {
-	width?: number;
-	height?: number;
+    width?: number;
+    height?: number;
 }
 
 const parseImageOptions = (options?: ImageOptions): ImageOptions => {
-	return {
-		width: options?.width || Math.round(getRandomMinMax(100, 800)),
-		height: options?.height || Math.round(getRandomMinMax(100, 800)),
-	};
+    return {
+        width: options?.width || Math.round(getRandomMinMax(100, 800)),
+        height: options?.height || Math.round(getRandomMinMax(100, 800)),
+    };
 };
 
 /**
@@ -17,7 +17,7 @@ const parseImageOptions = (options?: ImageOptions): ImageOptions => {
  * @param seed The seed to use for the image
  */
 export const getRobohashUrl = (seed: string) => {
-	return `https://robohash.org/${seed}`;
+    return `https://robohash.org/${seed}`;
 };
 
 /**
@@ -26,7 +26,7 @@ export const getRobohashUrl = (seed: string) => {
  * @param options The options to use for the image
  */
 export const getPicsumUrl = (seed: string, options?: ImageOptions) => {
-	options = parseImageOptions(options);
-	seed = seed.replace(/ /g, "_");
-	return `https://picsum.photos/seed/${seed}/${options.width}/${options.height}`;
+    options = parseImageOptions(options);
+    seed = seed.replace(/ /g, "_");
+    return `https://picsum.photos/seed/${seed}/${options.width}/${options.height}`;
 };

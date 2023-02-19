@@ -27,6 +27,6 @@ export const ApiReqMap: { [key in ApiReqTypes]: (user: User, prompt: UserPrompt)
     },
     [ApiReqTypes.GOOGLE_SEARCH]: (user: User, prompt: UserPrompt) => {
         console.log(ApiReqTypes.GOOGLE_SEARCH, user, prompt)
-        return google.search('TWDG', user.apiReqOpts);
+        return google.search("hello", user.apiReqOpts)
     }
 }

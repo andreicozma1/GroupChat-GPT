@@ -9,50 +9,50 @@ import {merge} from "lodash-es";
 export const localStorageKey = "data";
 
 interface StateGlobalStore {
-	userData: ChatStoreUserData;
-	threadData: ChatStoreThreadData;
-	cachedResponses: Record<string, ApiResponse>;
-	prefs: ChatStoreGlobalPrefs;
-	dateCreated: Date;
-	dateLastSaved?: Date;
+    userData: ChatStoreUserData;
+    threadData: ChatStoreThreadData;
+    cachedResponses: Record<string, ApiResponse>;
+    prefs: ChatStoreGlobalPrefs;
+    dateCreated: Date;
+    dateLastSaved?: Date;
 }
 
 const getDefault = (): StateGlobalStore => {
-	return {
-		userData: UsersState.getDefault(),
-		threadData: ThreadsState.getDefault(),
-		cachedResponses: {},
-		prefs: GlobalPrefs.getDefault(),
-		dateCreated: new Date(),
-	};
+    return {
+        userData: UsersState.getDefault(),
+        threadData: ThreadsState.getDefault(),
+        cachedResponses: {},
+        prefs: GlobalPrefs.getDefault(),
+        dateCreated: new Date(),
+    };
 }
 
 const getState = (): StateGlobalStore => {
-	let state: StateGlobalStore = getDefault()
+    let state: StateGlobalStore = getDefault()
 
-	const item: string | null = LocalStorage.getItem(localStorageKey);
-	if (!item) {
-		console.log("Initializing application for the first time.")
-		return state;
-	}
-	const parsedJson = JSON.parse(item);
-	state = merge(parsedJson, state);
+    const item: string | null = LocalStorage.getItem(localStorageKey);
+    if (!item) {
+        console.log("Initializing application for the first time.")
+        return state;
+    }
+    const parsedJson = JSON.parse(item);
+    state = merge(parsedJson, state);
 
-	return state;
+    return state;
 };
 
 const saveState = (state: StateGlobalStore, verbose = true): void => {
-	if (verbose) {
-		smartNotify("Saving changes...");
-	}
-	console.log("saveState:", {...state});
-	state.dateLastSaved = new Date();
-	LocalStorage.set(localStorageKey, JSON.stringify(state));
+    if (verbose) {
+        smartNotify("Saving changes...");
+    }
+    console.log("saveState:", {...state});
+    state.dateLastSaved = new Date();
+    LocalStorage.set(localStorageKey, JSON.stringify(state));
 }
 
 export default {
-	localStorageKey,
-	getDefault,
-	getState,
-	saveState,
+    localStorageKey,
+    getDefault,
+    getState,
+    saveState,
 };

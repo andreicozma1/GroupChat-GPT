@@ -8,7 +8,6 @@ export class UserDalleGen extends User {
         this.showInMembersInfo = false;
 
         this.apiReqType = ApiReqTypes.OAI_CREATE_IMAGE;
-
         this.apiReqOpts = {
             n: 1,
             size: "256x256",
@@ -18,11 +17,11 @@ export class UserDalleGen extends User {
 
 export class UserGoogle extends User {
     constructor() {
-        super("google_search", "Google Search", UserTypes.HELPER);
+        super("google", "Google Search", UserTypes.HELPER);
         this.icon = "search";
+        this.defaultJoin = true;
 
         this.apiReqType = ApiReqTypes.GOOGLE_SEARCH;
-
         this.apiReqOpts = {
             page: 0,
             safe: false, // Safe Search

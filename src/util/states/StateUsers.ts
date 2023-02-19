@@ -1,4 +1,4 @@
-import {UserDalleGen} from "src/util/chat/users/UserHelpers";
+import {UserDalleGen, UserGoogle} from "src/util/chat/users/UserHelpers";
 import {UserCoordinator} from "src/util/chat/users/UserCoordinator";
 import {User} from "src/util/chat/users/User";
 import {UserDavinci} from "src/util/chat/users/conversational/UserDavinci";
@@ -7,30 +7,31 @@ import {UserCodex} from "src/util/chat/users/conversational/UserCodex";
 
 
 export interface ChatStoreUserData {
-	usersMap: Record<string, User>;
-	myUserId: string;
+    usersMap: Record<string, User>;
+    myUserId: string;
 }
 
 const getDefault = (): ChatStoreUserData => {
-	const defaultUsers = [
-		new UserCoordinator(),
-		new UserDavinci(),
-		new UserDalle(), new UserDalleGen(),
-		new UserCodex()
-	]
+    const defaultUsers = [
+        new UserCoordinator(),
+        new UserDavinci(),
+        new UserDalle(), new UserDalleGen(),
+        new UserCodex(),
+        new UserGoogle()
+    ]
 
-	const data: ChatStoreUserData = {
-		usersMap: {},
-		myUserId: "human",
-	};
+    const data: ChatStoreUserData = {
+        usersMap: {},
+        myUserId: "human",
+    };
 
-	defaultUsers.forEach((user) => {
-		data.usersMap[user.id] = user;
-	});
+    defaultUsers.forEach((user) => {
+        data.usersMap[user.id] = user;
+    });
 
-	return data;
+    return data;
 };
 
 export default {
-	getDefault,
+    getDefault,
 };

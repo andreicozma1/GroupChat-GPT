@@ -39,7 +39,7 @@
                                 <q-item v-for="user in chatStore.getActiveThreadUsers()"
                                         :key="user">
                                     <q-item-section side>
-                                        <UserAvatar :url="user.getUserAvatarUrl()" />
+                                        <UserAvatar :url="user.getUserAvatarUrl()"/>
                                     </q-item-section>
                                     <q-item-section>
                                         <q-item-label>
@@ -130,58 +130,58 @@ import {User} from "src/util/chat/users/User";
 
 
 const defaultExpansionItemProps = {
-	defaultOpened: true,
-	expandSeparator: true,
-	popup: true,
+    defaultOpened: true,
+    expandSeparator: true,
+    popup: true,
 }
 const chatStore = useChatStore();
 const activeThread: ComputedRef<Thread> = computed(() =>
-													   chatStore.getActiveThread()
+    chatStore.getActiveThread()
 );
 
 const newThreadName: Ref<string> = ref(activeThread.value.name);
 
 const isNewThreadNameValid: ComputedRef<boolean> = computed(() => {
-	if (newThreadName.value === activeThread.value.name) {
-		return false;
-	}
-	if (newThreadName.value?.length < 2) {
-		return false;
-	}
-	return true;
+    if (newThreadName.value === activeThread.value.name) {
+        return false;
+    }
+    if (newThreadName.value?.length < 2) {
+        return false;
+    }
+    return true;
 });
 
 const saveThreadName = () => {
-	if (!isNewThreadNameValid.value) {
-		smartNotify("Please enter a valid new thread name");
-	}
-	activeThread.value.name = newThreadName.value;
-	chatStore.saveState(true);
+    if (!isNewThreadNameValid.value) {
+        smartNotify("Please enter a valid new thread name");
+    }
+    activeThread.value.name = newThreadName.value;
+    chatStore.saveState(true);
 }
 
 const isUserVisible = (user: User): boolean => {
-	return !activeThread.value.prefs.hiddenUserIds.includes(user.id);
+    return !activeThread.value.prefs.hiddenUserIds.includes(user.id);
 };
 
 const toggleUserVisibility = (user: User) => {
-	console.log("toggleUserVisibility->user:", user);
-	const userId = user.id;
-	const thread: Thread = activeThread.value;
-	console.log("toggleUserVisibility->thread.prefs.hiddenUserIds:", thread.prefs.hiddenUserIds);
+    console.log("toggleUserVisibility->user:", user);
+    const userId = user.id;
+    const thread: Thread = activeThread.value;
+    console.log("toggleUserVisibility->thread.prefs.hiddenUserIds:", thread.prefs.hiddenUserIds);
 
-	if (isUserVisible(user)) {
-		thread.prefs.hiddenUserIds.push(userId);
-		console.log("toggleUserVisibility->push:", thread.prefs.hiddenUserIds);
-	} else {
-		thread.prefs.hiddenUserIds = thread.prefs.hiddenUserIds.filter(
-			(id) => id !== userId
-		);
-		console.log("toggleUserVisibility->filter:", thread.prefs.hiddenUserIds);
-	}
+    if (isUserVisible(user)) {
+        thread.prefs.hiddenUserIds.push(userId);
+        console.log("toggleUserVisibility->push:", thread.prefs.hiddenUserIds);
+    } else {
+        thread.prefs.hiddenUserIds = thread.prefs.hiddenUserIds.filter(
+            (id) => id !== userId
+        );
+        console.log("toggleUserVisibility->filter:", thread.prefs.hiddenUserIds);
+    }
 };
 
 watch(activeThread.value.prefs, () => {
-	console.log("activeThread.prefs changed");
-	chatStore.saveState();
+    console.log("activeThread.prefs changed");
+    chatStore.saveState();
 });
 </script>

@@ -14,23 +14,23 @@
 import EssentialLink, {EssentialLinkProps,} from "components/EssentialLink.vue";
 
 const essentialLinks: EssentialLinkProps[] = [
-	{
-		title: "GitHub Page",
-		caption: "andreicozma1/GroupChat-GPT",
-		icon: "code",
-		link: "https://github.com/andreicozma1/GroupChat-GPT",
-	},
-	{
-		title: "OpenAI API Docs",
-		caption: "beta.openai.com/docs",
-		icon: "public",
-		link: "https://beta.openai.com/docs",
-	},
-	{
-		title: "Andrei's Portfolio",
-		caption: "andreicozma.com",
-		icon: "school",
-		link: "https://andreicozma.com",
-	},
+    {
+        title: "GitHub Page",
+        caption: "andreicozma1/GroupChat-GPT",
+        icon: "code",
+        link: "https://github.com/andreicozma1/GroupChat-GPT",
+    },
+    {
+        title: "OpenAI API Docs",
+        caption: "beta.openai.com/docs",
+        icon: "public",
+        link: "https://beta.openai.com/docs",
+    },
+    {
+        title: "Andrei's Portfolio",
+        caption: "andreicozma.com",
+        icon: "school",
+        link: "https://andreicozma.com",
+    },
 ];
 </script>

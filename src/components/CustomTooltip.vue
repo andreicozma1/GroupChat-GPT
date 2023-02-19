@@ -2,6 +2,6 @@
     <q-tooltip :delay="500"
                anchor="bottom middle"
                self="center middle">
-        <slot />
+        <slot/>
     </q-tooltip>
 </template>

@@ -30,10 +30,10 @@
                 </CustomTooltip>
             </q-tab>
         </q-tabs>
-        <q-space />
+        <q-space/>
 
         <div class="q-pl-md">
-            <ThreadPrefs />
+            <ThreadPrefs/>
         </div>
         <!--            <div class="q-ml-sm">Quasar v{{ $q.version }}</div>-->
     </q-toolbar>
@@ -55,19 +55,19 @@ const activeThread: ComputedRef<Thread> = computed(() => chatStore.getActiveThre
 const emit = defineEmits(["onToggleDrawer"]);
 
 const toggleSideMenu = () => {
-	emit("onToggleDrawer");
+    emit("onToggleDrawer");
 };
 
 const getChipIcon = (item: InfoMessage) => {
-	if (isNotificationActive(item)) {
-		return "notifications_active"
-	}
-	return "notifications"
+    if (isNotificationActive(item)) {
+        return "notifications_active"
+    }
+    return "notifications"
 }
 
 const isNotificationActive = (item: InfoMessage) => {
-	const dateCurr = new Date();
-	return dateCurr.getTime() - item.dateUpdated.getTime() < 5000
+    const dateCurr = new Date();
+    return dateCurr.getTime() - item.dateUpdated.getTime() < 5000
 };
 
 </script>

@@ -13,13 +13,13 @@
 import {defineProps} from 'vue'
 
 const props = defineProps({
-							  url: {
-								  type: String,
-								  required: true
-							  },
-							  size: {
-								  type: String,
-								  default: 'md'
-							  }
-						  })
+    url: {
+        type: String,
+        required: true
+    },
+    size: {
+        type: String,
+        default: 'md'
+    }
+})
 </script>

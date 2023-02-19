@@ -35,18 +35,19 @@
             <!--            </div>-->
 
             <q-markdown :src="textSnippet"
-                        class="q-px-xs" />
+                        class="q-px-xs"/>
 
 
             <!--            <CustomTooltip v-if="modelValue.apiResponse?.data?.usage">-->
             <!--                {{ modelUsageStr() }}-->
             <!--            </CustomTooltip>-->
 
-            <q-badge v-if="modelValue.apiResponse && (modelValue.apiResponse.data === undefined || modelValue.apiResponse.error)"
-                     color="red"
-                     floating
-                     label="Error"
-                     rounded>
+            <q-badge
+                    v-if="modelValue.apiResponse && (modelValue.apiResponse.data === undefined || modelValue.apiResponse.error)"
+                    color="red"
+                    floating
+                    label="Error"
+                    rounded>
                 <CustomTooltip v-if="modelValue.apiResponse.error">
                     {{ apiErrorToString(modelValue.apiResponse.error) }}
                 </CustomTooltip>
@@ -79,13 +80,13 @@
         <div v-if="loading">
             <q-spinner-dots class="q-ml-md"
                             color="primary"
-                            size="2em" />
+                            size="2em"/>
         </div>
 
         <template v-slot:avatar>
             <UserAvatar :url="messageUser?.getUserAvatarUrl()"
                         class="q-ml-xs q-mr-sm"
-                        size="xl" />
+                        size="xl"/>
         </template>
 
         <template v-slot:name>
@@ -137,14 +138,14 @@
 
                 <div class="text-caption text-blue-grey-10">
                     <DateText :modelValue="modelValue.dateCreated"
-                              :suffix="getStamp()" />
+                              :suffix="getStamp()"/>
                     <CustomTooltip>
                         {{ stampHoverHint }}
                     </CustomTooltip>
                 </div>
-                <q-space />
+                <q-space/>
                 <UsageBadges v-if="modelValue?.apiResponse?.data?.usage"
-                             :model-usage="modelValue?.apiResponse?.data?.usage" />
+                             :model-usage="modelValue?.apiResponse?.data?.usage"/>
                 <div>
                     <div v-if="shouldDelete"
                          class="text-bold">Delete?
@@ -224,21 +225,21 @@ import UserAvatar from "components/UserAvatar.vue";
 import {User} from "src/util/chat/users/User";
 
 const props = defineProps({
-							  modelValue: {
-								  type: Object as PropType<Message>,
-								  required: true,
-							  },
-							  loading: {
-								  type: Boolean as PropType<boolean>,
-								  required: false,
-								  default: false,
-							  },
-							  style: {
-								  type: Object as PropType<Record<string, any>>,
-								  required: false,
-								  default: () => ({}),
-							  },
-						  });
+    modelValue: {
+        type: Object as PropType<Message>,
+        required: true,
+    },
+    loading: {
+        type: Boolean as PropType<boolean>,
+        required: false,
+        default: false,
+    },
+    style: {
+        type: Object as PropType<Record<string, any>>,
+        required: false,
+        default: () => ({}),
+    },
+});
 
 const chatStore = useChatStore();
 
@@ -247,125 +248,125 @@ const messageUser: ComputedRef<User | undefined> = computed(() => chatStore.getU
 const shouldDelete = ref(false);
 
 const onClickMsg = () => {
-	console.log("onClickMsg:", {...props.modelValue});
-	console.log("onClickMsg", {...props.modelValue?.apiResponse});
+    console.log("onClickMsg:", {...props.modelValue});
+    console.log("onClickMsg", {...props.modelValue?.apiResponse});
 };
 
 const parsedTextSnippets = computed((): string[] => {
-	const texts = props.modelValue.textSnippets.flatMap((snippet: string) => {
-		// return snippet.trim().replace(':\n', ':\n\n').replace('```\n', '```\n\n').split('\n\n\n');
-		return snippet.trim().split("</br>")
-	});
-	if ((!texts || texts.length === 0) && !props.loading) {
-		return [];
-	}
-	return texts;
+    const texts = props.modelValue.textSnippets.flatMap((snippet: string) => {
+        // return snippet.trim().replace(':\n', ':\n\n').replace('```\n', '```\n\n').split('\n\n\n');
+        return snippet.trim().split("</br>")
+    });
+    if ((!texts || texts.length === 0) && !props.loading) {
+        return [];
+    }
+    return texts;
 });
 
 const onClickEdit = () => {
-	smartNotify(`Message editing is not yet implemented`);
-	console.warn("=> edit:", {...props.modelValue});
-	// comp.onClickEdit(msg);
+    smartNotify(`Message editing is not yet implemented`);
+    console.warn("=> edit:", {...props.modelValue});
+    // comp.onClickEdit(msg);
 };
 
 const canRegenerate = computed(() => {
-	return !shouldDelete.value;
+    return !shouldDelete.value;
 });
 
 const onClickRegenerate = () => {
-	console.warn("*".repeat(40));
-	console.log("onClickRegenerate->message:", {...props.modelValue});
-	chatStore.handleUserMessage(props.modelValue);
+    console.warn("*".repeat(40));
+    console.log("onClickRegenerate->message:", {...props.modelValue});
+    chatStore.handleUserMessage(props.modelValue);
 };
 
 const toggleShouldDelete = (value?: boolean) => {
-	console.warn("=> toggleDelete:", {...props.modelValue});
-	if (value !== undefined) {
-		shouldDelete.value = value;
-		return;
-	}
-	// 2nd click - confirmation and delete
-	if (shouldDelete.value) {
-		console.log("=> delete:", {...props.modelValue});
-		chatStore.getActiveThread().deleteMessage(props.modelValue.id);
-		chatStore.saveState()
-		return;
-	}
-	// 1st click - will need 2nd click to confirm
-	shouldDelete.value = true;
+    console.warn("=> toggleDelete:", {...props.modelValue});
+    if (value !== undefined) {
+        shouldDelete.value = value;
+        return;
+    }
+    // 2nd click - confirmation and delete
+    if (shouldDelete.value) {
+        console.log("=> delete:", {...props.modelValue});
+        chatStore.getActiveThread().deleteMessage(props.modelValue.id);
+        chatStore.saveState()
+        return;
+    }
+    // 1st click - will need 2nd click to confirm
+    shouldDelete.value = true;
 };
 
 const isSentByMe = computed(() => {
-	const myUser = chatStore.getMyUser();
-	return props.modelValue.userId === myUser.id;
+    const myUser = chatStore.getMyUser();
+    return props.modelValue.userId === myUser.id;
 });
 
 const typeIcon = computed(() => {
-	const user: User | undefined = messageUser.value
-	if (!user) {
-		const ic = "send";
-		console.error(
-			`User "${props.modelValue.userId}" not found. Using default icon: '${ic}'`
-		);
-		return ic;
-	}
-	if (!user.icon) {
-		const ic = "help";
-		console.warn(
-			`User "${user.id}" icon not found. Using default icon: '${ic}'`
-		);
-		return ic;
-	}
-	return user.icon;
+    const user: User | undefined = messageUser.value
+    if (!user) {
+        const ic = "send";
+        console.error(
+            `User "${props.modelValue.userId}" not found. Using default icon: '${ic}'`
+        );
+        return ic;
+    }
+    if (!user.icon) {
+        const ic = "help";
+        console.warn(
+            `User "${user.id}" icon not found. Using default icon: '${ic}'`
+        );
+        return ic;
+    }
+    return user.icon;
 });
 
 const getStamp = () => {
-	if (props.modelValue.apiResponse?.fromCache) {
-		return '(from cache)';
-	}
-	if (props.modelValue.apiResponse?.cacheIgnored) {
-		return '(cache ignored)';
-	}
-	return undefined
+    if (props.modelValue.apiResponse?.fromCache) {
+        return '(from cache)';
+    }
+    if (props.modelValue.apiResponse?.cacheIgnored) {
+        return '(cache ignored)';
+    }
+    return undefined
 }
 
 const stampHoverHint = computed(() => {
-	const dateGenerated = props.modelValue.apiResponse?.data?.created * 1000;
-	if (dateGenerated) {
-		return `Generated ${dateToTimeAgo(dateGenerated)} (${dateToLocaleStr(dateGenerated)})`;
-	}
-	let res = isSentByMe.value ? "Sent" : "Received";
-	res += ` ${dateToTimeAgo(props.modelValue.dateCreated)} (${dateToLocaleStr(props.modelValue.dateCreated)})`;
-	return res;
+    const dateGenerated = props.modelValue.apiResponse?.data?.created * 1000;
+    if (dateGenerated) {
+        return `Generated ${dateToTimeAgo(dateGenerated)} (${dateToLocaleStr(dateGenerated)})`;
+    }
+    let res = isSentByMe.value ? "Sent" : "Received";
+    res += ` ${dateToTimeAgo(props.modelValue.dateCreated)} (${dateToLocaleStr(props.modelValue.dateCreated)})`;
+    return res;
 });
 
 const modelUsageStr = () => {
-	const usage = props.modelValue.apiResponse?.data?.usage;
-	if (!usage) {
-		return undefined
-	}
-	const keys = Object.keys(usage)
-	if (keys.length === 0) {
-		return undefined
-	}
-	return keys.map(key => `${key}: ${usage[key]} `).join('; ')
+    const usage = props.modelValue.apiResponse?.data?.usage;
+    if (!usage) {
+        return undefined
+    }
+    const keys = Object.keys(usage)
+    if (keys.length === 0) {
+        return undefined
+    }
+    return keys.map(key => `${key}: ${usage[key]} `).join('; ')
 }
 
 const bgColor = computed(() => {
-	if (shouldDelete.value) {
-		return "red-2";
-	}
-	return props.modelValue.getBackgroundColor()
+    if (shouldDelete.value) {
+        return "red-2";
+    }
+    return props.modelValue.getBackgroundColor()
 });
 
 const style = computed(() => {
-	return {
-		...props.style,
-		borderRadius: "1.0rem",
-		opacity: props.modelValue.isIgnored
-				 ? chatStore.prefs.ignoredMessageOpacity.value
-				 : 1.0,
-		outline: shouldDelete.value ? "2px solid red" : null,
-	};
+    return {
+        ...props.style,
+        borderRadius: "1.0rem",
+        opacity: props.modelValue.isIgnored
+            ? chatStore.prefs.ignoredMessageOpacity.value
+            : 1.0,
+        outline: shouldDelete.value ? "2px solid red" : null,
+    };
 });
 </script>

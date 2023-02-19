@@ -17,24 +17,24 @@ import {dateToLocaleStr, dateToTimeAgo, parseDate, ValidDateTypes} from "../util
 import {PropType, Ref, ref, watchEffect} from "vue";
 
 const props = defineProps({
-							  modelValue: {
-								  // also allow undefined
-								  type: [String, Number, Date] as PropType<ValidDateTypes>,
-								  required: false
-							  },
-							  prefix: {
-								  type: String,
-								  required: false,
-							  },
-							  suffix: {
-								  type: String,
-								  required: false,
-							  }
-						  });
+    modelValue: {
+        // also allow undefined
+        type: [String, Number, Date] as PropType<ValidDateTypes>,
+        required: false
+    },
+    prefix: {
+        type: String,
+        required: false,
+    },
+    suffix: {
+        type: String,
+        required: false,
+    }
+});
 
 const parseDateProps = (): Date[] => {
-	const res = Array.isArray(props.modelValue) ? props.modelValue : [props.modelValue];
-	return res.map((val) => parseDate(val));
+    const res = Array.isArray(props.modelValue) ? props.modelValue : [props.modelValue];
+    return res.map((val) => parseDate(val));
 }
 const dates: Ref<Date[]> = ref(parseDateProps())
 
@@ -45,11 +45,11 @@ const dateTypeToggle = ref(false);
 
 
 const onClick = () => {
-	dateTypeToggle.value = !dateTypeToggle.value;
+    dateTypeToggle.value = !dateTypeToggle.value;
 }
 
 const onRightClick = () => {
-	currentDateIdx.value = (currentDateIdx.value + 1) % dates.value.length;
+    currentDateIdx.value = (currentDateIdx.value + 1) % dates.value.length;
 }
 
 const dateUpdateInterval: Ref<NodeJS.Timeout | null> = ref(null);
@@ -57,35 +57,35 @@ const dateUpdateInterval: Ref<NodeJS.Timeout | null> = ref(null);
 let timeoutMs = 1000;
 
 const update = () => {
-	const date = dates.value[currentDateIdx.value];
-	let dateStr;
+    const date = dates.value[currentDateIdx.value];
+    let dateStr;
 
-	if (dateUpdateInterval.value) {
-		clearTimeout(dateUpdateInterval.value);
-	}
-	if (dateTypeToggle.value) {
-		dateStr = dateToLocaleStr(date);
-	} else {
-		dateStr = dateToTimeAgo(date);
-		dateUpdateInterval.value = setTimeout(update, timeoutMs);
-	}
+    if (dateUpdateInterval.value) {
+        clearTimeout(dateUpdateInterval.value);
+    }
+    if (dateTypeToggle.value) {
+        dateStr = dateToLocaleStr(date);
+    } else {
+        dateStr = dateToTimeAgo(date);
+        dateUpdateInterval.value = setTimeout(update, timeoutMs);
+    }
 
-	if (props.prefix) {
-		dateStr = props.prefix + " " + dateStr;
-	}
-	if (props.suffix) {
-		dateStr = dateStr + " " + props.suffix;
-	}
+    if (props.prefix) {
+        dateStr = props.prefix + " " + dateStr;
+    }
+    if (props.suffix) {
+        dateStr = dateStr + " " + props.suffix;
+    }
 
-	if (text.value === dateStr) {
-		timeoutMs *= 1.25
-	}
-	text.value = dateStr;
+    if (text.value === dateStr) {
+        timeoutMs *= 1.25
+    }
+    text.value = dateStr;
 }
 
 watchEffect(() => {
-	dates.value = parseDateProps();
-	update();
+    dates.value = parseDateProps();
+    update();
 })
 
 
